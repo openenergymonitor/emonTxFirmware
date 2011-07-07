@@ -11,14 +11,14 @@
 
 //Based on JeeLabs RF12 library http://jeelabs.org/2009/02/10/rfm12b-library-for-arduino/
 
-// By Glyn Hudson 6/5/11
+// By Glyn Hudson and Trystan Lea: 7/7/11
 // openenergymonitor.org
 // GNU GPL V3
 
 //--------------------------------------------------------------------------------------
 */
 
-//JeeNodes librarys 
+//JeeLabs libraries 
 #include <Ports.h>
 #include <RF12.h>
 #include <avr/eeprom.h>
@@ -44,13 +44,13 @@ int myNodeID;                //to be picked randomy in void setup()
 //--------------------------------------------------------------------------------------------------
 // CT energy monitor setup definitions 
 //--------------------------------------------------------------------------------------------------
-int inPinI=                3;    //I/O analogue 3 = emonTx CT2 channel. Change to analogue 0 for emonTx CT1 chnnel  
-int numberOfSamples=       1480; //The period (one wavelength) of mains 50Hz is 20ms. Each samples was measured to take 0.188ms. This meas that 106.4 samples/wavelength are possible. 1480 samples takes 280.14ms which is 14 wavelengths. 
-int Vrms=                  230;  //UK assumed supply voltage. Tolerance: +10%-6%
-int CT_BURDEN_RESISTOR=    56;   //value in ohms of burden resistor R3 and R6
-int CT_TURNS=              1500; //number of turns in CT sensor. 1500 is the vaue of the efergy CT http://www.efergy.com/Products/efergy-Shop-Accessories/EFERGY/Jackplug-Extra-Sensor/pid-184334.aspx
+int CT_INPUT_PIN =          0;    //I/O analogue 3 = emonTx CT2 channel. Change to analogue 0 for emonTx CT1 chnnel  
+int NUMBER_OF_SAMPLES =     1480; //The period (one wavelength) of mains 50Hz is 20ms. Each samples was measured to take 0.188ms. This meas that 106.4 samples/wavelength are possible. 1480 samples takes 280.14ms which is 14 wavelengths. 
+int RMS_VOLTAGE =           230;  //UK assumed supply voltage. Tolerance: +10%-6%
+int CT_BURDEN_RESISTOR =    15;   //value in ohms of burden resistor R3 and R6
+int CT_TURNS =              1500; //number of turns in CT sensor. 1500 is the vaue of the efergy CT http://www.efergy.com/Products/efergy-Shop-Accessories/EFERGY/Jackplug-Extra-Sensor/pid-184334.aspx
 
-double CAL=1.2477;          //*calibration coefficient* IMPORTANT - each monitor must be calibrated. See step 4 http://openenergymonitor.org/emon/node/58
+double CAL=1.0;          //*calibration coefficient* IMPORTANT - each monitor must be calibrated. See step 4 http://openenergymonitor.org/emon/node/58
 //--------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------
@@ -112,9 +112,9 @@ void loop() {
     // 1. Read current supply voltage and get current CT energy monitoring reading 
     //--------------------------------------------------------------------------------------------------
           emontx.supplyV = readVcc();  //read emontx supply voltage
-          emontx.ct1=int(emon(inPinI,CAL,Vrms,numberOfSamples,CT_BURDEN_RESISTOR,CT_TURNS,emontx.supplyV));
+          emontx.ct1=int(emon( CT_INPUT_PIN, CAL, RMS_VOLTAGE, NUMBER_OF_SAMPLES, CT_BURDEN_RESISTOR, CT_TURNS, emontx.supplyV));
     //--------------------------------------------------------------------------------------------------
-  
+    
     //--------------------------------------------------------------------------------------------------
     // 2. Send data via RF 
     //--------------------------------------------------------------------------------------------------
