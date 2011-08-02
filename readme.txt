@@ -10,8 +10,7 @@ Wireless energy-monitoring node
 
 Builds on JeeLabs software and compatiable with JeeNode hardware 
 -----------------------------------------------
-Download the EtherCard, Ports and RF12 library here (insert into Arduino librarys folder):
-http://jeelabs.net/projects/cafe/wiki/EtherCard
+Download the JeeLabs Ports and RF12 library here (insert into Arduino librarys folder):
 http://jeelabs.net/projects/cafe/wiki/Ports
 http://jeelabs.net/projects/cafe/wiki/RF12
 -----------------------------------------------
