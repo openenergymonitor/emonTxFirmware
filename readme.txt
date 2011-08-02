@@ -8,6 +8,8 @@
 Wireless energy-monitoring node 
 ***********************************
 
+emonTx single CT example: Monitor AC current flow using one CT sensor and transmitt data via RFM12B to NanodeRF/emonBase
+
 Builds on JeeLabs software and compatiable with JeeNode hardware 
 -----------------------------------------------
 Download the JeeLabs Ports and RF12 library here (insert into Arduino librarys folder):
@@ -15,12 +17,10 @@ http://jeelabs.net/projects/cafe/wiki/Ports
 http://jeelabs.net/projects/cafe/wiki/RF12
 -----------------------------------------------
 
-This repo contains the firmware in development for the emontx. A small open-source wireless monitoring node
-
-emonTx single CT example: Monitor AC current flow using one CT sensor and transmitt data via RFM12B to NanodeRF/emonBase
-
+For web-connected Nanode receiver code see:
+https://github.com/openenergymonitor/sketchbook/tree/master/EtherShield_simpleClient_RF12
 
 
-emonTx: openenergymonitor.org/emon/emontx
+openenergymonitor.org/emon/emontx
 
  
