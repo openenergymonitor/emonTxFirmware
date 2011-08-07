@@ -30,8 +30,8 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); } 	 // interrupt handler: has to be def
 //---------------------------------------------------------------------------------------------------
 // fixed RF12 settings
 
-int myNodeID;                //to be picked randomy in void setup()
-#define network     212      //default network group (can be in the range 1-250). All nodes required to communigate together must be on the same network group
+#define myNodeID 10         //in the range 1-30
+#define network     212      //default network group (can be in the range 1-250). All nodes required to communicate together must be on the same network group
 #define freq RF12_433MHZ     //Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 
 // set the sync mode to 2 if the fuses are still the Arduino default
@@ -46,11 +46,11 @@ int myNodeID;                //to be picked randomy in void setup()
 //--------------------------------------------------------------------------------------------------
 int CT_INPUT_PIN =          0;    //I/O analogue 3 = emonTx CT2 channel. Change to analogue 0 for emonTx CT1 chnnel  
 int NUMBER_OF_SAMPLES =     1480; //The period (one wavelength) of mains 50Hz is 20ms. Each samples was measured to take 0.188ms. This meas that 106.4 samples/wavelength are possible. 1480 samples takes 280.14ms which is 14 wavelengths. 
-int RMS_VOLTAGE =           230;  //UK assumed supply voltage. Tolerance: +10%-6%
+int RMS_VOLTAGE =           230;  //Assumed supply voltage (230V in UK).  Tolerance: +10%-6%
 int CT_BURDEN_RESISTOR =    15;   //value in ohms of burden resistor R3 and R6
-int CT_TURNS =              1500; //number of turns in CT sensor. 1500 is the vaue of the efergy CT http://www.efergy.com/Products/efergy-Shop-Accessories/EFERGY/Jackplug-Extra-Sensor/pid-184334.aspx
+int CT_TURNS =              1500; //number of turns in CT sensor. 1500 is the vaue of the efergy CT 
 
-double CAL=1.0;          //*calibration coefficient* IMPORTANT - each monitor must be calibrated. See step 4 http://openenergymonitor.org/emon/node/58
+double CAL=1.0;          //*calibration coefficient* IMPORTANT - each monitor must be calibrated for maximum accuracy. See step 4 http://openenergymonitor.org/emon/node/58. Set to 1.295 for Seedstudio 100A current output CT (included in emonTx V2.0 kit)
 //--------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------
@@ -64,11 +64,6 @@ double CAL=1.0;          //*calibration coefficient* IMPORTANT - each monitor mu
 //######################################################################################################################## 
 typedef struct {
   	  int ct1;		// current transformer 1
-	  int ct2;		// current transformer 2
-	  int nPulse;		// number of pulses recieved since last update
-	  int temp1;		// One-wire temperature 1
-	  int temp2;		// One-wire temperature 2
-	  int temp3;		// One-wire temperature 3
 	  int supplyV;		// emontx voltage
 } Payload;
 Payload emontx;
@@ -87,16 +82,14 @@ void setup() {
   //-----------------------------------------
   // RFM12B Initialize
   //------------------------------------------
-  randomSeed(analogRead(0));                //initiate random function from noise 
-  myNodeID=(random(28)+1);                  //Ramdomly pick a NodeID Must be in the range of 1-39 (reserve node 30 for Base Station)
   rf12_initialize(myNodeID,freq,network);   //Initialize RFM12 with settings defined above 
-  rf12_sleep(0);                             //Put the RFM12 to sleep - Note: This RF12 sleep interupt method might not be 100% repiable. Put RF to sleep: RFM12B module can be kept off while not used – saving roughly 15 mA
+  rf12_sleep(0);                             //Put the RFM12 to sleep - Note: This RF12 sleep interupt method might not be 100% reliable. Put RF to sleep: RFM12B module can be kept off while not used – saving roughly 15 mA
   //------------------------------------------
   
   Serial.print("Node: "); 
   Serial.print(myNodeID); 
   Serial.print(" Freq: "); 
-  Serial.print(freq); 
+  Serial.print("433Mhz");       //dumb hack, I couldn't get the variable freq to print properly  
   Serial.print(" Network: "); 
   Serial.println(network);
 
@@ -146,7 +139,7 @@ static void rfwrite(){
 //--------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------
-// Read current supply voltage
+// Read current emonTx battery voltage - not main supplyV!
 //--------------------------------------------------------------------------------------------------
 long readVcc() {
   long result;
