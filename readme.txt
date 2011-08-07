@@ -17,8 +17,8 @@ http://jeelabs.net/projects/cafe/wiki/Ports
 http://jeelabs.net/projects/cafe/wiki/RF12
 -----------------------------------------------
 
-For web-connected Nanode receiver code see:
-https://github.com/openenergymonitor/sketchbook/tree/master/EtherShield_simpleClient_RF12
+For web-connected Nanode (emonBase) receiver code see:
+https://github.com/openenergymonitor/NanodeRF
 
 
 openenergymonitor.org/emon/emontx
