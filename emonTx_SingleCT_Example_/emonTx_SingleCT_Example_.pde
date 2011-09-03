@@ -46,11 +46,11 @@ int myNodeID;                //to be picked randomy in void setup()
 //--------------------------------------------------------------------------------------------------
 int CT_INPUT_PIN =          0;    //I/O analogue 3 = emonTx CT2 channel. Change to analogue 0 for emonTx CT1 chnnel  
 int NUMBER_OF_SAMPLES =     1480; //The period (one wavelength) of mains 50Hz is 20ms. Each samples was measured to take 0.188ms. This meas that 106.4 samples/wavelength are possible. 1480 samples takes 280.14ms which is 14 wavelengths. 
-int RMS_VOLTAGE =           230;  //UK assumed supply voltage. Tolerance: +10%-6%
+int RMS_VOLTAGE =           240;  //UK assumed supply voltage. Tolerance: +10%-6%
 int CT_BURDEN_RESISTOR =    15;   //value in ohms of burden resistor R3 and R6
 int CT_TURNS =              1500; //number of turns in CT sensor. 1500 is the vaue of the efergy CT http://www.efergy.com/Products/efergy-Shop-Accessories/EFERGY/Jackplug-Extra-Sensor/pid-184334.aspx
 
-double CAL=1.0;          //*calibration coefficient* IMPORTANT - each monitor must be calibrated. See step 4 http://openenergymonitor.org/emon/node/58
+double CAL=1.295000139;          //*calibration coefficient* IMPORTANT - each monitor must be calibrated. See step 4 http://openenergymonitor.org/emon/node/58
 //--------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------
@@ -63,12 +63,7 @@ double CAL=1.0;          //*calibration coefficient* IMPORTANT - each monitor mu
 //Data Structure to be received 
 //######################################################################################################################## 
 typedef struct {
-  	  int ct1;		// current transformer 1
-	  int ct2;		// current transformer 2
-	  int nPulse;		// number of pulses recieved since last update
-	  int temp1;		// One-wire temperature 1
-	  int temp2;		// One-wire temperature 2
-	  int temp3;		// One-wire temperature 3
+  	  int ct1;		// current transformer 1]
 	  int supplyV;		// emontx voltage
 } Payload;
 Payload emontx;
