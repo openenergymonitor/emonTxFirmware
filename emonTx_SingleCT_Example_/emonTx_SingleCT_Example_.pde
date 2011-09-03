@@ -31,7 +31,7 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); } 	 // interrupt handler: has to be def
 // fixed RF12 settings
 
 #define myNodeID 10         //in the range 1-30
-#define network     212      //default network group (can be in the range 1-250). All nodes required to communicate together must be on the same network group
+#define network     210      //default network group (can be in the range 1-250). All nodes required to communicate together must be on the same network group
 #define freq RF12_433MHZ     //Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 
 // set the sync mode to 2 if the fuses are still the Arduino default
@@ -46,11 +46,11 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); } 	 // interrupt handler: has to be def
 //--------------------------------------------------------------------------------------------------
 int CT_INPUT_PIN =          0;    //I/O analogue 3 = emonTx CT2 channel. Change to analogue 0 for emonTx CT1 chnnel  
 int NUMBER_OF_SAMPLES =     1480; //The period (one wavelength) of mains 50Hz is 20ms. Each samples was measured to take 0.188ms. This meas that 106.4 samples/wavelength are possible. 1480 samples takes 280.14ms which is 14 wavelengths. 
-int RMS_VOLTAGE =           230;  //Assumed supply voltage (230V in UK).  Tolerance: +10%-6%
+int RMS_VOLTAGE =           240;  //Assumed supply voltage (230V in UK).  Tolerance: +10%-6%
 int CT_BURDEN_RESISTOR =    15;   //value in ohms of burden resistor R3 and R6
 int CT_TURNS =              1500; //number of turns in CT sensor. 1500 is the vaue of the efergy CT 
 
-double CAL=1.0;          //*calibration coefficient* IMPORTANT - each monitor must be calibrated for maximum accuracy. See step 4 http://openenergymonitor.org/emon/node/58. Set to 1.295 for Seedstudio 100A current output CT (included in emonTx V2.0 kit)
+double CAL=1.295000139;          //*calibration coefficient* IMPORTANT - each monitor must be calibrated for maximum accuracy. See step 4 http://openenergymonitor.org/emon/node/58. Set to 1.295 for Seedstudio 100A current output CT (included in emonTx V2.0 kit)
 //--------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------
@@ -102,7 +102,7 @@ void setup() {
 //********************************************************************
 void loop() {
     
-    digitalWrite(LEDpin, HIGH);
+    
     //--------------------------------------------------------------------------------------------------
     // 1. Read current supply voltage and get current CT energy monitoring reading 
     //--------------------------------------------------------------------------------------------------
@@ -115,7 +115,8 @@ void loop() {
     //--------------------------------------------------------------------------------------------------
            rfwrite() ;
     //--------------------------------------------------------------------------------------------------    
-    digitalWrite(LEDpin, LOW); 
+	digitalWrite(LEDpin, HIGH); //flash LED - very quickly   
+	digitalWrite(LEDpin, LOW); 
   
   //for debugging 
   Serial.println(emontx.ct1); 
