@@ -109,13 +109,14 @@ void loop() {
           emontx.supplyV = readVcc();  //read emontx supply voltage
           emontx.ct1=int(emon( CT_INPUT_PIN, CAL, RMS_VOLTAGE, NUMBER_OF_SAMPLES, CT_BURDEN_RESISTOR, CT_TURNS, emontx.supplyV));
     //--------------------------------------------------------------------------------------------------
-    
+      
+      digitalWrite(LEDpin, HIGH); //flash LED - very quickly  
     //--------------------------------------------------------------------------------------------------
     // 2. Send data via RF 
     //--------------------------------------------------------------------------------------------------
            rfwrite() ;
     //--------------------------------------------------------------------------------------------------    
-	digitalWrite(LEDpin, HIGH); //flash LED - very quickly   
+	 
 	digitalWrite(LEDpin, LOW); 
   
   //for debugging 
