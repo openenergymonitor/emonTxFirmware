@@ -78,7 +78,7 @@ void setup() {
   Serial.begin(9600);
   pinMode(LEDpin, OUTPUT);
   
-  Serial.println("EmonTx single CT example");
+  Serial.println("emonTx single CT example");
   Serial.println("openenergymonitor.org");
   
   
@@ -142,7 +142,7 @@ static void rfwrite(){
     while (!rf12_canSend())
     rf12_recvDone();
     rf12_sendStart(rf12_hdr, &emontx, sizeof emontx, RADIO_SYNC_MODE); 
-     rf12_sendWait(2);    //wait for RF to finish sending while in idle mode
+     //rf12_sendWait(2);    //wait for RF to finish sending while in idle mode
     rf12_sleep(0);    //put RF module to sleep
 }
 //--------------------------------------------------------------------------------------------------
