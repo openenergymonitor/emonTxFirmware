@@ -84,6 +84,7 @@ void setup() {
   //------------------------------------------
   rf12_initialize(myNodeID,freq,network);   //Initialize RFM12 with settings defined above 
   rf12_sleep(0);                             //Put the RFM12 to sleep - Note: This RF12 sleep interupt method might not be 100% reliable. Put RF to sleep: RFM12B module can be kept off while not used – saving roughly 15 mA
+  Sleepy::loseSomeTime(4000);               //stay off for a while after power on to let power settle
   //------------------------------------------
   
   Serial.print("Node: "); 
@@ -138,6 +139,7 @@ static void rfwrite(){
     while (!rf12_canSend())
     rf12_recvDone();
     rf12_sendStart(rf12_hdr, &emontx, sizeof emontx, RADIO_SYNC_MODE); 
+     rf12_sendWait(2);    //wait for RF to finish sending while in idle mode
     rf12_sleep(0);    //put RF module to sleep
 }
 //--------------------------------------------------------------------------------------------------
