@@ -7,13 +7,15 @@
  \___|_| |_| |_|\___/|_| |_\_/_/\_\
  
 //--------------------------------------------------------------------------------------
-//Single CT wireless node example 
+//Two CT wireless node example 
 
 //Based on JeeLabs RF12 library http://jeelabs.org/2009/02/10/rfm12b-library-for-arduino/
 
-// By Glyn Hudson and Trystan Lea: 7/7/11
+// By Glyn Hudson and Trystan Lea: 4/9/11
 // openenergymonitor.org
 // GNU GPL V3
+
+//using CT channels 1 and 2 (middle and bottom jackplugs)
 
 //--------------------------------------------------------------------------------------
 */
@@ -56,6 +58,7 @@ class Channel //create class of emon variables to allow two channel monitoring
 };
 
 Channel ch1, ch2;                  //creat two instances of Channel two allow two channel monitoring
+
 int CT1_INPUT_PIN =          3;   //bottom jack port 
 int CT2_INPUT_PIN =          0;   //middle jack port  
 int NUMBER_OF_SAMPLES =     1480; //The period (one wavelength) of mains 50Hz is 20ms. Each samples was measured to take 0.188ms. This meas that 106.4 samples/wavelength are possible. 1480 samples takes 280.14ms which is 14 wavelengths. 
@@ -95,16 +98,16 @@ void setup() {
   
   Serial.println("EmonTx 2CT example");
   Serial.println("openenergymonitor.org");
-  delay(10);                                //for for emonTx to finish printing before going to sleep
+  //delay(10);                                //for for emonTx to finish printing before going to sleep
   //-----------------------------------------
   // RFM12B Initialize
   //------------------------------------------
   rf12_initialize(myNodeID,freq,network);   //Initialize RFM12 with settings defined above 
   rf12_sleep(0);                             //Put the RFM12 to sleep - Note: This RF12 sleep interupt method might not be 100% reliable. Put RF to sleep: RFM12B module can be kept off while not used – saving roughly 15 mA
-  Sleepy::loseSomeTime(4000);               //stay off for a while after power on to let power settle
+  //Sleepy::loseSomeTime(4000);               //stay off for a while after power on to let power settle
   //------------------------------------------
   
-  delay(30);                                //allow bit of time for the emonTx to wake up before serial printing
+ // delay(30);                                //allow bit of time for the emonTx to wake up before serial printing
   Serial.print("Node: "); 
   Serial.print(myNodeID); 
   Serial.print(" Freq: "); 
@@ -165,7 +168,7 @@ static void rfwrite(){
     while (!rf12_canSend())
     rf12_recvDone();
     rf12_sendStart(rf12_hdr, &emontx, sizeof emontx, RADIO_SYNC_MODE); 
-     rf12_sendWait(2);    //wait for RF to finish sending while in idle mode
+     //rf12_sendWait(2);    //wait for RF to finish sending while in idle mode
     rf12_sleep(0);    //put RF module to sleep
 }
 //--------------------------------------------------------------------------------------------------
