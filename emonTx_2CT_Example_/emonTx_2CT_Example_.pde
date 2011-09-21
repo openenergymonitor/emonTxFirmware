@@ -153,7 +153,7 @@ void loop() {
   
   delay(10);                     // Needed to make sure print is finished before going to sleep
 
-Sleepy::loseSomeTime(4000);      //JeeLabs power save function: enter low power mode and update Arduino millis 
+Sleepy::loseSomeTime(10000);      //JeeLabs power save function: enter low power mode and update Arduino millis 
 //only be used with time ranges of 16..65000 milliseconds, and is not as accurate as when running normally.http://jeelabs.org/2010/10/18/tracking-time-in-your-sleep/
    
 }

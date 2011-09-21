@@ -142,7 +142,7 @@ void loop()
    
    pulseCount=0;       //reset pulse increments 
 
-  delay(4000);
+  delay(10000);
   
  
 }
