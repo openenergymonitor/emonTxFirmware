@@ -91,6 +91,7 @@ void setup() {
   Serial.println("emonTx single CT example");
   Serial.println("openenergymonitor.org");
   
+  delay(10);                             
   
   //-----------------------------------------
   // RFM12B Initialize
@@ -115,7 +116,7 @@ void setup() {
     Serial.end();
   }
   
-  digitalWrite(LEDpin, HIGH);              //turn off LED
+  digitalWrite(LEDpin, LOW);              //turn off LED
 }
 
 //********************************************************************
@@ -159,14 +160,15 @@ Sleepy::loseSomeTime(10000);      //JeeLabs power save function: enter low power
 
 
 //--------------------------------------------------------------------------------------------------
-// Send payload data via RF
+// Send payload data via RF - see http://jeelabs.net/projects/cafe/wiki/RF12 for RF12 library documentation 
 //--------------------------------------------------------------------------------------------------
 static void rfwrite(){
     rf12_sleep(RF12_WAKEUP);     //wake up RF module
     while (!rf12_canSend())
     rf12_recvDone();
     rf12_sendStart(0, &emontx, sizeof emontx); 
-    rf12_sendWait(2);    //wait for RF to finish sending while in idle mode
+    //rf12_sendStart(rf12_hdr, &emontx, sizeof emontx, RADIO_SYNC_MODE); -- includes header data 
+    rf12_sendWait(2);    //wait for RF to finish sending while in standby mode
     rf12_sleep(RF12_SLEEP);    //put RF module to sleep
 }
 //--------------------------------------------------------------------------------------------------

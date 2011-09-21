@@ -11,7 +11,7 @@
 
 //Based on JeeLabs RF12 library http://jeelabs.org/2009/02/10/rfm12b-library-for-arduino/
 
-// By Glyn Hudson and Trystan Lea: 4/9/11
+// By Glyn Hudson and Trystan Lea: 21/9/11
 // openenergymonitor.org
 // GNU GPL V3
 
@@ -27,6 +27,14 @@
 #include <util/crc16.h>  //cyclic redundancy check
 
 ISR(WDT_vect) { Sleepy::watchdogEvent(); } 	 // interrupt handler: has to be defined because we're using the watchdog for low-power waiting
+
+
+//---------------------------------------------------------------------------------------------------
+// Serial print settings - disable all serial prints if SERIAL 0 - increases long term stability 
+//---------------------------------------------------------------------------------------------------
+#define SERIAL 0
+//---------------------------------------------------------------------------------------------------
+
 //---------------------------------------------------------------------------------------------------
 // RF12 settings 
 //---------------------------------------------------------------------------------------------------
@@ -95,19 +103,22 @@ Payload emontx;
 void setup() {
   Serial.begin(9600);
   pinMode(LEDpin, OUTPUT);
+  digitalWrite(LEDpin, HIGH);    //turn on LED 
   
-  Serial.println("EmonTx 2CT example");
+  Serial.println("emonTx 2CT example");
   Serial.println("openenergymonitor.org");
-  //delay(10);                                //for for emonTx to finish printing before going to sleep
+  delay(10);        //for for emonTx to finish printing before going to sleep
+  
   //-----------------------------------------
   // RFM12B Initialize
   //------------------------------------------
   rf12_initialize(myNodeID,freq,network);   //Initialize RFM12 with settings defined above 
-  rf12_sleep(0);                             //Put the RFM12 to sleep - Note: This RF12 sleep interupt method might not be 100% reliable. Put RF to sleep: RFM12B module can be kept off while not used – saving roughly 15 mA
-  //Sleepy::loseSomeTime(4000);               //stay off for a while after power on to let power settle
+  rf12_sleep(RF12_SLEEP);                             //Put the RFM12 to sleep - Note: This RF12 sleep interupt method might not be 100% reliable. Put RF to sleep: RFM12B module can be kept off while not used – saving roughly 15 mA
   //------------------------------------------
   
- // delay(30);                                //allow bit of time for the emonTx to wake up before serial printing
+  Sleepy::loseSomeTime(3000);               //wait 3s for power to settle 
+  
+
   Serial.print("Node: "); 
   Serial.print(myNodeID); 
   Serial.print(" Freq: "); 
@@ -116,6 +127,13 @@ void setup() {
    if (freq == RF12_915MHZ) Serial.print("915Mhz");  
   Serial.print(" Network: "); 
   Serial.println(network);
+  
+   if (SERIAL==0) {
+    Serial.println("serial disabled"); 
+    Serial.end();
+  }
+  
+  digitalWrite(LEDpin, HIGH);              //turn off LED
 
 }
 
@@ -133,25 +151,28 @@ void loop() {
           emontx.ct1=int(ch1.emon( CT1_INPUT_PIN, cal1, RMS_VOLTAGE, NUMBER_OF_SAMPLES, CT_BURDEN_RESISTOR, CT_TURNS, emontx.supplyV));
           emontx.ct2=int(ch2.emon( CT2_INPUT_PIN, cal2, RMS_VOLTAGE, NUMBER_OF_SAMPLES, CT_BURDEN_RESISTOR, CT_TURNS, emontx.supplyV));
           
-    //--------------------------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------------------------------      
       
-      digitalWrite(LEDpin, HIGH); //flash status LED - very quickly  
     //--------------------------------------------------------------------------------------------------
     // 2. Send data via RF 
     //--------------------------------------------------------------------------------------------------
            rfwrite() ;
     //--------------------------------------------------------------------------------------------------    
 	 
-	digitalWrite(LEDpin, LOW); 
+
   
   //for debugging 
-  Serial.print(emontx.ct1); 
-  Serial.print(" ");
-  Serial.print(emontx.ct2);
-  Serial.print(" ");
-  Serial.println(emontx.supplyV);
+  if (SERIAL==1) {
+    Serial.print(emontx.ct1); 
+    Serial.print(" ");
+    Serial.print(emontx.ct2);
+    Serial.print(" ");
+    Serial.println(emontx.supplyV);
+  }
   
-  delay(10);                     // Needed to make sure print is finished before going to sleep
+  digitalWrite(LEDpin, HIGH);    //flash LED - very quickly 
+  delay(2);                     // Needed to make sure print is finished before going to sleep
+  digitalWrite(LEDpin, LOW); 
 
 Sleepy::loseSomeTime(10000);      //JeeLabs power save function: enter low power mode and update Arduino millis 
 //only be used with time ranges of 16..65000 milliseconds, and is not as accurate as when running normally.http://jeelabs.org/2010/10/18/tracking-time-in-your-sleep/
@@ -161,14 +182,15 @@ Sleepy::loseSomeTime(10000);      //JeeLabs power save function: enter low power
 
 
 //--------------------------------------------------------------------------------------------------
-// Send payload data via RF
+// Send payload data via RF -see http://jeelabs.net/projects/cafe/wiki/RF12 for RF12 library documentation 
 //--------------------------------------------------------------------------------------------------
 static void rfwrite(){
-    rf12_sleep(-1);     //wake up RF module
+    rf12_sleep(RF12_WAKEUP);     //wake up RF module
     while (!rf12_canSend())
     rf12_recvDone();
-    rf12_sendStart(rf12_hdr, &emontx, sizeof emontx, RADIO_SYNC_MODE); 
-     //rf12_sendWait(2);    //wait for RF to finish sending while in idle mode
+    //rf12_sendStart(rf12_hdr, &emontx, sizeof emontx, RADIO_SYNC_MODE); - with hdr info 
+    rf12_sendStart(0, &emontx, sizeof emontx); 
+    rf12_sendWait(2);    //wait for RF to finish sending while in idle mode
     rf12_sleep(0);    //put RF module to sleep
 }
 //--------------------------------------------------------------------------------------------------

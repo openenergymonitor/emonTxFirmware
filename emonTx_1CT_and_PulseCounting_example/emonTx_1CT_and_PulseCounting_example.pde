@@ -12,7 +12,7 @@
 
 //Based on JeeLabs RF12 library http://jeelabs.org/2009/02/10/rfm12b-library-for-arduino/
 
-// By Glyn Hudson and Trystan Lea: 4/9/11
+// By Glyn Hudson and Trystan Lea: 21/9/11
 // openenergymonitor.org
 // GNU GPL V3
 
@@ -28,6 +28,11 @@
 #include <avr/eeprom.h>
 #include <util/crc16.h>  //cyclic redundancy check
 
+//---------------------------------------------------------------------------------------------------
+// Serial print settings - disable all serial prints if SERIAL 0 - increases long term stability 
+//---------------------------------------------------------------------------------------------------
+#define SERIAL 0
+//---------------------------------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------------------------------
 // RF12 settings 
@@ -91,16 +96,18 @@ void setup()
 {
   Serial.begin(9600);                   //fast serial 
    pinMode(LEDpin, OUTPUT);
+   digitalWrite(LEDpin, HIGH);    //turn on LED 
   
   Serial.println("emonTx interrupt pulse counting + one CT example");
   Serial.println("openenergymonitor.org");
   
-  
+  delay(10);  
   //-----------------------------------------
   // RFM12B Initialize
   //------------------------------------------
   rf12_initialize(myNodeID,freq,network);     //Initialize RFM12 with settings defined above 
-
+  //------------------------------------------
+  
   delay(20);
   
   Serial.print("Node: "); 
@@ -113,7 +120,14 @@ void setup()
   Serial.println(network);
   delay(20);
   
+  if (SERIAL==0) {
+    Serial.println("serial disabled"); 
+    Serial.end();
+  }
+  
   attachInterrupt(1, onPulse, FALLING);    // KWH interrupt attached to IRQ 1  = pin3 - hardwired to emonTx pulse jackplug. For connections see: http://openenergymonitor.org/emon/node/208
+
+digitalWrite(LEDpin, LOW);              //turn off LED
 }
 
 
@@ -133,16 +147,19 @@ void loop()
     //--------------------------------------------------------------------------------------------------
     while (!rf12_canSend())
     rf12_recvDone();
+    //rf12_sendStart(0,&emontx, sizeof emontx); 
     rf12_sendStart(rf12_hdr, &emontx, sizeof emontx, RADIO_SYNC_MODE); 
     //--------------------------------------------------------------------------------------------------    
 
-  Serial.print(emontx.power);
-  Serial.print(" ");
-  Serial.println(emontx.ct1);
+ if (SERIAL==1){
+    Serial.print(emontx.power);
+    Serial.print(" ");
+    Serial.println(emontx.ct1);
+ }
    
    pulseCount=0;       //reset pulse increments 
 
-  delay(10000);
+  delay(10000);        //10s delay 
   
  
 }
@@ -152,7 +169,7 @@ void loop()
 //--------------------------------------------------------------------------------------------------
 void onPulse()                  
 {
-digitalWrite(LEDpin, HIGH);     //flash LED - very quickly  
+digitalWrite(LEDpin, HIGH);     //flash LED - very quickly each time a pluse occus  
 
   lastTime = pulseTime;        //used to measure time between pulses.
   pulseTime = micros();
@@ -162,6 +179,7 @@ digitalWrite(LEDpin, HIGH);     //flash LED - very quickly
   emontx.power = int((3600000000.0 / (pulseTime - lastTime))/ppwh);  //Calculate power
   
   //elapsedWh= (1.0*pulseCount/(ppwh));   // Find wh elapsed
+  
 
 digitalWrite(LEDpin, LOW);
 }

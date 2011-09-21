@@ -12,7 +12,7 @@
 
 //Based on JeeLabs RF12 library http://jeelabs.org/2009/02/10/rfm12b-library-for-arduino/
 
-// By Glyn Hudson and Trystan Lea: 4/9/11
+// By Glyn Hudson and Trystan Lea: 21/9/11
 // openenergymonitor.org
 // GNU GPL V3
 
@@ -28,6 +28,11 @@
 #include <avr/eeprom.h>
 #include <util/crc16.h>  //cyclic redundancy check
 
+//---------------------------------------------------------------------------------------------------
+// Serial print settings - disable all serial prints if SERIAL 0 - increases long term stability 
+//---------------------------------------------------------------------------------------------------
+#define SERIAL 0
+//---------------------------------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------------------------------
 // RF12 settings 
@@ -108,11 +113,13 @@ void setup()
 {
   Serial.begin(9600);                   //fast serial 
    pinMode(LEDpin, OUTPUT);
+  digitalWrite(LEDpin, HIGH);    //turn on LED 
   
   Serial.println("emonTx interrupt pulse counting + one CT example");
   Serial.println("openenergymonitor.org");
   
   
+  delay(10);  
   //-----------------------------------------
   // RFM12B Initialize
   //------------------------------------------
@@ -130,7 +137,14 @@ void setup()
   Serial.println(network);
   delay(20);
   
+    if (SERIAL==0) {
+    Serial.println("serial disabled"); 
+    Serial.end();
+  }
+  
   attachInterrupt(1, onPulse, FALLING);    // KWH interrupt attached to IRQ 1  = pin3 - hardwired to emonTx pulse jackplug. For connections see: http://openenergymonitor.org/emon/node/208
+
+digitalWrite(LEDpin, LOW);              //turn off LED
 }
 
 
@@ -151,18 +165,21 @@ void loop()
     //--------------------------------------------------------------------------------------------------
     while (!rf12_canSend())
     rf12_recvDone();
+    //rf12_sendStart(0,&emontx, sizeof emontx); 
     rf12_sendStart(rf12_hdr, &emontx, sizeof emontx, RADIO_SYNC_MODE); 
     //--------------------------------------------------------------------------------------------------    
 
+ if (SERIAL==1){
   Serial.print(emontx.power);
   Serial.print(" ");
   Serial.print(emontx.ct1);
   Serial.print(" ");
   Serial.println(emontx.ct2);
+ }
    
    pulseCount=0;       //reset pulse increments 
 
-  delay(4000);
+  delay(10000);        //10s delay
   
  
 }
