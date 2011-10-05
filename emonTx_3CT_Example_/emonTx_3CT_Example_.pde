@@ -5,33 +5,30 @@
  / _ \ '_ ` _ \ / _ \| '_ \| \ \/ /
 |  __/ | | | | | (_) | | | | |>  < 
  \___|_| |_| |_|\___/|_| |_\_/_/\_\
-
-//openenergymonigtor.org/emon/emontx 
+ 
 //--------------------------------------------------------------------------------------
-//Single CT wireless node example 
+//openenergymonitor.org/emon/emontx
+
+//Three CT wireless node example 
 
 //Based on JeeLabs RF12 library http://jeelabs.org/2009/02/10/rfm12b-library-for-arduino/
-//Requires Jeelabs RF12 and Ports library: http://jeelabs.net/projects/cafe/wiki/Libraries
 
-// By Glyn Hudson and Trystan Lea: 21/9/11
+// By Glyn Hudson and Trystan Lea: 5/10/11
 // openenergymonitor.org
 // GNU GPL V3
 
-//using CT port 2 - middle jackplug
-
+//using CT channels 1, 2 and 3 
 //--------------------------------------------------------------------------------------
 */
-
-
 
 //JeeLabs libraries 
 #include <Ports.h>
 #include <RF12.h>
-//Built in Arduino libraries 
 #include <avr/eeprom.h>
 #include <util/crc16.h>  //cyclic redundancy check
 
 ISR(WDT_vect) { Sleepy::watchdogEvent(); } 	 // interrupt handler: has to be defined because we're using the watchdog for low-power waiting
+
 
 //---------------------------------------------------------------------------------------------------
 // Serial print settings - disable all serial prints if SERIAL 0 - increases long term stability 
@@ -58,13 +55,32 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); } 	 // interrupt handler: has to be def
 //--------------------------------------------------------------------------------------------------
 // CT energy monitor setup definitions 
 //--------------------------------------------------------------------------------------------------
-int CT_INPUT_PIN =          0;    //I/O analogue 3 = emonTx CT2 channel. Change to analogue 0 for emonTx CT1 chnnel  
+class Channel //create class of emon variables to allow two channel monitoring
+{
+  public: 
+  double emon(int,double,int,int,int,int,int);
+  
+  private:  
+    int lastSampleI,sampleI;         // Sample variables
+    double lastFilteredI,filteredI;  // Filter variables
+    double sqI,sumI;                 // Power calculation variables
+};
+
+Channel ch1, ch2 ,ch3;                  //creat two instances of Channel two allow two channel monitoring
+
+int CT1_INPUT_PIN =          3;   //bottom jack port 
+int CT2_INPUT_PIN =          0;   //middle jack port  
+int CT3_INPUT_PIN =          1;   //middle jack port  
 int NUMBER_OF_SAMPLES =     1480; //The period (one wavelength) of mains 50Hz is 20ms. Each samples was measured to take 0.188ms. This meas that 106.4 samples/wavelength are possible. 1480 samples takes 280.14ms which is 14 wavelengths. 
 int RMS_VOLTAGE =           240;  //Assumed supply voltage (230V in UK).  Tolerance: +10%-6%
 int CT_BURDEN_RESISTOR =    15;   //value in ohms of burden resistor R3 and R6
 int CT_TURNS =              1500; //number of turns in CT sensor. 1500 is the vaue of the efergy CT 
 
-double CAL=1.295000139;          //*calibration coefficient* IMPORTANT - each monitor must be calibrated for maximum accuracy. See step 4 http://openenergymonitor.org/emon/node/58. Set to 1.295 for Seedstudio 100A current output CT (included in emonTx V2.0 kit)
+double cal1=1.295000139;          //*calibration coefficient for ch1* IMPORTANT - each monitor must be calibrated for maximum accuracy. See step 4 http://openenergymonitor.org/emon/node/58. Set to 1.295 for Seedstudio 100A current output CT (included in emonTx V2.0 kit)
+double cal2=1.295000139;          //calibration coefficient for ch2
+double cal3=1.295000139;          //calibration coefficient for ch2
+
+
 //--------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------
@@ -78,7 +94,9 @@ double CAL=1.295000139;          //*calibration coefficient* IMPORTANT - each mo
 //######################################################################################################################## 
 typedef struct {
   	  int ct1;		// current transformer 1
-	  int supplyV;		// emontx voltage
+          int ct2;
+          int ct3;
+	  int supplyV;		// voltage of emonTx battery 
 } Payload;
 Payload emontx;
 //########################################################################################################################
@@ -91,20 +109,19 @@ void setup() {
   pinMode(LEDpin, OUTPUT);
   digitalWrite(LEDpin, HIGH);    //turn on LED 
   
-  Serial.println("emonTx single CT example");
+  Serial.println("emonTx 3CT example");
   Serial.println("openenergymonitor.org");
-  
-  delay(10);                             
-  
+  delay(10);                                //for for emonTx to finish printing before going to sleep
   //-----------------------------------------
   // RFM12B Initialize
   //------------------------------------------
   rf12_initialize(myNodeID,freq,network);   //Initialize RFM12 with settings defined above 
   rf12_sleep(RF12_SLEEP);                             //Put the RFM12 to sleep - Note: This RF12 sleep interupt method might not be 100% reliable. Put RF to sleep: RFM12B module can be kept off while not used – saving roughly 15 mA
   //------------------------------------------
-  delay(10);
-  Sleepy::loseSomeTime(3000);                //wait 3s for power to settle 
+  delay(10);                               
+  Sleepy::loseSomeTime(3000);               //wait 3s for power to settle
   
+
   Serial.print("Node: "); 
   Serial.print(myNodeID); 
   Serial.print(" Freq: "); 
@@ -118,8 +135,8 @@ void setup() {
     Serial.println("serial disabled"); 
     Serial.end();
   }
-  
-  digitalWrite(LEDpin, LOW);              //turn off LED
+
+digitalWrite(LEDpin, LOW);              //turn off LED
 }
 
 //********************************************************************
@@ -132,28 +149,36 @@ void loop() {
     // 1. Read current supply voltage and get current CT energy monitoring reading 
     //--------------------------------------------------------------------------------------------------
           emontx.supplyV = readVcc();  //read emontx supply voltage
-          emontx.ct1=int(emon( CT_INPUT_PIN, CAL, RMS_VOLTAGE, NUMBER_OF_SAMPLES, CT_BURDEN_RESISTOR, CT_TURNS, emontx.supplyV));
+          
+          emontx.ct1=int(ch1.emon( CT1_INPUT_PIN, cal1, RMS_VOLTAGE, NUMBER_OF_SAMPLES, CT_BURDEN_RESISTOR, CT_TURNS, emontx.supplyV));
+          emontx.ct2=int(ch2.emon( CT2_INPUT_PIN, cal2, RMS_VOLTAGE, NUMBER_OF_SAMPLES, CT_BURDEN_RESISTOR, CT_TURNS, emontx.supplyV));
+          emontx.ct3=int(ch3.emon( CT3_INPUT_PIN, cal3, RMS_VOLTAGE, NUMBER_OF_SAMPLES, CT_BURDEN_RESISTOR, CT_TURNS, emontx.supplyV));          
     //--------------------------------------------------------------------------------------------------
       
-       
+
+
     //--------------------------------------------------------------------------------------------------
     // 2. Send data via RF 
     //--------------------------------------------------------------------------------------------------
            rfwrite() ;
     //--------------------------------------------------------------------------------------------------    
 	
-	
   
   //for debugging 
-  if (SERIAL==1)
-    Serial.println(emontx.ct1); 
-   
+  if (SERIAL==1){
+      Serial.print(emontx.ct1); 
+      Serial.print(" ");
+      Serial.print(emontx.ct2);
+      Serial.print(" ");
+      Serial.print(emontx.ct3);
+      Serial.print(" ");
+      Serial.println(emontx.supplyV);
+  }
+  
   
   digitalWrite(LEDpin, HIGH);    //flash LED - very quickly 
   delay(2);                     // Needed to make sure print is finished before going to sleep
   digitalWrite(LEDpin, LOW); 
-
-  
 
 Sleepy::loseSomeTime(10000);      //JeeLabs power save function: enter low power mode and update Arduino millis 
 //only be used with time ranges of 16..65000 milliseconds, and is not as accurate as when running normally.http://jeelabs.org/2010/10/18/tracking-time-in-your-sleep/
@@ -163,15 +188,15 @@ Sleepy::loseSomeTime(10000);      //JeeLabs power save function: enter low power
 
 
 //--------------------------------------------------------------------------------------------------
-// Send payload data via RF - see http://jeelabs.net/projects/cafe/wiki/RF12 for RF12 library documentation 
+// Send payload data via RF
 //--------------------------------------------------------------------------------------------------
 static void rfwrite(){
     rf12_sleep(RF12_WAKEUP);     //wake up RF module
     while (!rf12_canSend())
     	rf12_recvDone();
-    rf12_sendStart(0, &emontx, sizeof emontx); 
-    //rf12_sendStart(rf12_hdr, &emontx, sizeof emontx, RADIO_SYNC_MODE); -- un comment and use instead of line above in emonTx node ID needs to be included in header. Needed for multiple emonTx's to single emonBase
-    rf12_sendWait(2);    //wait for RF to finish sending while in standby mode
+    rf12_sendStart(0, &emontx, sizeof emontx);
+    	//rf12_sendStart(rf12_hdr, &emontx, sizeof emontx, RADIO_SYNC_MODE);  - use instead of line above if emonTx node ID is required in header. For multiple emonTx's to a single emonBase
+     rf12_sendWait(2);    //wait for RF to finish sending while in idle mode
     rf12_sleep(RF12_SLEEP);    //put RF module to sleep
 }
 //--------------------------------------------------------------------------------------------------
