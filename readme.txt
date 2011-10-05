@@ -6,9 +6,14 @@
  \___|_| |_| |_|\___/|_| |_\_/_/\_\
                                                   
 Wireless energy-monitoring node 
+
+openenergymonitor.org/emon/emontx
 ***********************************
 
-emonTx single CT example: Monitor AC current flow using one CT sensor and transmitt data via RFM12B to NanodeRF/emonBase
+emonTx single CT example: Monitor AC current flow using one CT sensor and transmitt data via wireless using RFM12B to emonBase (openenergymonitor.org/emon/emonbase)
+
+For emonBase (wireless enabled Nanode) receiver code see:
+https://github.com/openenergymonitor/NanodeRF
 
 Builds on JeeLabs software and compatiable with JeeNode hardware 
 -----------------------------------------------
@@ -17,10 +22,9 @@ http://jeelabs.net/projects/cafe/wiki/Ports
 http://jeelabs.net/projects/cafe/wiki/RF12
 -----------------------------------------------
 
-For web-connected Nanode (emonBase) receiver code see:
-https://github.com/openenergymonitor/NanodeRF
 
 
-openenergymonitor.org/emon/emontx
+
+
 
  
