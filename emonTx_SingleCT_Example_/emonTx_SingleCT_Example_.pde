@@ -5,13 +5,11 @@
  / _ \ '_ ` _ \ / _ \| '_ \| \ \/ /
 |  __/ | | | | | (_) | | | | |>  < 
  \___|_| |_| |_|\___/|_| |_\_/_/\_\
-
-//openenergymonigtor.org/emon/emontx 
+ 
 //--------------------------------------------------------------------------------------
 //Single CT wireless node example 
 
 //Based on JeeLabs RF12 library http://jeelabs.org/2009/02/10/rfm12b-library-for-arduino/
-//Requires Jeelabs RF12 and Ports library: http://jeelabs.net/projects/cafe/wiki/Libraries
 
 // By Glyn Hudson and Trystan Lea: 21/9/11
 // openenergymonitor.org
@@ -27,7 +25,6 @@
 //JeeLabs libraries 
 #include <Ports.h>
 #include <RF12.h>
-//Built in Arduino libraries 
 #include <avr/eeprom.h>
 #include <util/crc16.h>  //cyclic redundancy check
 
@@ -167,10 +164,15 @@ Sleepy::loseSomeTime(10000);      //JeeLabs power save function: enter low power
 //--------------------------------------------------------------------------------------------------
 static void rfwrite(){
     rf12_sleep(RF12_WAKEUP);     //wake up RF module
+    int ec = 0;
     while (!rf12_canSend())
-    	rf12_recvDone();
+    {
+      rf12_recvDone();
+      ec++;
+      if (ec>1000) break;
+    }
     rf12_sendStart(0, &emontx, sizeof emontx); 
-    //rf12_sendStart(rf12_hdr, &emontx, sizeof emontx, RADIO_SYNC_MODE); -- un comment and use instead of line above in emonTx node ID needs to be included in header. Needed for multiple emonTx's to single emonBase
+    //rf12_sendStart(rf12_hdr, &emontx, sizeof emontx, RADIO_SYNC_MODE); -- includes header data 
     rf12_sendWait(2);    //wait for RF to finish sending while in standby mode
     rf12_sleep(RF12_SLEEP);    //put RF module to sleep
 }
