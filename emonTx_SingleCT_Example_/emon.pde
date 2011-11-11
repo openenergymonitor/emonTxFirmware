@@ -4,7 +4,6 @@ double sqI = 0,sumI = 0;                 // Power calculation variables
  
 double emon(int CT_INPUT_PIN,double ICAL,int RMS_VOLTAGE,int NUMBER_OF_SAMPLES,int CT_BURDEN_RESISTOR,int CT_TURNS,int SUPPLY_VOLTAGE) 
 { 
-  sampleI = analogRead( CT_INPUT_PIN );
   for (int n = 0; n < NUMBER_OF_SAMPLES; n++)
   {
     lastSampleI = sampleI;
