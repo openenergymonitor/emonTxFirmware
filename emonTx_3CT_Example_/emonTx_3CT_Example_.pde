@@ -66,7 +66,7 @@ class Channel //create class of emon variables to allow two channel monitoring
     double sqI,sumI;                 // Power calculation variables
 };
 
-Channel ch1, ch2 ,ch3;                  //creat two instances of Channel two allow two channel monitoring
+Channel ch1, ch2 ,ch3;                  //create three instances of Channel to allow three channel monitoring
 
 int CT1_INPUT_PIN =          3;   //bottom jack port 
 int CT2_INPUT_PIN =          0;   //middle jack port  
