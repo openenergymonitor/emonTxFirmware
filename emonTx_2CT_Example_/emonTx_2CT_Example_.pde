@@ -174,8 +174,13 @@ void loop() {
   delay(2);                     // Needed to make sure print is finished before going to sleep
   digitalWrite(LEDpin, LOW); 
 
-Sleepy::loseSomeTime(10000);      //JeeLabs power save function: enter low power mode and update Arduino millis 
-//only be used with time ranges of 16..65000 milliseconds, and is not as accurate as when running normally.http://jeelabs.org/2010/10/18/tracking-time-in-your-sleep/
+if ( (emontx.supplyV) > 3300 ) //if emonTx is powered by 5V usb power supply (going through 3.3V voltage reg) then don't go to sleep
+  delay(10000); //10s
+else
+  if ( (emontx.supplyV) < 2700)  //if battery voltage drops below 2.7V then enter battery conservation mode (sleep for 60s in between readings) (need to fine tune this value) 
+    Sleepy::loseSomeTime(60000);
+    else
+      Sleepy::loseSomeTime(10000); //10s
    
 }
 //********************************************************************
