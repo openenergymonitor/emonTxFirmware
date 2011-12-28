@@ -62,20 +62,12 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); }
 //--------------------------------------------------------------------------------------------------
 
 //########################################################################################################################
-//Data Structure to be sent
+//Data Structure to be sent - should be the same as received on the emonBase or emonGLCD
 //######################################################################################################################## 
 typedef struct {
-  	  double real1;		
-          double apparent1;
-	  double vrms1;
-          double irms1;
-          
-          double real2;		
-          double apparent2;
-	  double vrms2;
-          double irms2;
-          
-          int supplyV;         
+  	  double real1;		//real power reading from CT1	
+          double real2;		//real power reading from CT2
+          int supplyV;         	//emonTx supply voltage - only usefull when powering from batteries 
 } Payload;
 Payload emontx;
 //########################################################################################################################
@@ -123,18 +115,6 @@ void loop()
   int vcc = readVcc();  //read emontx supply voltage
 
   //------------------------------------------------
-  // MEASURE FROM CT 2
-  //------------------------------------------------
-  emon2.setPins(2,0); // CT 2
-  emon2.calibration(281.6,126.5,0); 
-  emon2.calc(20,2000,vcc );
-    
-  emontx.real2 = emon2.realPower;
-  emontx.apparent2 = emon2.apparentPower;
-  emontx.vrms2 = emon2.Vrms;
-  emontx.irms2 = emon2.Irms;
-
-  //------------------------------------------------
   // MEASURE FROM CT 1
   //------------------------------------------------
   emon1.setPins(2,3); // CT 1
@@ -145,6 +125,18 @@ void loop()
   emontx.apparent1 = emon1.apparentPower;
   emontx.vrms1 = emon1.Vrms;
   emontx.irms1 = emon1.Irms;
+
+  //------------------------------------------------
+  // MEASURE FROM CT 2
+  //------------------------------------------------
+  emon2.setPins(2,0); // CT 2
+  emon2.calibration(281.6,126.5,0); 
+  emon2.calc(20,2000,vcc );
+    
+  emontx.real2 = emon2.realPower;
+  emontx.apparent2 = emon2.apparentPower;
+  emontx.vrms2 = emon2.Vrms;
+  emontx.irms2 = emon2.Irms;
 
   //------------------------------------------------
   emontx.supplyV = vcc;
