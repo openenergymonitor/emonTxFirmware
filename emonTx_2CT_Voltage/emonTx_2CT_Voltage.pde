@@ -65,12 +65,15 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); }
 //Data Structure to be sent - should be the same as received on the emonBase or emonGLCD
 //######################################################################################################################## 
 typedef struct {
-  	  double real1;		//real power reading from CT1	
-          double real2;		//real power reading from CT2
+  	  int real1;		//real power reading from CT1	
+          int real2;		//real power reading from CT2
           int supplyV;         	//emonTx supply voltage - only usefull when powering from batteries 
 } Payload;
 Payload emontx;
 //########################################################################################################################
+double apparent1, apparent2;
+double vrms1, vrms2, irms1, irms2;
+
 
 //********************************************************************
 //SETUP
@@ -122,9 +125,9 @@ void loop()
   emon1.calc(20,2000,vcc );
     
   emontx.real1 = emon1.realPower;
-  emontx.apparent1 = emon1.apparentPower;
-  emontx.vrms1 = emon1.Vrms;
-  emontx.irms1 = emon1.Irms;
+  apparent1 = emon1.apparentPower;
+  vrms1 = emon1.Vrms;
+  irms1 = emon1.Irms;
 
   //------------------------------------------------
   // MEASURE FROM CT 2
@@ -134,9 +137,9 @@ void loop()
   emon2.calc(20,2000,vcc );
     
   emontx.real2 = emon2.realPower;
-  emontx.apparent2 = emon2.apparentPower;
-  emontx.vrms2 = emon2.Vrms;
-  emontx.irms2 = emon2.Irms;
+  apparent2 = emon2.apparentPower;
+  vrms2 = emon2.Vrms;
+  irms2 = emon2.Irms;
 
   //------------------------------------------------
   emontx.supplyV = vcc;
@@ -209,21 +212,21 @@ void serial_output()
 {
     Serial.print(emontx.real1);
     Serial.print(' ');
-    Serial.print(emontx.apparent1);
-    Serial.print(' ');
-    Serial.print(emontx.vrms1);
-    Serial.print(' ');
-    Serial.print(emontx.irms1);
-    Serial.print(" | ");
+    //Serial.print(apparent1);
+    ///Serial.print(' ');
+    //Serial.print(rms1);
+    //Serial.print(' ');
+    //Serial.print(irms1);
+    //Serial.print(" | ");
     
     Serial.print(emontx.real2);
     Serial.print(' ');
-    Serial.print(emontx.apparent2);
-    Serial.print(' ');
-    Serial.print(emontx.vrms2);
-    Serial.print(' ');
-    Serial.print(emontx.irms2);
-    Serial.print(" | ");
+    //Serial.print(apparent2);
+    //Serial.print(' ');
+    //Serial.print(vrms2);
+    //Serial.print(' ');
+    //Serial.print(irms2);
+    //Serial.print(" | ");
 
     Serial.println(emontx.supplyV); 
 }
