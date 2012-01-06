@@ -7,7 +7,7 @@
  \___|_| |_| |_|\___/|_| |_\_/_/\_\
  
 //--------------------------------------------------------------------------------------
-// 3CT + AC-AC Voltage Adapter 
+// 2CT + AC-AC Voltage Adapter 
 
 // Based on JeeLabs RF12 library http://jeelabs.org/2009/02/10/rfm12b-library-for-arduino/
 
@@ -85,7 +85,7 @@ void setup()
   digitalWrite(LEDpin, HIGH);    //turn on LED 
   
   Serial.begin(9600);
-  Serial.println("emonTx 3 CT AC-AC example");
+  Serial.println("emonTx 2 CT AC-AC example");
   Serial.println("openenergymonitor.org");
   
   rf12_initialize(myNodeID,freq,network); 
@@ -120,9 +120,9 @@ void loop()
   //------------------------------------------------
   // MEASURE FROM CT 1
   //------------------------------------------------
-  emon1.setPins(2,3); // CT 1
-  emon1.calibration(281.6,126.5,0); 
-  emon1.calc(20,2000,vcc );
+  emon1.setPins(2,3); 				//emonTX AC-AC voltage (ADC2), current pin (CT1 - ADC3)
+  emon1.calibration(234.89,126.5,1.7);		//voltage calibration , current calibration, power factor calibration
+  emon1.calc(20,2000,vcc );			//No.of wavelengths, time-out , emonTx supply voltage 
     
   emontx.real1 = emon1.realPower;
   apparent1 = emon1.apparentPower;
@@ -132,9 +132,10 @@ void loop()
   //------------------------------------------------
   // MEASURE FROM CT 2
   //------------------------------------------------
-  emon2.setPins(2,0); // CT 2
-  emon2.calibration(281.6,126.5,0); 
-  emon2.calc(20,2000,vcc );
+  emon2.setPins(2,0); // CT 2		   //emonTX AC-AC voltage (ADC2), current pin (CT2 - ADC0)
+  emon2.calibration(234.89,126.5,1.7);    //voltage calibration , current calibration, power factor calibration 
+  emon2.calc(20,2000,vcc );		 //No.of wavelengths, time-out , emonTx supply voltage 
+
     
   emontx.real2 = emon2.realPower;
   apparent2 = emon2.apparentPower;
