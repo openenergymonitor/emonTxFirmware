@@ -114,7 +114,7 @@ void loop()
   // MEASURE FROM CT 1
   //------------------------------------------------
   emon1.setPins(2,0);                     //emonTX AC-AC voltage (ADC2), current pin (CT2 - ADC0) 
-  emon1.calibration(234.89,126.5,1.7);    //voltage calibration , current calibration, power factor calibrstion 
+  emon1.calibration(234.89,126.5,1.7);    //voltage calibration , current calibration, power factor calibration 
   emon1.calc(20,2000,vcc );               //No.of wavelengths, time-out , emonTx supply voltage 
     
   emontx.real1 = emon1.realPower;
