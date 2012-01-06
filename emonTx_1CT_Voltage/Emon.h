@@ -7,7 +7,8 @@
 #ifndef Emon_h
 #define Emon_h
 
-#include "WProgram.h"
+//#include "WProgram.h"    //un-comment for use on older versions of Arduino IDE
+#include "Arduino.h"
 
 class EnergyMonitor
 {

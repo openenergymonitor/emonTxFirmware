@@ -4,8 +4,9 @@
   GNU GPL
 */
 
-#include "WProgram.h"
+//#include "WProgram.h" un-comment for use on older versions of Arduino IDE
 #include "Emon.h"
+#include "Arduino.h"
 
 //--------------------------------------------------------------------------------------
 // Sets the pins to be used for voltage and current sensors
@@ -135,6 +136,8 @@ void EnergyMonitor::calc(int wavelengths, int timeout, int SUPPLYVOLTAGE)
 //  realPower = VCAL * ICAL * sumP / numberOfSamples;
   realPower = V_RATIO * I_RATIO * sumP / numberOfSamples;
   apparentPower = Vrms * Irms;
+  
+  powerFactor=realPower / apparentPower;
 
   //Reset accumulators
   sumV = 0;

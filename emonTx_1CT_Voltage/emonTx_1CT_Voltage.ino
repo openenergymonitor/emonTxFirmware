@@ -7,7 +7,7 @@
  \___|_| |_| |_|\___/|_| |_\_/_/\_\
  
 //--------------------------------------------------------------------------------------
-// 1x CT + voltage measurement
+// 1x CT +  AC voltage measurement - real power, current direction
 
 // Based on JeeLabs RF12 library http://jeelabs.org/2009/02/10/rfm12b-library-for-arduino/
 
@@ -23,9 +23,9 @@
 #include "Emon.h"
 EnergyMonitor emon1;
 
-//JeeLabs libraries 
-#include <Ports.h>
-#include <RF12.h>
+//JeeLabs libraries - https://github.com/jcw
+#include <JeeLib.h>
+
 #include <avr/eeprom.h>
 #include <util/crc16.h>  
 
@@ -42,7 +42,7 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); }
 //---------------------------------------------------------------------------------------------------
 // fixed RF12 settings
 
-#define myNodeID 10         //in the range 1-30
+#define myNodeID     10         //in the range 1-30
 #define network     210      //default network group (can be in the range 1-250). All nodes required to communicate together must be on the same network group
 #define freq RF12_433MHZ     //Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 
@@ -63,12 +63,7 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); }
 //Data Structure to be sent
 //######################################################################################################################## 
 typedef struct {
-  	  double real1;		
-          double apparent1;
-	  double vrms1;
-          double irms1;
-          
-          int supplyV;         
+  	  double real1;		       
 } Payload;
 Payload emontx;
 //########################################################################################################################
@@ -83,12 +78,12 @@ void setup()
   digitalWrite(LEDpin, HIGH);    //turn on LED 
   
   Serial.begin(9600);
-  Serial.println("emonTx single CT example");
+  Serial.println("emonTx single CT AC voltage real power example");
   Serial.println("openenergymonitor.org");
   
   rf12_initialize(myNodeID,freq,network); 
   rf12_sleep(RF12_SLEEP); 
-  delay(10);
+  delay(100);
   Sleepy::loseSomeTime(3000);
   
   Serial.print("Node: "); 
@@ -118,17 +113,14 @@ void loop()
   //------------------------------------------------
   // MEASURE FROM CT 1
   //------------------------------------------------
-  emon1.setPins(2,0); // CT 1
-  emon1.calibration(357.6,126.5,0); 
-  emon1.calc(20,2000,vcc );
+  emon1.setPins(2,0);                     //emonTX AC-AC voltage (ADC2), current pin (CT2 - ADC0) 
+  emon1.calibration(234.89,126.5,1.7);    //voltage calibration , current calibration, power factor calibrstion 
+  emon1.calc(20,2000,vcc );               //No.of wavelengths, time-out , emonTx supply voltage 
     
   emontx.real1 = emon1.realPower;
-  emontx.apparent1 = emon1.apparentPower;
-  emontx.vrms1 = emon1.Vrms;
-  emontx.irms1 = emon1.Irms;
 
   //------------------------------------------------
-  emontx.supplyV = vcc;
+  int supplyV = vcc;
   //------------------------------------------------
   
     //--------------------------------------------------------------------------------------------------
@@ -147,10 +139,10 @@ void loop()
 //Uses JeeLabs power save function: enter low power mode and update Arduino millis 
 //only be used with time ranges of 16..65000 milliseconds, and is not as accurate as when running normally.http://jeelabs.org/2010/10/18/tracking-time-in-your-sleep/
 
-if ( (emontx.supplyV) > 3300 ) //if emonTx is powered by 5V usb power supply (going through 3.3V voltage reg) then don't go to sleep
+if ( (supplyV) > 3300 ) //if emonTx is powered by 5V usb power supply (going through 3.3V voltage reg) then don't go to sleep
   delay(1000); //10s
 else
-  if ( (emontx.supplyV) < 2700)  //if battery voltage drops below 2.7V then enter battery conservation mode (sleep for 60s in between readings) (need to fine tune this value) 
+  if ( (supplyV) < 2700)  //if battery voltage drops below 2.7V then enter battery conservation mode (sleep for 60s in between readings) (need to fine tune this value) 
     Sleepy::loseSomeTime(60000);
     else
       Sleepy::loseSomeTime(1000); //10s
@@ -198,11 +190,11 @@ void serial_output()
 {
     Serial.print(emontx.real1);
     Serial.print(' ');
-    Serial.print(emontx.apparent1);
+    Serial.print(emon1.apparentPower);
     Serial.print(' ');
-    Serial.print(emontx.vrms1);
+    Serial.print(emon1.Vrms);
     Serial.print(' ');
-    Serial.print(emontx.irms1);
+    Serial.print(emon1.Irms);
     Serial.print(' ');
-    Serial.println(emontx.supplyV); 
+    Serial.println(emon1.powerFactor);
 }
