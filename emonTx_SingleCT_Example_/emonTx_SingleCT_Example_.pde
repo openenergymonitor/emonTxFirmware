@@ -181,8 +181,8 @@ static void rfwrite(){
       ec++;
       if (ec>1000) break;
     }
-    rf12_sendStart(0, &emontx, sizeof emontx); 
-    //rf12_sendStart(rf12_hdr, &emontx, sizeof emontx, RADIO_SYNC_MODE); -- includes header data 
+    //rf12_sendStart(0, &emontx, sizeof emontx); -lower power transmission, not including header data which contains node ID
+    rf12_sendStart(rf12_hdr, &emontx, sizeof emontx, RADIO_SYNC_MODE);
     rf12_sendWait(2);    //wait for RF to finish sending while in standby mode
     rf12_sleep(RF12_SLEEP);    //put RF module to sleep
 }
