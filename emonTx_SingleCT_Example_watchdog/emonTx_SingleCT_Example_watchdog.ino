@@ -12,19 +12,21 @@
 
 // Based on JeeLabs RF12 library http://jeelabs.org/2009/02/10/rfm12b-library-for-arduino/
 
+// 2010-05-28 <jcw@equi4.com> http://opensource.org/licenses/mit-license.php
+
 // By Glyn Hudson and Trystan Lea
 // openenergymonitor.org
 // GNU GPL V3
+// http://openenergymonitor.org/emon/license
 
 // using CT port 2 - middle jackplug
+
 
 //--------------------------------------------------------------------------------------
 */
 
 #include <avr/wdt.h>
-//JeeLabs libraries 
-#include <Ports.h>
-#include <RF12.h>
+#include <JeeLib.h>
 #include <avr/eeprom.h>
 #include <util/crc16.h>  //cyclic redundancy check
 
@@ -33,7 +35,7 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); } 	 // interrupt handler: has to be def
 //---------------------------------------------------------------------------------------------------
 // Serial print settings - disable all serial prints if SERIAL 0 - increases long term stability 
 //---------------------------------------------------------------------------------------------------
-// #define DEBUG
+#define DEBUG
 
 //---------------------------------------------------------------------------------------------------
 // RF12 settings 
@@ -83,7 +85,7 @@ void setup() {
   Serial.println("emonTx single CT example");
   Serial.println("openenergymonitor.org");
   
-  delay(100);                             
+  delay(3000);                             
   
   //-----------------------------------------
   // RFM12B Initialize
