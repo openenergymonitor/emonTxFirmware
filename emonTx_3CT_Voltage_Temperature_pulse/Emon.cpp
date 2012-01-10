@@ -4,8 +4,17 @@
   GNU GPL
 */
 
-#include "WProgram.h"
 #include "Emon.h"
+
+#if defined(ARDUINO) && ARDUINO >= 100
+
+#include "Arduino.h"
+
+#else
+
+#include "WProgram.h"
+
+#endif
 
 //--------------------------------------------------------------------------------------
 // Sets the pins to be used for voltage and current sensors
