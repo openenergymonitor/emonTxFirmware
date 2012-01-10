@@ -33,7 +33,7 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); } 	 // interrupt handler: has to be def
 //---------------------------------------------------------------------------------------------------
 // Serial print settings - disable all serial prints if SERIAL 0 - increases long term stability 
 //---------------------------------------------------------------------------------------------------
-#define SERIAL 0
+#define SERIAL 1
 //---------------------------------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------------------------------
@@ -91,7 +91,7 @@ void setup() {
   Serial.println("emonTx single CT example");
   Serial.println("openenergymonitor.org");
   
-  delay(10);                             
+  delay(100);                             
   
   //-----------------------------------------
   // RFM12B Initialize
