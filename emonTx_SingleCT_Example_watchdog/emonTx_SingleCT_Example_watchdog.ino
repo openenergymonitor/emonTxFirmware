@@ -33,7 +33,7 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); } 	 // interrupt handler: has to be def
 //---------------------------------------------------------------------------------------------------
 // Serial print settings - disable all serial prints if SERIAL 0 - increases long term stability 
 //---------------------------------------------------------------------------------------------------
-#define DEBUG
+// #define DEBUG
 
 //---------------------------------------------------------------------------------------------------
 // RF12 settings 
@@ -139,6 +139,7 @@ void loop()
   //for debugging 
   #ifdef DEBUG 
     Serial.println(emontx.power); 
+    delay(10);
   #endif
    
   digitalWrite(LEDpin, HIGH);    //flash LED - very quickly 
