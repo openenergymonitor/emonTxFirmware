@@ -14,7 +14,7 @@
 //Based on JeeLabs RF12 library - now called ports 
 // 2009-02-13 <jc@wippler.nl> http://opensource.org/licenses/mit-license.php
 
-// By Glyn Hudson and Trystan Lea: 5/10/11
+// By Glyn Hudson and Trystan Lea
 // openenergymonitor.org
 // GNU GPL V3
 // http://openenergymonitor.org/emon/license
@@ -34,7 +34,7 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); } 	 // interrupt handler: has to be def
 //---------------------------------------------------------------------------------------------------
 // Serial print settings - disable all serial prints if SERIAL 0 - increases long term stability 
 //---------------------------------------------------------------------------------------------------
-#define SERIAL 1
+#define DEBUG
 //---------------------------------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------------------------------
@@ -93,13 +93,11 @@ double cal3=1.295000139;          //calibration coefficient for ch2
 //########################################################################################################################
 //Data Structure to be sent
 //######################################################################################################################## 
-typedef struct {
-  	  int ct1;		// current transformer 1
-          int ct2;
-          int ct3;
-	  int supplyV;		// voltage of emonTx battery 
-} Payload;
-Payload emontx;
+//---------------------------------------------------
+// Data structure for sending emontx data via RF
+//---------------------------------------------------
+typedef struct { int power1, power2, power3, battery; } PayloadTX;
+PayloadTX emontx;    
 //########################################################################################################################
 
 //********************************************************************
@@ -119,8 +117,7 @@ void setup() {
   rf12_initialize(myNodeID,freq,network);   //Initialize RFM12 with settings defined above 
   rf12_sleep(RF12_SLEEP);                             //Put the RFM12 to sleep - Note: This RF12 sleep interupt method might not be 100% reliable. Put RF to sleep: RFM12B module can be kept off while not used – saving roughly 15 mA
   //------------------------------------------
-  delay(10);                               
-  Sleepy::loseSomeTime(3000);               //wait 3s for power to settle
+  delay(3000);                               
   
 
   Serial.print("Node: "); 
@@ -132,10 +129,11 @@ void setup() {
   Serial.print(" Network: "); 
   Serial.println(network);
   
-  if (SERIAL==0) {
+  #ifndef DEBUG
     Serial.println("serial disabled"); 
     Serial.end();
-  }
+  #endif 
+
 
   digitalWrite(LEDpin, LOW);              //turn off LED
   
@@ -153,14 +151,12 @@ void loop() {
     //--------------------------------------------------------------------------------------------------
     // 1. Read current supply voltage and get current CT energy monitoring reading 
     //--------------------------------------------------------------------------------------------------
-          emontx.supplyV = readVcc();  //read emontx supply voltage
+          emontx.battery = readVcc();  //read emontx supply voltage
           
-          emontx.ct1=int(ch1.emon( CT1_INPUT_PIN, cal1, RMS_VOLTAGE, NUMBER_OF_SAMPLES, CT_BURDEN_RESISTOR, CT_TURNS, emontx.supplyV));
-          emontx.ct2=int(ch2.emon( CT2_INPUT_PIN, cal2, RMS_VOLTAGE, NUMBER_OF_SAMPLES, CT_BURDEN_RESISTOR, CT_TURNS, emontx.supplyV));
-          emontx.ct3=int(ch3.emon( CT3_INPUT_PIN, cal3, RMS_VOLTAGE, NUMBER_OF_SAMPLES, CT_BURDEN_RESISTOR, CT_TURNS, emontx.supplyV));          
-    //--------------------------------------------------------------------------------------------------
-      
-
+          emontx.power2=int(ch1.emon( CT1_INPUT_PIN, cal1, RMS_VOLTAGE, NUMBER_OF_SAMPLES, CT_BURDEN_RESISTOR, CT_TURNS, emontx.battery ));
+          emontx.power2=int(ch2.emon( CT2_INPUT_PIN, cal2, RMS_VOLTAGE, NUMBER_OF_SAMPLES, CT_BURDEN_RESISTOR, CT_TURNS, emontx.battery ));
+          emontx.power3=int(ch3.emon( CT3_INPUT_PIN, cal3, RMS_VOLTAGE, NUMBER_OF_SAMPLES, CT_BURDEN_RESISTOR, CT_TURNS, emontx.battery ));          
+    //------------------------------------------------------------------------------------------------------
 
     //--------------------------------------------------------------------------------------------------
     // 2. Send data via RF 
@@ -170,24 +166,27 @@ void loop() {
 	
   
   //for debugging 
-  if (SERIAL==1){
-      Serial.print(emontx.ct1); 
+  #ifdef DEBUG 
+      Serial.print(emontx.power1); 
       Serial.print(" ");
-      Serial.print(emontx.ct2);
+      Serial.print(emontx.power2);
       Serial.print(" ");
-      Serial.print(emontx.ct3);
+      Serial.print(emontx.power3);
       Serial.print(" ");
-      Serial.println(emontx.supplyV);
-  }
+      Serial.println(emontx.battery);
+  #endif
   
   
   digitalWrite(LEDpin, HIGH);    //flash LED - very quickly 
   delay(2);                     // Needed to make sure print is finished before going to sleep
   digitalWrite(LEDpin, LOW); 
 
-Sleepy::loseSomeTime(10000);      //JeeLabs power save function: enter low power mode and update Arduino millis 
-//only be used with time ranges of 16..65000 milliseconds, and is not as accurate as when running normally.http://jeelabs.org/2010/10/18/tracking-time-in-your-sleep/
-   
+if ( (emontx.battery) > 3300 ) {//if emonTx is powered by 5V usb power supply (going through 3.3V voltage reg) then don't go to sleep
+    for (int i=0; i<5; i++){ delay(5000); wdt_reset();} //delay 10s 
+  } else {
+    //if battery voltage drops below 2.7V then enter battery conservation mode (sleep for 60s in between readings) (need to fine tune this value) 
+    if ( (emontx.battery) < 2700) Sleepy::loseSomeTime(60000); else Sleepy::loseSomeTime(5000);
+  }
 }
 //********************************************************************
 
@@ -199,8 +198,7 @@ static void rfwrite(){
     rf12_sleep(RF12_WAKEUP);     //wake up RF module
     while (!rf12_canSend())
     	rf12_recvDone();
-    //rf12_sendStart(0, &emontx, sizeof emontx);
-     rf12_sendStart(rf12_hdr, &emontx, sizeof emontx, RADIO_SYNC_MODE); 
+    rf12_sendStart(0, &emontx, sizeof emontx);
      rf12_sendWait(2);    //wait for RF to finish sending while in idle mode
     rf12_sleep(RF12_SLEEP);    //put RF module to sleep
 }

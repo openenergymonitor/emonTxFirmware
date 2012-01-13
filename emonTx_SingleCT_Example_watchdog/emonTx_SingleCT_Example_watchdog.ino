@@ -32,7 +32,7 @@
 ISR(WDT_vect) { Sleepy::watchdogEvent(); } 	 // interrupt handler: has to be defined because we're using the watchdog for low-power waiting
 
 //---------------------------------------------------------------------------------------------------
-// Serial print settings - disable all serial prints if SERIAL 0 - increases long term stability 
+// Serial print settings -
 //---------------------------------------------------------------------------------------------------
 #define DEBUG
 
@@ -132,8 +132,8 @@ void loop()
   //--------------------------------------------------------------------------------------------------
   rf12_sleep(RF12_WAKEUP);                                            // wake up RF module
   int i = 0; while (!rf12_canSend() && i<10) {rf12_recvDone(); i++;}  // if ready to send + exit loop if it gets stuck as it seems too
-  //rf12_sendStart(0, &emontx, sizeof emontx);                          
-  rf12_sendStart(rf12_hdr, &emontx, sizeof emontx, RADIO_SYNC_MODE);  // send emontx data
+  rf12_sendStart(0, &emontx, sizeof emontx);                          
+  //rf12_sendStart(rf12_hdr, &emontx, sizeof emontx, RADIO_SYNC_MODE);  // send emontx data
   rf12_sendWait(2);                                                   // wait for RF to finish sending while in standby mode
   rf12_sleep(RF12_SLEEP);                                             // put RF module to sleep
   //--------------------------------------------------------------------------------------------------    
@@ -153,7 +153,7 @@ void loop()
   // only be used with time ranges of 16..65000 milliseconds, and is not as accurate as when running normally.http://jeelabs.org/2010/10/18/tracking-time-in-your-sleep/
 
   if ( (emontx.battery) > 3300 ) {//if emonTx is powered by 5V usb power supply (going through 3.3V voltage reg) then don't go to sleep
-    for (int i=0; i<5; i++){ delay(1000); wdt_reset();} //delay 10s 
+    for (int i=0; i<5; i++){ delay(5000); wdt_reset();} //delay 10s 
   } else {
     //if battery voltage drops below 2.7V then enter battery conservation mode (sleep for 60s in between readings) (need to fine tune this value) 
     if ( (emontx.battery) < 2700) Sleepy::loseSomeTime(60000); else Sleepy::loseSomeTime(5000);
