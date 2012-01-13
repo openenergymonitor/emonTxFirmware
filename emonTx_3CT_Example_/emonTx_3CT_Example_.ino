@@ -11,21 +11,22 @@
 
 //Three CT wireless node example 
 
-//Based on JeeLabs RF12 library http://jeelabs.org/2009/02/10/rfm12b-library-for-arduino/
+//Based on JeeLabs RF12 library - now called ports 
+// 2009-02-13 <jc@wippler.nl> http://opensource.org/licenses/mit-license.php
 
 // By Glyn Hudson and Trystan Lea: 5/10/11
 // openenergymonitor.org
 // GNU GPL V3
+// http://openenergymonitor.org/emon/license
 
 //using CT channels 1, 2 and 3 
 //--------------------------------------------------------------------------------------
 */
 
-//JeeLabs libraries 
-#include <Ports.h>
-#include <RF12.h>
+#include <avr/wdt.h>
+#include <JeeLib.h>        //https://github.com/jcw/jeelib
 #include <avr/eeprom.h>
-#include <util/crc16.h>  //cyclic redundancy check
+#include <util/crc16.h>     //cyclic redundancy check
 
 ISR(WDT_vect) { Sleepy::watchdogEvent(); } 	 // interrupt handler: has to be defined because we're using the watchdog for low-power waiting
 
@@ -33,7 +34,7 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); } 	 // interrupt handler: has to be def
 //---------------------------------------------------------------------------------------------------
 // Serial print settings - disable all serial prints if SERIAL 0 - increases long term stability 
 //---------------------------------------------------------------------------------------------------
-#define SERIAL 0
+#define SERIAL 1
 //---------------------------------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------------------------------
@@ -76,7 +77,7 @@ int RMS_VOLTAGE =           240;  //Assumed supply voltage (230V in UK).  Tolera
 int CT_BURDEN_RESISTOR =    15;   //value in ohms of burden resistor R3 and R6
 int CT_TURNS =              1500; //number of turns in CT sensor. 1500 is the vaue of the efergy CT 
 
-double cal1=1.295000139;          //*calibration coefficient for ch1* IMPORTANT - each monitor must be calibrated for maximum accuracy. See step 4 http://openenergymonitor.org/emon/node/58. Set to 1.295 for Seedstudio 100A current output CT (included in emonTx V2.0 kit)
+double cal1=1.295000139;          //*calibration coefficient for ch1* IMPORTANT - each monitor should be calibrated for maximum accuracy. See step 4 http://openenergymonitor.org/emon/node/58. Set to 1.295 for Seedstudio 100A current output CT (included in emonTx V2.0 kit)
 double cal2=1.295000139;          //calibration coefficient for ch2
 double cal3=1.295000139;          //calibration coefficient for ch2
 
@@ -136,14 +137,18 @@ void setup() {
     Serial.end();
   }
 
-digitalWrite(LEDpin, LOW);              //turn off LED
-}
+  digitalWrite(LEDpin, LOW);              //turn off LED
+  
+   wdt_enable(WDTO_8S);                   //enable crash watchdog 
+
+}  
 
 //********************************************************************
 //LOOP
 //********************************************************************
 void loop() {
     
+  wdt_reset();
     
     //--------------------------------------------------------------------------------------------------
     // 1. Read current supply voltage and get current CT energy monitoring reading 
@@ -194,8 +199,8 @@ static void rfwrite(){
     rf12_sleep(RF12_WAKEUP);     //wake up RF module
     while (!rf12_canSend())
     	rf12_recvDone();
-    rf12_sendStart(0, &emontx, sizeof emontx);
-    	//rf12_sendStart(rf12_hdr, &emontx, sizeof emontx, RADIO_SYNC_MODE);  - use instead of line above if emonTx node ID is required in header. For multiple emonTx's to a single emonBase
+    //rf12_sendStart(0, &emontx, sizeof emontx);
+     rf12_sendStart(rf12_hdr, &emontx, sizeof emontx, RADIO_SYNC_MODE); 
      rf12_sendWait(2);    //wait for RF to finish sending while in idle mode
     rf12_sleep(RF12_SLEEP);    //put RF module to sleep
 }

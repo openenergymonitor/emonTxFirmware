@@ -10,9 +10,8 @@
 // Single CT wireless node example 
 // Includes watchdog incase it crashes
 
-// Based on JeeLabs RF12 library http://jeelabs.org/2009/02/10/rfm12b-library-for-arduino/
-
-// 2010-05-28 <jcw@equi4.com> http://opensource.org/licenses/mit-license.php
+// Based on JeeLabs RF12 library - now called ports 
+// 2009-02-13 <jc@wippler.nl> http://opensource.org/licenses/mit-license.php
 
 // By Glyn Hudson and Trystan Lea
 // openenergymonitor.org
@@ -26,9 +25,9 @@
 */
 
 #include <avr/wdt.h>
-#include <JeeLib.h>
+#include <JeeLib.h>          //https://github.com/jcw/jeelib
 #include <avr/eeprom.h>
-#include <util/crc16.h>  //cyclic redundancy check
+#include <util/crc16.h>      //cyclic redundancy check
 
 ISR(WDT_vect) { Sleepy::watchdogEvent(); } 	 // interrupt handler: has to be defined because we're using the watchdog for low-power waiting
 
@@ -111,7 +110,7 @@ void setup() {
   
   digitalWrite(LEDpin, LOW);              //turn off LED
   
-  wdt_enable(WDTO_8S);
+  wdt_enable(WDTO_8S);                   //enable crash watchdog 
 }
 
 //********************************************************************
@@ -133,7 +132,8 @@ void loop()
   //--------------------------------------------------------------------------------------------------
   rf12_sleep(RF12_WAKEUP);                                            // wake up RF module
   int i = 0; while (!rf12_canSend() && i<10) {rf12_recvDone(); i++;}  // if ready to send + exit loop if it gets stuck as it seems too
-  rf12_sendStart(0, &emontx, sizeof emontx);                          // send emontx data
+  //rf12_sendStart(0, &emontx, sizeof emontx);                          
+  rf12_sendStart(rf12_hdr, &emontx, sizeof emontx, RADIO_SYNC_MODE);  // send emontx data
   rf12_sendWait(2);                                                   // wait for RF to finish sending while in standby mode
   rf12_sleep(RF12_SLEEP);                                             // put RF module to sleep
   //--------------------------------------------------------------------------------------------------    
