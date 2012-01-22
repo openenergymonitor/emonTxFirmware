@@ -37,6 +37,11 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); } 	 // interrupt handler: has to be def
 #define DEBUG
 
 //---------------------------------------------------------------------------------------------------
+// Bootloader setting -
+//---------------------------------------------------------------------------------------------------
+#define UNO
+
+//---------------------------------------------------------------------------------------------------
 // RF12 settings 
 //---------------------------------------------------------------------------------------------------
 // fixed RF12 settings
@@ -110,7 +115,9 @@ void setup() {
   
   digitalWrite(LEDpin, LOW);              //turn off LED
   
+  #ifdef UNO
   wdt_enable(WDTO_8S);                   //enable crash watchdog 
+  #endif
 }
 
 //********************************************************************
@@ -118,8 +125,11 @@ void setup() {
 //********************************************************************
 void loop() 
 {
+  
+  #ifdef UNO
   wdt_reset();
-    
+  #endif  
+  
   //--------------------------------------------------------------------------------------------------
   // 1. Read current supply voltage and get current CT energy monitoring reading 
   //--------------------------------------------------------------------------------------------------
@@ -153,10 +163,15 @@ void loop()
   // only be used with time ranges of 16..65000 milliseconds, and is not as accurate as when running normally.http://jeelabs.org/2010/10/18/tracking-time-in-your-sleep/
 
   if ( (emontx.battery) > 3300 ) {//if emonTx is powered by 5V usb power supply (going through 3.3V voltage reg) then don't go to sleep
-    for (int i=0; i<5; i++){ delay(5000); wdt_reset();} //delay 10s 
+    for (int i=0; i<5; i++){ 
+	delay(5000); 
+	#ifdef UNO
+        wdt_reset();
+	#endif
+	} 
   } else {
-    //if battery voltage drops below 2.7V then enter battery conservation mode (sleep for 60s in between readings) (need to fine tune this value) 
-    if ( (emontx.battery) < 2700) Sleepy::loseSomeTime(60000); else Sleepy::loseSomeTime(5000);
+    //if battery voltage drops below 2.7V then enter battery conservation mode (sleep for 30s in between readings) (need to fine tune this value) 
+    if ( (emontx.battery) < 2700) Sleepy::loseSomeTime(30000); else Sleepy::loseSomeTime(5000);
   }
 
 }
