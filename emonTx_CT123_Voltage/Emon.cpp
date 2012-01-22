@@ -4,6 +4,7 @@
   GNU GPL
 */
 
+//#include "WProgram.h" un-comment for use on older versions of Arduino IDE
 #include "Emon.h"
 
 #if defined(ARDUINO) && ARDUINO >= 100
@@ -144,6 +145,8 @@ void EnergyMonitor::calc(int wavelengths, int timeout, int SUPPLYVOLTAGE)
 //  realPower = VCAL * ICAL * sumP / numberOfSamples;
   realPower = V_RATIO * I_RATIO * sumP / numberOfSamples;
   apparentPower = Vrms * Irms;
+  
+  powerFactor=realPower / apparentPower;
 
   //Reset accumulators
   sumV = 0;
@@ -152,5 +155,19 @@ void EnergyMonitor::calc(int wavelengths, int timeout, int SUPPLYVOLTAGE)
 //--------------------------------------------------------------------------------------       
  
 
+}
+
+void EnergyMonitor::serialprint()
+{
+    Serial.print(realPower);
+    Serial.print(' ');
+    Serial.print(apparentPower);
+    Serial.print(' ');
+    Serial.print(Vrms);
+    Serial.print(' ');
+    Serial.print(Irms);
+    Serial.print(' ');
+    Serial.print(powerFactor);
+    Serial.print(' ');
 }
 

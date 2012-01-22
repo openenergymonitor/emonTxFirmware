@@ -24,7 +24,7 @@ class EnergyMonitor
     void setPins(int _inPinV,int _inPinI);
     void calibration(double _VCAL, double _ICAL, double _PHASECAL);
     void calc(int wavelengths, int timeout, int SUPPLYVOLTAGE);
-
+    void serialprint();
     //Useful value variables
     double realPower,
        apparentPower,
