@@ -7,7 +7,7 @@
                                                   
 Wireless energy-monitoring node 
 
-openenergymonitor.org/emon/emontx
+http://openenergymonitor.org/emon/emontx
 ***********************************
 
 Monitor AC current flow using one CT sensor and transmitt data via wireless using RFM12B to emonBase (openenergymonitor.org/emon/emonbase)
