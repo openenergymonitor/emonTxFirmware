@@ -185,10 +185,12 @@ void loop()
   if ( (vcc) > 3250 ) {//if emonTx is powered by 5V usb power supply (going through 3.3V voltage reg) then don't go to sleep
     for (int i=0; i<5; i++)
     { 
-      delay(1000); 
+      delay(1000); // 1 second delay x 5
+      
       #ifdef UNO
-      wdt_reset();
+      wdt_reset();  //8s anti-crash watchdog reset, if hang/delay for more than 8s then reset 
       #endif
+      
     } //delay 10s 
   } else {
     //if battery voltage drops below 2.7V then enter battery conservation mode (sleep for 60s in between readings) (need to fine tune this value) 

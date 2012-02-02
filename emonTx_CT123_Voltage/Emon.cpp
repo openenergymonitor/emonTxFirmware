@@ -168,6 +168,7 @@ void EnergyMonitor::serialprint()
     Serial.print(Irms);
     Serial.print(' ');
     Serial.print(powerFactor);
-    Serial.print(' ');
+    Serial.println(' ');
+    delay(100); 
 }
 
