@@ -131,7 +131,7 @@ void loop()
   //------------------------------------------------
   // MEASURE FROM CT'S
   //------------------------------------------------
-  emon1.setPins(2,0);                     //emonTX AC-AC voltage (ADC2), current pin (CT2 - ADC0) 
+  emon1.setPins(2,3);                     //emonTX AC-AC voltage (ADC2), current pin (CT1 - ADC3) 
   emon1.calibration(280.0,126.5,1.7);    //voltage calibration , current calibration, power factor calibration 
   emon1.calc(20,2000,vcc);               //No.of wavelengths, time-out , emonTx supply voltage 
   emontx.powerA = emon1.realPower;
@@ -140,7 +140,7 @@ void loop()
  
   /* UNCOMMENT AS REQURED FOR 2ND CT
   
-  emon2.setPins(2,1);                     //emonTX AC-AC voltage (ADC2), current pin (CT2 - ADC0) 
+  emon2.setPins(2,0);                     //emonTX AC-AC voltage (ADC2), current pin (CT2 - ADC0) 
   emon2.calibration(280.0,126.5,1.7);    //voltage calibration , current calibration, power factor calibration 
   emon2.calc(20,2000,vcc);               //No.of wavelengths, time-out , emonTx supply voltage 
   emontx.powerB = emon2.realPower;
@@ -150,7 +150,7 @@ void loop()
   
   /* UNCOMMENT AS REQURED FOR 3RD CT
   
-  emon3.setPins(2,3);                     //emonTX AC-AC voltage (ADC2), current pin (CT2 - ADC0) 
+  emon3.setPins(2,1);                     //emonTX AC-AC voltage (ADC2), current pin (CT3 - ADC1) 
   emon3.calibration(280.0,126.5,1.7);    //voltage calibration , current calibration, power factor calibration 
   emon3.calc(20,2000,vcc);               //No.of wavelengths, time-out , emonTx supply voltage 
   emontx.powerC = emon3.realPower;
