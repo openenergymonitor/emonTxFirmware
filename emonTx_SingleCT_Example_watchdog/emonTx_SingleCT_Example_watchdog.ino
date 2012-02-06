@@ -164,7 +164,7 @@ void loop()
 
   if ( (emontx.battery) > 3300 ) {//if emonTx is powered by 5V usb power supply (going through 3.3V voltage reg) then don't go to sleep
     for (int i=0; i<5; i++){ 
-	delay(5000); 
+	delay(1000); 
 	#ifdef UNO
         wdt_reset();
 	#endif
