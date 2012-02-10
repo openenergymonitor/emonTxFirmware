@@ -70,7 +70,7 @@ int RMS_VOLTAGE =           240;  //Assumed supply voltage (230V in UK).  Tolera
 int CT_BURDEN_RESISTOR =    15;   //value in ohms of burden resistor R3 and R6
 int CT_TURNS =              1500; //number of turns in CT sensor. 1500 is the vaue of the efergy CT 
 
-double CAL=1.295000139;          //*calibration coefficient* IMPORTANT - each monitor must be calibrated for maximum accuracy. See step 4 http://openenergymonitor.org/emon/node/58. Set to 1.295 for Seedstudio 100A current output CT (included in emonTx V2.0 kit)
+double CAL=1.398858;          //*calibration coefficient* IMPORTANT - each monitor must be calibrated for maximum accuracy. See step 4 http://openenergymonitor.org/emon/node/58. Set to 1.295 for Seedstudio 100A current output CT (included in emonTx V2.0 kit)
 //--------------------------------------------------------------------------------------------------
 
 
