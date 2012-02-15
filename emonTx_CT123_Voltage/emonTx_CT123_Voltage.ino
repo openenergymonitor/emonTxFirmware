@@ -42,7 +42,7 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); }
 //---------------------------------------------------------------------------------------------------
 // Serial print settings - disable all serial prints if SERIAL 0 - increases long term stability 
 //---------------------------------------------------------------------------------------------------
-#define SERIAL 0
+#define SERIAL 1
 //---------------------------------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------------------------------
@@ -131,13 +131,16 @@ void loop()
   
   //------------------------------------------------
   // MEASURE FROM CT'S
+  // Calibration notes:
+  // 212.6 is a suitable calibration value for the Euro AC-AC adapter http://uk.rs-online.com/web/p/products/459-853/
+  // 237.3 is a suitable calibration value for the UK AC-AC adapter http://uk.rs-online.com/web/p/products/400-6484/
   //------------------------------------------------
-  emon1.setPins(2,3);                     //emonTX AC-AC voltage (ADC2), current pin (CT1 - ADC3) 
-  emon1.calibration(238.56, 138.8,1.7)    //voltage calibration , current calibration, power factor calibration. See: http://openenergymonitor.org/emon/emontx/acac
+  emon1.setPins(2,0);                     //emonTX AC-AC voltage (ADC2), current pin (CT1 - ADC3) 
+  emon1.calibration(238.5, 138.8,1.7);    //voltage calibration , current calibration, power factor calibration. See: http://openenergymonitor.org/emon/emontx/acac
   emon1.calc(20,2000,vcc);               //No.of wavelengths, time-out , emonTx supply voltage 
   emontx.powerA = emon1.realPower;
   emontx.appA = emon1.apparentPower;
-  //emon1.serialprint();
+  emon1.serialprint();
  
   /* UNCOMMENT AS REQURED FOR 2ND CT
   
