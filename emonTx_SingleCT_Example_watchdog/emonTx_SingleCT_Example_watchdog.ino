@@ -59,7 +59,7 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); } 	 // interrupt handler: has to be def
 //--------------------------------------------------------------------------------------------------
 // CT energy monitor setup definitions 
 //--------------------------------------------------------------------------------------------------
-int CT_INPUT_PIN =          0;    // I/O analogue 3 = emonTx CT2 channel (middle). Change to analogue 0 for emonTx CT1 chnnel  
+int CT_INPUT_PIN =          0;    // ADC 0 = CT2 middle CT, ADC 1 = CT 3 (top), ADC 3 = CT 1 (bottom)
 int NUMBER_OF_SAMPLES =     1480; // The period (one wavelength) of mains 50Hz is 20ms. Each samples was measured to take 0.188ms. This meas that 106.4 samples/wavelength are possible. 1480 samples takes 280.14ms which is 14 wavelengths. 
 int RMS_VOLTAGE =           240;  // Assumed supply voltage (230V in UK).  Tolerance: +10%-6%
 int CT_BURDEN_RESISTOR =    15;   // value in ohms of burden resistor R3 and R6
