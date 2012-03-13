@@ -7,13 +7,15 @@
 // When doing a long term instal its worth deleting
 // the Serial.begin and print statements
 
-#define freq RF12_433MHZ     //Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
+#define freq RF12_433MHZ                                                //Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
+#define nodeID 10                                                       //emonTx node ID
+#define networkGroup 210                                                //emonTx RFM12B wireless network group - needs to be same as emonBase and emonGLCD
 
-#define UNO                                                             // Uncomment this line if your not using
-#include <avr/wdt.h>                                                    // the UNO bootloader 
+#define UNO                                                             // Uncomment this line if your not using the UNO bootloader (i.e using Duemilanove) - All Atmega's shipped from OpenEnergyMonitor come witj Arduino Uno bootloader
+#include <avr/wdt.h>                                                    // 
 
 #include <JeeLib.h>                                                     // Download JeeLib: http://github.com/jcw/jeelib
-ISR(WDT_vect) { Sleepy::watchdogEvent(); }
+ISR(WDT_vect) { Sleepy::watchdogEvent(); }                              //Attached JeeLib sleep function to Atmega328 watchdog -enables MCU to be put into sleep mode inbetween readings to reduce power consumption 
 
 #include "EmonLib.h"
 EnergyMonitor emon1;                                                    // Create  instances for each CT channel
@@ -28,26 +30,26 @@ typedef struct {                                                        // Creat
 } PayloadTX;
 PayloadTX emontx;                                                       // neat way of packaging data for RF comms
 
-# define LEDpin 9
+# define LEDpin 9                                                       //On-board emonTx LED 
 
 void setup() 
 {
   Serial.begin(9600);
-  Serial.println("emonTX CT123 example");
+  Serial.println("emonTX CT123 example"); Serial.println("OpenEnergyMonitor.org");
              
   emon1.currentTX(1, 115.6);                                            // Setup emonTX CT channel (channel, calibration)
   // emon2.currentTX(2, 115.6);                                         // Uncomment for 2 CT's
   // emon3.currentTX(3, 115.6);                                         // Uncomment for 3 CT's
   
-  rf12_initialize(10, freq, 210);                                // initialize RF
+  rf12_initialize(nodeID, freq, networkGroup);                          // initialize RFM12B
   rf12_sleep(RF12_SLEEP);
 
   pinMode(LEDpin, OUTPUT);                                              // Setup indicator LED
   digitalWrite(LEDpin, HIGH);
   
   #ifdef UNO
-  wdt_enable(WDTO_8S);                                                  // Enable watchdog if UNO
-  #endif
+  wdt_enable(WDTO_8S);                                                  // Enable anti crash (restart) watchdog if UNO bootloader is selected. Watchdog does not work with duemilanove bootloader
+  #endif                                                                // Restarts emonTx if sketch hangs for more than 8s
 }
 
 void loop() 
