@@ -73,27 +73,19 @@ void setup()
 void loop() 
 { 
   emontx.power1 = emon1.calcIrms(1480) * 240.0;                         // Calculate CT 1 power
-
+  Serial.print(emontx.power1);   
+    
   #ifdef CT2
     emontx.power2 = emon2.calcIrms(1480) * 240.0;
-  #endif
-
-  #ifdef CT3
-    emontx.power3 = emon3.calcIrms(1480) * 240.0;
-  #endif
-  
-  emontx.battery = emon1.readVcc();
-  
-  Serial.print(emontx.power1);                                          // Output to serial
-
-  #ifdef CT2
     Serial.print(" "); Serial.print(emontx.power2);
   #endif
 
   #ifdef CT3
+    emontx.power3 = emon3.calcIrms(1480) * 240.0;
     Serial.print(" "); Serial.print(emontx.power3);
   #endif
-
+  
+  emontx.battery = emon1.readVcc();
   Serial.println();
  
   send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
