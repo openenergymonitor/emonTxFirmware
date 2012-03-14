@@ -12,15 +12,15 @@
  
 */
 
-const int CT2 = 1;
-const int CT3 = 1;
+const int CT2 = 1;                                                      // Set to 0 to disable CT channel 2
+const int CT3 = 1;                                                      // Set to 0 to disable CT channel 3
 
 #define freq RF12_433MHZ                                                // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
-const int nodeID = 10;                                                  // emonTx node ID
+const int nodeID = 10;                                                  // emonTx RFM12B node ID
 const int networkGroup = 210;                                           // emonTx RFM12B wireless network group - needs to be same as emonBase and emonGLCD
 
-const int UNO = 1;                                                      // Set to 0 if your not using the UNO bootloader (i.e using Duemilanove) - All Atmega's shipped from OpenEnergyMonitor come witj Arduino Uno bootloader
-#include <avr/wdt.h>                                                    // 
+const int UNO = 1;                                                      // Set to 0 if your not using the UNO bootloader (i.e using Duemilanove) - All Atmega's shipped from OpenEnergyMonitor come with Arduino Uno bootloader
+#include <avr/wdt.h>                                                     
 
 #include <JeeLib.h>                                                     // Download JeeLib: http://github.com/jcw/jeelib
 ISR(WDT_vect) { Sleepy::watchdogEvent(); }                              // Attached JeeLib sleep function to Atmega328 watchdog -enables MCU to be put into sleep mode inbetween readings to reduce power consumption 
