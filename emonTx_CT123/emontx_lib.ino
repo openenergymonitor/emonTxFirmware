@@ -14,9 +14,7 @@ void emontx_sleep(int seconds) {
   if (emontx.battery > 3300) { 
     for (int i=0; i<seconds; i++) { 
       delay(1000); 
-      #ifdef UNO
-      wdt_reset();
-      #endif
+      if (UNO) wdt_reset();
     } 
   } else Sleepy::loseSomeTime(seconds*1000);
 }
