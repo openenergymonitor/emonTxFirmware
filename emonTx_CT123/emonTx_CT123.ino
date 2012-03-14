@@ -54,8 +54,8 @@ void setup()
 
 void loop() 
 { 
-  emontx.power1 = ct1.calcIrms(1480) * 240.0;                         // Calculate CT 1 power
-  Serial.print(emontx.power1);                                        // Output to serial  
+  emontx.power1 = ct1.calcIrms(1480) * 240.0;                           // Calculate CT 1 power
+  Serial.print(emontx.power1);                                          // Output to serial  
     
   if (CT2) {
     emontx.power2 = ct2.calcIrms(1480) * 240.0;
@@ -71,6 +71,6 @@ void loop()
   Serial.println(); delay(100);
  
   send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
-  emontx_sleep(5);                                                     // sleep or delay in seconds - see emontx_lib
+  emontx_sleep(5);                                                      // sleep or delay in seconds - see emontx_lib
   digitalWrite(LEDpin, HIGH); delay(2); digitalWrite(LEDpin, LOW);      // flash LED
 }
