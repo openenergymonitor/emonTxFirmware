@@ -28,13 +28,8 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); }                              // Attac
 #include "EmonLib.h"
 EnergyMonitor ct1,ct2,ct3;                                              // Create  instances for each CT channel
 
-typedef struct {                                                        // Create emontx data structure
-  int power1;
-  int power2;
-  int power3;
-  int battery;
-} PayloadTX;
-PayloadTX emontx;                                                       // neat way of packaging data for RF comms
+typedef struct { int power1, power2, power3, battery; } PayloadTX;      // create structure - a neat way of packaging data for RF comms
+PayloadTX emontx;                                                       
 
 const int LEDpin = 9;                                                   // On-board emonTx LED 
 
