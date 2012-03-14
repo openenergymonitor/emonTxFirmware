@@ -1,11 +1,16 @@
-// emonTX CT123 example
-// Part of the openenergymonitor.org project
-// Licence: GNU GPL V3
-// Authors: Glyn Hudson, Trystan Lea
-// Builds upon JeeLabs RF12 library and Arduino
-//
-// When doing a long term instal its worth deleting
-// the Serial.begin and print statements
+/*
+ EmonTx CT123 example
+ 
+ An example sketch for the emontx module for
+ CT only electricity monitoring.
+ 
+ Part of the openenergymonitor.org project
+ Licence: GNU GPL V3
+ 
+ Authors: Glyn Hudson, Trystan Lea
+ Builds upon JeeLabs RF12 library and Arduino
+ 
+*/
 
 const int CT2 = 1;
 const int CT3 = 1;
