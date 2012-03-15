@@ -12,7 +12,8 @@ http://openenergymonitor.org/emon/emontx
 
 Builds on JeeLabs software and compatiable with JeeNode hardware 
 ------------------------------------------------------------------------
-Download the JeeLib library here (insert into Arduino librarys folder):
+These examples require the following librarys - download and insert into Arduino librarys folder 
+https://github.com/openenergymonitor/EmonLib
 http://github.com/jcw/jeelib
 
 Temperature monitoring needs the following: 
@@ -25,7 +26,9 @@ emonTx_CT123 - Apparent Power Example - Use this example if only using CT sensor
 
 emonTx_CT123_Voltage - Real Power - Use this example if using an AC-AC adapter with as well as CT sensors. AC-AC plug-in adapter to monitors AC RMS voltage and give real power and current direction readings. 
 
-Both examples are setup to use one CT (CT1 port) by default. Uncomment commented out lines to enable reading from multiple CT's. 
+emonTx_Pulse - Use for counting pulses from pulse output utility meter (flashing LED). Optical sensor can be used to detect pulses. 
+
+emonTx_Temperature - For using multiple DS18B20 temperature sensors on a one-wire bus with emonTx. Uses direct addressing method, run the 'temperature search' sketch to find the addresses of the DS18B20 sensors and insert into main example. http://openenergymonitor.org/emon/buildingblocks/DS18B20-temperature-sensing
 
 Note: CT must be clipped round either the Live or Neutral wire, not both! 
 
