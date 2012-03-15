@@ -12,8 +12,8 @@
  
 */
 
-const int CT2 = 1;                                                      // Set to 0 to disable CT channel 2
-const int CT3 = 1;                                                      // Set to 0 to disable CT channel 3
+const int CT2 = 0;                                                      // Set to 1 to enable CT channel 2
+const int CT3 = 0;                                                      // Set to 1 to enable CT channel 3
 
 #define freq RF12_433MHZ                                                // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 const int nodeID = 10;                                                  // emonTx RFM12B node ID

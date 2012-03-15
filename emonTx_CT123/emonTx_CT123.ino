@@ -12,8 +12,8 @@
  
 */
 
-const int CT2 = 1;                                                      // Set to 0 to disable CT channel 2
-const int CT3 = 1;                                                      // Set to 0 to disable CT channel 3
+const int CT2 = 0;                                                      // Set to 1 to enable CT channel 2
+const int CT3 = 0;                                                      // Set to 1 to enable CT channel 3
 
 #define freq RF12_433MHZ                                                // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 const int nodeID = 10;                                                  // emonTx RFM12B node ID
@@ -56,18 +56,7 @@ void loop()
 { 
   emontx.power1 = ct1.calcIrms(1480) * 240.0;                           // Calculate CT 1 power
   Serial.print(emontx.power1);                                          // Output to serial  
-    
-  if (CT2) {
-    emontx.power2 = ct2.calcIrms(1480) * 240.0;
-    Serial.print(" "); Serial.print(emontx.power2);
-  } 
-
-  if (CT3) {
-    emontx.power3 = ct3.calcIrms(1480) * 240.0;
-    Serial.print(" "); Serial.print(emontx.power3);
-  } 
   
-  emontx.battery = ct1.readVcc();
   Serial.println(); delay(100);
  
   send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
