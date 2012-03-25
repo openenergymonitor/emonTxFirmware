@@ -30,7 +30,10 @@ emonTx_Pulse - Use for counting pulses from pulse output utility meter (flashing
 
 emonTx_Temperature - For using multiple DS18B20 temperature sensors on a one-wire bus with emonTx. Uses direct addressing method, run the 'temperature search' sketch to find the addresses of the DS18B20 sensors and insert into main example. http://openenergymonitor.org/emon/buildingblocks/DS18B20-temperature-sensing
 
+
 Note: CT must be clipped round either the Live or Neutral wire, not both! 
+
+When the example has been succesfully uploaded the green LED should blink quickly once very 10's
 
 
 
