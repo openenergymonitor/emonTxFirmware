@@ -11,7 +11,6 @@
  Builds upon JeeLabs RF12 library and Arduino
  
 */
-const int CT1 = 1;                                                      // Set to 1 to enable CT channel 1
 const int CT2 = 1;                                                      // Set to 1 to enable CT channel 2
 const int CT3 = 1;                                                      // Set to 1 to enable CT channel 3
 
