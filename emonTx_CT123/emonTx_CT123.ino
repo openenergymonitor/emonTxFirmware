@@ -12,6 +12,7 @@
  
 */
 
+const int CT1 = 1; 
 const int CT2 = 1;                                                      // Set to 0 to disable CT channel 2
 const int CT3 = 1;                                                      // Set to 0 to disable CT channel 3
 
@@ -39,7 +40,7 @@ void setup()
   Serial.println("emonTX CT123 example"); 
   Serial.println("OpenEnergyMonitor.org");
              
-  ct1.currentTX(1, 115.6);                                              // Setup emonTX CT channel (channel, calibration)
+  if (CT1) ct1.currentTX(1, 115.6);                                              // Setup emonTX CT channel (channel, calibration)
   if (CT2) ct2.currentTX(2, 115.6);
   if (CT3) ct3.currentTX(3, 115.6);
   
@@ -54,9 +55,11 @@ void setup()
 
 void loop() 
 { 
-  emontx.power1 = ct1.calcIrms(1480) * 240.0;                           // Calculate CT 1 power
-  Serial.print(emontx.power1);                                          // Output to serial  
-    
+  if (CT1) {
+    emontx.power1 = ct1.calcIrms(1480) * 240.0;                           // Calculate CT 1 power
+    Serial.print(emontx.power1);                                          // Output to serial  
+  }
+  
   if (CT2) {
     emontx.power2 = ct2.calcIrms(1480) * 240.0;
     Serial.print(" "); Serial.print(emontx.power2);
@@ -68,6 +71,8 @@ void loop()
   } 
   
   emontx.battery = ct1.readVcc();
+  
+  Serial.print(" "); Serial.print(emontx.battery);
   Serial.println(); delay(100);
  
   send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
