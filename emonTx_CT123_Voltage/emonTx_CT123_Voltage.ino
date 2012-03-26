@@ -37,14 +37,14 @@ void setup()
   Serial.begin(9600);
   Serial.println("emonTX CT123 Voltage example");
   
-  ct1.voltageTX(238.5, 1.7);                                          // Voltage: calibration, phase_shift
-  ct1.currentTX(1, 115.6);                                            // Setup emonTX CT channel (channel, calibration)
+  ct1.voltageTX(234.6, 1.7);                                          // Voltage: calibration, phase_shift
+  ct1.currentTX(1, 113.4);                                            // Setup emonTX CT channel (channel, calibration)
   
-  ct2.voltageTX(238.5, 1.7);
-  ct2.currentTX(2, 115.6);
+  ct2.voltageTX(234.6, 1.7);
+  ct2.currentTX(2, 113.4);
   
-  ct3.voltageTX(238.5, 1.7);
-  ct3.currentTX(3, 115.6);
+  ct3.voltageTX(234.6, 1.7);
+  ct3.currentTX(3, 113.4);
   
   rf12_initialize(nodeID, freq, networkGroup);                          // initialize RF
   rf12_sleep(RF12_SLEEP);
@@ -61,7 +61,7 @@ void loop()
   emontx.power1 = ct1.realPower;
   Serial.print(emontx.power1); 
   
-  emontx.Vrms = ct1.Vrms;                                               // Mains rms voltage 
+  emontx.Vrms = ct1.Vrms*100;                                               // Mains rms voltage 
   
   if (CT2) {
     ct2.calcVI(20,2000);
@@ -74,6 +74,8 @@ void loop()
     emontx.power3 = ct3.realPower;
     Serial.print(" "); Serial.print(emontx.power3);
   }
+  
+  Serial.print(" "); Serial.print(ct1.Vrms);
 
   Serial.println(); delay(100);
  
