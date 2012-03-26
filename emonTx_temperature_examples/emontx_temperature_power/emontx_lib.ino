@@ -13,8 +13,6 @@ void send_rf_data()
 void emontx_sleep(int seconds) {
     for (int i=0; i<seconds; i++) { 
       delay(1000); 
-      #ifdef UNO
-      wdt_reset();
-      #endif
+      if (UNO) wdt_reset();
     } 
 }

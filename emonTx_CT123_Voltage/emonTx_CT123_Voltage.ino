@@ -11,9 +11,9 @@
  Builds upon JeeLabs RF12 library and Arduino
  
 */
-
-const int CT2 = 0;                                                      // Set to 1 to enable CT channel 2
-const int CT3 = 0;                                                      // Set to 1 to enable CT channel 3
+const int CT1 = 1;                                                      // Set to 1 to enable CT channel 1
+const int CT2 = 1;                                                      // Set to 1 to enable CT channel 2
+const int CT3 = 1;                                                      // Set to 1 to enable CT channel 3
 
 #define freq RF12_433MHZ                                                // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 const int nodeID = 10;                                                  // emonTx RFM12B node ID
@@ -28,13 +28,7 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); }
 #include "EmonLib.h"
 EnergyMonitor ct1,ct2,ct3;                                              // Create  instances for each CT channel
 
-typedef struct                                                          // neat way of packaging data for RF comms
-{ 
-  int powerA, appA;
-  int powerB, appB;
-  int powerC, appC;
-  
-} PayloadTX;
+typedef struct { int power1, power2, power3, Vrms; } PayloadTX;                                                          // neat way of packaging data for RF comms
 PayloadTX emontx;
 
 const int LEDpin = 9;                                                   // On-board emonTx LED 
@@ -64,28 +58,27 @@ void setup()
 
 void loop() 
 { 
-  ct1.calcVI(20,2000);                                                // Calculate all. No.of wavelengths, time-out 
-  emontx.powerA = ct1.realPower;
-  emontx.appA = ct1.apparentPower;
-  Serial.print(emontx.powerA); 
+  ct1.calcVI(20,2000);                                                  // Calculate all. No.of wavelengths, time-out 
+  emontx.power1 = ct1.realPower;
+  Serial.print(emontx.power1); 
+  
+  emontx.Vrms = ct1.Vrms;                                               // Mains rms voltage 
   
   if (CT2) {
     ct2.calcVI(20,2000);
-    emontx.powerB = ct2.realPower;
-    emontx.appB = ct2.apparentPower;
-    Serial.print(" "); Serial.print(emontx.powerB);
+    emontx.power2 = ct2.realPower;
+    Serial.print(" "); Serial.print(emontx.power2);
   }
 
   if (CT3) {
     ct3.calcVI(20,2000);
-    emontx.powerC = ct3.realPower;
-    emontx.appC = ct3.apparentPower;
-    Serial.print(" "); Serial.print(emontx.powerC);
+    emontx.power3 = ct3.realPower;
+    Serial.print(" "); Serial.print(emontx.power3);
   }
 
   Serial.println(); delay(100);
  
   send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
-  emontx_sleep(5);                                                     // sleep or delay in seconds - see emontx_lib
+  emontx_sleep(5);                                                      // sleep or delay in seconds - see emontx_lib
   digitalWrite(LEDpin, HIGH); delay(2); digitalWrite(LEDpin, LOW);      // flash LED
 }
