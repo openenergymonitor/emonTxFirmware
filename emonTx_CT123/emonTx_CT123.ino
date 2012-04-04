@@ -40,9 +40,9 @@ void setup()
   Serial.println("emonTX CT123 example"); 
   Serial.println("OpenEnergyMonitor.org");
              
-  if (CT1) ct1.currentTX(1, 115.6);                                              // Setup emonTX CT channel (channel, calibration)
-  if (CT2) ct2.currentTX(2, 115.6);
-  if (CT3) ct3.currentTX(3, 115.6);
+  if (CT1) ct1.currentTX(1, 111.1);                                     // Setup emonTX CT channel (channel, calibration)
+  if (CT2) ct2.currentTX(2, 111.1);                                     // Calibration factor = CT ratio / burden resistance
+  if (CT3) ct3.currentTX(3, 111.1);                                     // Calibration factor = (100A / 0.05A) x 18 Ohms
   
   rf12_initialize(nodeID, freq, networkGroup);                          // initialize RFM12B
   rf12_sleep(RF12_SLEEP);
