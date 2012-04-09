@@ -57,8 +57,8 @@ void setup() {
   Serial.println("emonTX Temperature power example"); 
   Serial.println("OpenEnergyMonitor.org");
   
-  ct1.voltageTX(238.5, 1.7);                                            // Voltage: calibration, phase_shift
-  ct1.currentTX(1, 115.6);                                              // Setup emonTX CT channel (channel, calibration)
+  ct1.voltageTX(234.26, 1.7);                                           // Voltage: calibration, phase_shift
+  ct1.currentTX(1, 111.1);                                              // Setup emonTX CT channel (channel, calibration)
                                                                         // CT Calibration factor = CT ratio / burden resistance
                                                                         // CT Calibration factor = (100A / 0.05A) x 18 Ohms
   sensors.begin();

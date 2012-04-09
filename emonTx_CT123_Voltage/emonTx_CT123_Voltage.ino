@@ -37,13 +37,13 @@ void setup()
   Serial.begin(9600);
   Serial.println("emonTX CT123 Voltage example");
   
-  ct1.voltageTX(234.6, 1.7);                                          // Voltage: calibration, phase_shift
+  ct1.voltageTX(234.26, 1.7);                                          // Voltage: calibration, phase_shift
   ct1.currentTX(1, 111.1);                                            // Setup emonTX CT channel (channel, calibration)
                                                                       // CT Calibration factor = CT ratio / burden resistance
-  ct2.voltageTX(234.6, 1.7);                                          // CT Calibration factor = (100A / 0.05A) x 18 Ohms
+  ct2.voltageTX(234.26, 1.7);                                          // CT Calibration factor = (100A / 0.05A) x 18 Ohms
   ct2.currentTX(2, 111.1);
   
-  ct3.voltageTX(234.6, 1.7);
+  ct3.voltageTX(234.26, 1.7);
   ct3.currentTX(3, 111.1);
   
   rf12_initialize(nodeID, freq, networkGroup);                          // initialize RF
