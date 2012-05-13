@@ -10,6 +10,10 @@
  Authors: Glyn Hudson, Trystan Lea
  Builds upon JeeLabs RF12 library and Arduino
  
+ emonTx documentation: http://openenergymonitor.org/emon/modules/emontx/
+ emonTx firmware code explination: http://openenergymonitor.org/emon/modules/emontx/firmware
+ emonTx calibration instructions: http://openenergymonitor.org/emon/modules/emontx/firmware/calibration
+ 
 */
 
 const int CT1 = 1; 
@@ -39,6 +43,14 @@ void setup()
   Serial.begin(9600);
   Serial.println("emonTX CT123 example"); 
   Serial.println("OpenEnergyMonitor.org");
+  Serial.print("Node: "); 
+  Serial.print(nodeID); 
+  Serial.print(" Freq: "); 
+  if (freq == RF12_433MHZ) Serial.print("433Mhz");
+  if (freq == RF12_868MHZ) Serial.print("868Mhz");
+  if (freq == RF12_915MHZ) Serial.print("915Mhz"); 
+ Serial.print(" Network: "); 
+  Serial.println(networkGroup);
              
   if (CT1) ct1.currentTX(1, 111.1);                                     // Setup emonTX CT channel (channel, calibration)
   if (CT2) ct2.currentTX(2, 111.1);                                     // Calibration factor = CT ratio / burden resistance
@@ -56,8 +68,8 @@ void setup()
 void loop() 
 { 
   if (CT1) {
-    emontx.power1 = ct1.calcIrms(1480) * 240.0;                           // Calculate CT 1 power
-    Serial.print(emontx.power1);                                          // Output to serial  
+    emontx.power1 = ct1.calcIrms(1480) * 240.0;                         //ct.calcIrms(number of wavelengths sample)*AC RMS voltage
+    Serial.print(emontx.power1);                                         
   }
   
   if (CT2) {
@@ -70,7 +82,7 @@ void loop()
     Serial.print(" "); Serial.print(emontx.power3);
   } 
   
-  emontx.battery = ct1.readVcc();
+  emontx.battery = ct1.readVcc();                                      //read emonTx battey (supply voltage)
   
   Serial.print(" "); Serial.print(emontx.battery);
   Serial.println(); delay(100);

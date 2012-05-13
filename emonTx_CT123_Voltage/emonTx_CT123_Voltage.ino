@@ -10,7 +10,13 @@
  Authors: Glyn Hudson, Trystan Lea
  Builds upon JeeLabs RF12 library and Arduino
  
+ emonTx documentation: http://openenergymonitor.org/emon/modules/emontx/
+ emonTx firmware code explination: http://openenergymonitor.org/emon/modules/emontx/firmware
+ emonTx calibration instructions: http://openenergymonitor.org/emon/modules/emontx/firmware/calibration
+ 
 */
+
+//CT 1 is always enabled
 const int CT2 = 1;                                                      // Set to 1 to enable CT channel 2
 const int CT3 = 1;                                                      // Set to 1 to enable CT channel 3
 
@@ -27,7 +33,7 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); }
 #include "EmonLib.h"
 EnergyMonitor ct1,ct2,ct3;                                              // Create  instances for each CT channel
 
-typedef struct { int power1, power2, power3, Vrms; } PayloadTX;                                                          // neat way of packaging data for RF comms
+typedef struct { int power1, power2, power3, Vrms; } PayloadTX;         // neat way of packaging data for RF comms
 PayloadTX emontx;
 
 const int LEDpin = 9;                                                   // On-board emonTx LED 
@@ -36,11 +42,20 @@ void setup()
 {
   Serial.begin(9600);
   Serial.println("emonTX CT123 Voltage example");
+  Serial.println("OpenEnergyMonitor.org");
+  Serial.print("Node: "); 
+  Serial.print(nodeID); 
+  Serial.print(" Freq: "); 
+  if (freq == RF12_433MHZ) Serial.print("433Mhz");
+  if (freq == RF12_868MHZ) Serial.print("868Mhz");
+  if (freq == RF12_915MHZ) Serial.print("915Mhz"); 
+  Serial.print(" Network: "); 
+  Serial.println(networkGroup);
   
-  ct1.voltageTX(234.26, 1.7);                                          // Voltage: calibration, phase_shift
-  ct1.currentTX(1, 111.1);                                            // Setup emonTX CT channel (channel, calibration)
+  ct1.voltageTX(234.26, 1.7);                                         // ct.voltageTX(calibration, phase_shift) - make sure to select correct calibration for AC-AC adapter  http://openenergymonitor.org/emon/modules/emontx/firmware/calibration
+  ct1.currentTX(1, 111.1);                                            // Setup emonTX CT channel (channel (1,2 or 3), calibration)
                                                                       // CT Calibration factor = CT ratio / burden resistance
-  ct2.voltageTX(234.26, 1.7);                                          // CT Calibration factor = (100A / 0.05A) x 18 Ohms
+  ct2.voltageTX(234.26, 1.7);                                         // CT Calibration factor = (100A / 0.05A) x 18 Ohms
   ct2.currentTX(2, 111.1);
   
   ct3.voltageTX(234.26, 1.7);
@@ -61,10 +76,10 @@ void loop()
   emontx.power1 = ct1.realPower;
   Serial.print(emontx.power1); 
   
-  emontx.Vrms = ct1.Vrms*100;                                               // Mains rms voltage 
+  emontx.Vrms = ct1.Vrms*100;                                          // AC Mains rms voltage 
   
-  if (CT2) {
-    ct2.calcVI(20,2000);
+  if (CT2) {  
+    ct2.calcVI(20,2000);                                               //ct.calcVI(number of wavelengths to sample across, time out (ms) if no waveform is detected)                                         
     emontx.power2 = ct2.realPower;
     Serial.print(" "); Serial.print(emontx.power2);
   }
