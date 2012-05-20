@@ -95,6 +95,7 @@ void loop()
   Serial.println(); delay(100);
  
   send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
-  emontx_sleep(5);                                                      // sleep or delay in seconds - see emontx_lib
   digitalWrite(LEDpin, HIGH); delay(2); digitalWrite(LEDpin, LOW);      // flash LED
+  emontx_sleep(5);                                                      // sleep or delay in seconds - see emontx_lib
+
 }
