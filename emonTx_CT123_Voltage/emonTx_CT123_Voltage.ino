@@ -72,14 +72,14 @@ void setup()
 
 void loop() 
 { 
-  ct1.calcVI(20,2000);                                                  // Calculate all. No.of wavelengths, time-out 
+  ct1.calcVI(20,2000);                                                  // Calculate all. No.of crossings, time-out 
   emontx.power1 = ct1.realPower;
   Serial.print(emontx.power1); 
   
   emontx.Vrms = ct1.Vrms*100;                                          // AC Mains rms voltage 
   
   if (CT2) {  
-    ct2.calcVI(20,2000);                                               //ct.calcVI(number of wavelengths to sample across, time out (ms) if no waveform is detected)                                         
+    ct2.calcVI(20,2000);                                               //ct.calcVI(number of crossings to sample, time out (ms) if no waveform is detected)                                         
     emontx.power2 = ct2.realPower;
     Serial.print(" "); Serial.print(emontx.power2);
   }
