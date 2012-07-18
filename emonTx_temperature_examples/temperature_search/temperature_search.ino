@@ -1,3 +1,10 @@
+// THIS SKETCH REQUIRES:
+
+// Libraries in the standard arduino libraries folder:
+//
+//	- OneWire library	http://www.pjrc.com/teensy/td_libs_OneWire.html
+//	- DallasTemperature	http://download.milesburton.com/Arduino/MaximTemperature
+
 #include <OneWire.h>
 #include <DallasTemperature.h>
 

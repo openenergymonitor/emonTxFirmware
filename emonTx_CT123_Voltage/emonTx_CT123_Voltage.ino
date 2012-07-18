@@ -13,7 +13,16 @@
  emonTx documentation: http://openenergymonitor.org/emon/modules/emontx/
  emonTx firmware code explination: http://openenergymonitor.org/emon/modules/emontx/firmware
  emonTx calibration instructions: http://openenergymonitor.org/emon/modules/emontx/firmware/calibration
- 
+
+ THIS SKETCH REQUIRES:
+
+ Libraries in the standard arduino libraries folder:
+	- JeeLib		https://github.com/jcw/jeelib
+	- EmonLib		https://github.com/openenergymonitor/EmonLib.git
+
+ Other files in project directory (should appear in the arduino tabs above)
+	- emontx_lib.ino
+
 */
 
 //CT 1 is always enabled

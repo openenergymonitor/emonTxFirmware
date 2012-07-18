@@ -9,6 +9,14 @@
  
  Authors: Glyn Hudson, Trystan Lea
  Builds upon JeeLabs RF12 library and Arduino
+
+ THIS SKETCH REQUIRES:
+
+ Libraries in the standard arduino libraries folder:
+	- JeeLib		https://github.com/jcw/jeelib
+
+ Other files in project directory (should appear in the arduino tabs above)
+	- emontx_lib.ino
  
 */
 

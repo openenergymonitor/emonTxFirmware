@@ -10,9 +10,18 @@
  Authors: Glyn Hudson, Trystan Lea
  Builds upon JeeLabs RF12 library and Arduino
  
- emonTx documentation: http://openenergymonitor.org/emon/modules/emontx/
+ emonTx documentation: 	http://openenergymonitor.org/emon/modules/emontx/
  emonTx firmware code explination: http://openenergymonitor.org/emon/modules/emontx/firmware
  emonTx calibration instructions: http://openenergymonitor.org/emon/modules/emontx/firmware/calibration
+
+ THIS SKETCH REQUIRES:
+
+ Libraries in the standard arduino libraries folder:
+	- JeeLib		https://github.com/jcw/jeelib
+	- EmonLib		https://github.com/openenergymonitor/EmonLib.git
+
+ Other files in project directory (should appear in the arduino tabs above)
+	- emontx_lib.ino
  
 */
 
