@@ -51,6 +51,8 @@
  change "#define PHASE2 8" and/or "#define PHASE3 17"
  
 */
+#define FILTERSETTLETIME 5000                                           //  Time (ms) to allow the filters to settle before sending data
+
 // #define DEBUGGING									// enable this line to include debugging print statements
 #define SERIALPRINT								// include print statement for commissioning - comment this line to exclude
 
@@ -144,6 +146,8 @@ PayloadTX emontx;													// create an instance
 
 const int LEDpin = 9;												// On-board emonTx LED 
 
+boolean settled = false;
+
 void setup() 
 {
   Serial.begin(9600);
@@ -202,10 +206,16 @@ void loop()
   emontx.power2 = realPower2;
   emontx.power3 = realPower3;
   emontx.Vrms   = Vrms;
-  
-  send_rf_data();											// *SEND RF DATA* - see emontx_lib
-  digitalWrite(LEDpin, HIGH); delay(2); digitalWrite(LEDpin, LOW);      // flash LED
-  emontx_sleep(3);											// sleep or delay in seconds - see emontx_lib
+
+  // because millis() returns to zero after 50 days ! 
+  if (!settled && millis() > FILTERSETTLETIME) settled = true;
+
+  if (settled)                                                            // send data only after filters have settled
+  { 
+    send_rf_data();											// *SEND RF DATA* - see emontx_lib
+    digitalWrite(LEDpin, HIGH); delay(2); digitalWrite(LEDpin, LOW);      // flash LED
+    emontx_sleep(3);											// sleep or delay in seconds - see emontx_lib
+  }
 
 }
 

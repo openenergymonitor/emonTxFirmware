@@ -24,6 +24,7 @@
 	- emontx_lib.ino
 
 */
+#define FILTERSETTLETIME 5000                                           //  Time (ms) to allow the filters to settle before sending data
 
 //CT 1 is always enabled
 const int CT2 = 1;                                                      // Set to 1 to enable CT channel 2
@@ -46,6 +47,8 @@ typedef struct { int power1, power2, power3, Vrms; } PayloadTX;         // neat 
 PayloadTX emontx;
 
 const int LEDpin = 9;                                                   // On-board emonTx LED 
+
+boolean settled = false;
 
 void setup() 
 {
@@ -102,9 +105,14 @@ void loop()
   Serial.print(" "); Serial.print(ct1.Vrms);
 
   Serial.println(); delay(100);
- 
-  send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
-  digitalWrite(LEDpin, HIGH); delay(2); digitalWrite(LEDpin, LOW);      // flash LED
-  emontx_sleep(5);                                                      // sleep or delay in seconds - see emontx_lib
 
+  // because millis() returns to zero after 50 days ! 
+  if (!settled && millis() > FILTERSETTLETIME) settled = true;
+
+  if (settled)                                                            // send data only after filters have settled
+  { 
+    send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
+    digitalWrite(LEDpin, HIGH); delay(2); digitalWrite(LEDpin, LOW);      // flash LED
+    emontx_sleep(5);                                                      // sleep or delay in seconds - see emontx_lib
+  }
 }
