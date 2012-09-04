@@ -1,18 +1,16 @@
 # EmonTx - Wireless energy-monitoring node 
 
+Main EmonTx page: 
 http://openenergymonitor.org/emon/emontx
 
-Builds on JeeLabs software and compatiable with JeeNode hardware 
-------------------------------------------------------------------------
-These examples require the following librarys - download and insert into Arduino librarys folder 
+Builds on JeeLabs software and compatible with JeeNode hardware
+
+These examples require the following libraries - download and insert into Arduino libraries folder
 https://github.com/openenergymonitor/EmonLib
 http://github.com/jcw/jeelib
 
 Temperature monitoring needs the following: 
-Temperature controll library: http://download.milesburton.com/Arduino/MaximTemperature/ (version 372 works with Arduino 1.0) 
-and OneWire library: http://www.pjrc.com/teensy/td_libs_OneWire.html
-
--------------------------------------------------------------------------
+Temperature controll library: http://download.milesburton.com/Arduino/MaximTemperature/ (version 372 works with Arduino 1.0) and OneWire library: http://www.pjrc.com/teensy/td_libs_OneWire.html
 
 * **emonTx_CT123** - Apparent Power Example - Use this example if only using CT sensors. Monitors AC current using one CT sensor and transmitt data via wireless using RFM12B to emonBase. 
 
