@@ -6,7 +6,10 @@
   sensors use the: **temperature_search sketch** : 
   
   emonTxFirmware > emonTx_temperature_examples > temperature_search
-  
+
+  -----------------------------------------
+  Part of the openenergymonitor.org project
+  Licence: GNU GPL V3  
 */ 
 
 #include <OneWire.h>

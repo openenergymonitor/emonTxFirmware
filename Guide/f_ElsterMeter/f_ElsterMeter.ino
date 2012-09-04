@@ -1,3 +1,20 @@
+/*
+  Part 6 - Elster Meter Reader
+ 
+  If you have an Elster meter this is a fantastic way to read the exact accumulated watt hours 
+  that you have generated or used and can compliment and cross check a CT based measurement.
+ 
+  You will need to download the elster.h library developed by Dave Berkeley here:
+  https://github.com/openenergymonitor/ElsterMeterReader
+ 
+  Read more here:
+  http://openenergymonitor.blogspot.co.uk/2012/08/reading-watt-hour-data-from-elster.html
+
+  -----------------------------------------
+  Part of the openenergymonitor.org project
+  Licence: GNU GPL V3
+*/
+
 #include "elster.h"
 
 void meter_reading(unsigned long r)

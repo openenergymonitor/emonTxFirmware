@@ -1,23 +1,36 @@
 /*
- EmonTx Pulse example
- 
- An example sketch for the emontx module for
- CT only electricity monitoring.
- 
- Part of the openenergymonitor.org project
- Licence: GNU GPL V3
- 
- Authors: Glyn Hudson, Trystan Lea
- Builds upon JeeLabs RF12 library and Arduino
+  EmonTx Pulse example
 
- THIS SKETCH REQUIRES:
+  Many meters have pulse outputs, including electricity meters: single phase, 3-phase, 
+  import, export.. Gas meters, Water flow meters etc
 
- Libraries in the standard arduino libraries folder:
-	- JeeLib		https://github.com/jcw/jeelib
+  The pulse output may be a flashing LED or a switching relay (usually solid state) or both.
 
- Other files in project directory (should appear in the arduino tabs above)
+  In the case of an electricity meter a pulse output corresponds to a certain amount of 
+  energy passing through the meter (Kwhr/Wh). For single-phase domestic electricity meters
+  (eg. Elster A100c) each pulse usually corresponds to 1 Wh (1000 pulses per kwh).  
+
+  The code below detects the falling edge of each pulse and increment pulseCount
+  
+  It calculated the power by the calculating the time elapsed between pulses.
+  
+  Read more about pulse counting here:
+  http://openenergymonitor.org/emon/buildingblocks/introduction-to-pulse-counting
+ 
+  -----------------------------------------
+  Part of the openenergymonitor.org project
+  Licence: GNU GPL V3
+ 
+  Authors: Glyn Hudson, Trystan Lea
+  Builds upon JeeLabs RF12 library and Arduino
+
+  THIS SKETCH REQUIRES:
+
+  Libraries in the standard arduino libraries folder:
+ 	- JeeLib		https://github.com/jcw/jeelib
+
+  Other files in project directory (should appear in the arduino tabs above)
 	- emontx_lib.ino
- 
 */
 
 #define freq RF12_433MHZ                                                // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.

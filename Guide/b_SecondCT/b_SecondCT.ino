@@ -7,6 +7,10 @@
   EnergyMonitor ct1, ct2;
   
   and set the second instance setup ct2.currentTX(*2*, 115.6); to the channel you wish to measure.
+
+  -----------------------------------------
+  Part of the openenergymonitor.org project
+  Licence: GNU GPL V3
 */
 
 #include "EmonLib.h"                   // Include Emon Library

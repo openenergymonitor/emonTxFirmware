@@ -34,6 +34,9 @@
   For details on the calculations that occur in EmonLib.h see this page on:
   AC Power Theory - Arduino maths for an overview. http://openenergymonitor.org/emon/buildingblocks/ac-power-arduino-maths
 
+  -----------------------------------------
+  Part of the openenergymonitor.org project
+  Licence: GNU GPL V3
 */ 
 
 #include "EmonLib.h"                   // Include Emon Library

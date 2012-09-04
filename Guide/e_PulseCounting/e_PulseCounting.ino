@@ -1,6 +1,27 @@
 /*
   Part 5 – Pulse counting
+  
+  Many meters have pulse outputs, including electricity meters: single phase, 3-phase, 
+  import, export.. Gas meters, Water flow meters etc
+
+  The pulse output may be a flashing LED or a switching relay (usually solid state) or both.
+
+  In the case of an electricity meter a pulse output corresponds to a certain amount of 
+  energy passing through the meter (Kwhr/Wh). For single-phase domestic electricity meters
+  (eg. Elster A100c) each pulse usually corresponds to 1 Wh (1000 pulses per kwh).  
+
+  The code below detects the falling edge of each pulse and increment pulseCount
+  
+  It calculated the power by the calculating the time elapsed between pulses.
+  
+  Read more about pulse counting here:
+  http://openenergymonitor.org/emon/buildingblocks/introduction-to-pulse-counting
+
+  -----------------------------------------
+  Part of the openenergymonitor.org project
+  Licence: GNU GPL V3
 */
+
 long pulseCount = 0;
 unsigned long pulseTime,lastTime; // Used to measure time between pulses
 double power;
