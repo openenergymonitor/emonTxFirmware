@@ -5,14 +5,25 @@ http://openenergymonitor.org/emon/emontx
 
 Builds on JeeLabs software and compatible with JeeNode hardware
 
-# Libraries Needed
+## Libraries Needed
 * https://github.com/openenergymonitor/EmonLib
 * http://github.com/jcw/jeelib
 
 Temperature monitoring needs the following: 
 Temperature control library: http://download.milesburton.com/Arduino/MaximTemperature/ (version 372 works with Arduino 1.0) and OneWire library: http://www.pjrc.com/teensy/td_libs_OneWire.html
 
-# Full EmonTx Firmware's
+## EmonTx Code guide
+The EmonTx code guide goes through main components required to put a full emontx firmware together. It's recommended that you work through these examples first so that you have a good understanding of how the full firmware's work.
+* [01 - Single CT](https://github.com/openenergymonitor/emonTxFirmware/blob/master/Guide/a_SingleCT/a_SingleCT.ino)
+* [02 - Second CT](https://github.com/openenergymonitor/emonTxFirmware/blob/master/Guide/b_SecondCT/b_SecondCT.ino)
+* [03 - AC Voltage](https://github.com/openenergymonitor/emonTxFirmware/blob/master/Guide/c_ACVoltage/c_ACVoltage.ino)
+* [04 - Temperature](https://github.com/openenergymonitor/emonTxFirmware/blob/master/Guide/d_Temperature/d_Temperature.ino)
+* [05 - Pulse Counting](https://github.com/openenergymonitor/emonTxFirmware/blob/master/Guide/e_PulseCounting/e_PulseCounting.ino)
+* [06 - Elster Meter](https://github.com/openenergymonitor/emonTxFirmware/blob/master/Guide/f_ElsterMeter/f_ElsterMeter.ino)
+* [07 - Transmitting Data](https://github.com/openenergymonitor/emonTxFirmware/blob/master/Guide/g_TransmittingData/g_TransmittingData.ino)
+* [08 - Watchdog](https://github.com/openenergymonitor/emonTxFirmware/blob/master/Guide/h_watchdog/h_watchdog.ino)
+
+## Full EmonTx Firmware's
 * **emonTx_CT123** - Apparent Power Example - Use this example if only using CT sensors. Monitors AC current using one CT sensor and transmit data via wireless using RFM12B to emonBase. 
 
 * **emonTx_CT123_Voltage** - Real Power - Use this example if using an AC-AC adapter with as well as CT sensors. AC-AC plug-in adapter to monitors AC RMS voltage and give real power and current direction readings. 
