@@ -6,11 +6,10 @@ http://openenergymonitor.org/emon/emontx
 Builds on JeeLabs software and compatible with JeeNode hardware
 
 ## Libraries Needed
-* https://github.com/openenergymonitor/EmonLib
-* http://github.com/jcw/jeelib
-
-Temperature monitoring needs the following: 
-Temperature control library: http://download.milesburton.com/Arduino/MaximTemperature/ (version 372 works with Arduino 1.0) and OneWire library: http://www.pjrc.com/teensy/td_libs_OneWire.html
+* RFM12: http://github.com/jcw/jeelib
+* Mains Voltage and current: https://github.com/openenergymonitor/EmonLib
+* Temperature control library: http://download.milesburton.com/Arduino/MaximTemperature/ (version 372 works with Arduino 1.0) and OneWire library: http://www.pjrc.com/teensy/td_libs_OneWire.html
+* ElsterMeterReader: https://github.com/openenergymonitor/ElsterMeterReader
 
 ## EmonTx Code guide
 The EmonTx code guide goes through main components required to put a full emontx firmware together. It's recommended that you work through these examples first so that you have a good understanding of how the full firmware's work.
