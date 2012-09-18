@@ -22,7 +22,9 @@ void setup()
   ct1.currentTX(1, 111.1);
 
   // initialize RFM12B (node id, frequency, group)
-  rf12_initialize(15,RF12_433MHZ,210); // NodeID, Frequency, Group   
+  // Node 10 is an arbitrary choice (though all nodes must be unique on the system)   
+  rf12_initialize(10,RF12_433MHZ,210); // NodeID, Frequency, Group
+
   rf12_sleep(RF12_SLEEP);
 }
 
