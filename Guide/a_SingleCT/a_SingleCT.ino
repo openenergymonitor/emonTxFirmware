@@ -23,8 +23,5 @@ void setup()
 void loop()
 {
   double Irms = ct1.calcIrms(1480);    // Calculate RMS current (1480: no. of samples)
-  
-  Serial.print(Irms*240.0);	       // Print to serial apparent power (current x voltage 240V)
-  Serial.print(" ");
   Serial.println(Irms);		       // Print to serial Irms
 }

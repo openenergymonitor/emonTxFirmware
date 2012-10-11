@@ -29,7 +29,13 @@ void loop()
   double Irms1 = ct1.calcIrms(1480);   // Calculate RMS current 1
   double Irms2 = ct2.calcIrms(1480);   // Calculate RMS current 2
   
-  Serial.print(Irms1*240.0);	       // Print apparent power 1   
+  Serial.print(Irms1);                 // Print Current 1   
   Serial.print(' '); 
-  Serial.println(Irms2*240.0);	       // Print apparent power 2
+  Serial.print(Irms2);                 // Print Current 2
+  
+  // By multiplying by the nominal voltage, we can indicate the approximate apparent power:
+  Serial.print(' '); 
+  Serial.print(Irms1*240.0);           // Print apparent power 1   
+  Serial.print(' '); 
+  Serial.println(Irms2*240.0);         // Print apparent power 2
 }
