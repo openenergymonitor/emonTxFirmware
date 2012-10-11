@@ -1,7 +1,7 @@
 /*
- EmonTx CT123 example
+ EmonTx Shield 4 x CT example
  
- An example sketch for the emontx module for
+  An example sketch for the emontx Arduino shield module for
  CT only electricity monitoring.
  
  Part of the openenergymonitor.org project
@@ -10,7 +10,7 @@
  Authors: Glyn Hudson, Trystan Lea
  Builds upon JeeLabs RF12 library and Arduino
  
- emonTx documentation: 	http://openenergymonitor.org/emon/modules/emontx/
+ emonTx documentation: 	http://openenergymonitor.org/emon/modules/emontxshield/
  emonTx firmware code explination: http://openenergymonitor.org/emon/modules/emontx/firmware
  emonTx calibration instructions: http://openenergymonitor.org/emon/modules/emontx/firmware/calibration
 
@@ -27,11 +27,10 @@
 #define FILTERSETTLETIME 5000                                           //  Time (ms) to allow the filters to settle before sending data
 
 const int CT1 = 1; 
-const int CT2 = 1;                                                      // Set to 0 to disable CT channel 2
+const int CT2 = 1;                                                      // Set to 0 to disable 
 const int CT3 = 1;
 const int CT4 = 1;
 
-// Set to 0 to disable CT channel 3
 
 #define freq RF12_433MHZ                                                // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 const int nodeID = 10;                                                  // emonTx RFM12B node ID
@@ -67,10 +66,10 @@ void setup()
   if (CT3) ct3.current(3, 60.606); 
   if (CT4) ct4.current(4, 60.606); 
   
-  // Calibration factor = (100A / 0.05A) / 18 Ohms
+ // emonTx Shield Calibration = (100A / 0.05A) / 33 Ohms
   
   rf12_initialize(nodeID, freq, networkGroup);                          // initialize RFM12B
-  //rf12_sleep(RF12_SLEEP);                                             //seems to cause issue with Arduino Leonardo - not needed on shield
+  rf12_sleep(RF12_SLEEP);                                             
 
   pinMode(LEDpin, OUTPUT);                                              // Setup indicator LED
   digitalWrite(LEDpin, HIGH);
