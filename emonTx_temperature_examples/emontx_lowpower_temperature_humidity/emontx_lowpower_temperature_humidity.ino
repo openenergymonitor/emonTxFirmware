@@ -39,7 +39,7 @@
 */
 
 #define freq RF12_433MHZ                                                // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
-const int nodeID = 18;                                                  // emonTx temperature RFM12B node ID - should be unique on network
+const int nodeID = 17;                                                  // emonTx temperature RFM12B node ID - should be unique on network
 const int networkGroup = 210;                                           // emonTx RFM12B wireless network group - needs to be same as emonBase and emonGLCD
                                             
 const int sensorResolution = 11;                                        //DS18B20 resolution 9,10,11 or 12bit corresponding to (0.5, 0.25, 0.125, 0.0625 degrees C LSB), lower resolution means lower power
@@ -55,10 +55,28 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); }                              // Attac
 #define ONE_WIRE_BUS 4                                                  // Data wire is plugged into port 2 on the Arduino
 OneWire oneWire(ONE_WIRE_BUS);                                          // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
 DallasTemperature sensors(&oneWire);                                    // Pass our oneWire reference to Dallas Temperature.
-DeviceAddress sensor;                                                   // arrays to hold device address
+DeviceAddress sensor;  // arrays to hold device address
+
+// Humidity code adapted from ladyada' example
+#include "DHT.h"
+#define DHTPIN 5     // what pin we're connected to
+
+// Uncomment whatever type you're using!
+//#define DHTTYPE DHT11   // DHT 11 
+#define DHTTYPE DHT11   // DHT 22  (AM2302)
+//#define DHTTYPE DHT21   // DHT 21 (AM2301)
+
+// Connect pin 1 (on the left) of the sensor to +5V
+// Connect pin 2 of the sensor to whatever your DHTPIN is
+// Connect pin 4 (on the right) of the sensor to GROUND
+// Connect a 10K resistor from pin 2 (data) to pin 1 (power) of the sensor
+
+DHT dht(DHTPIN, DHTTYPE);
 
 typedef struct {
-  	  int temp;		                                      
+  	  int temp1;
+          int temp2;
+          int humidity;                                  
 	  int battery;		                                      
 } Payload;
 Payload emontx;
@@ -86,6 +104,8 @@ void setup() {
   Serial.print("Temperature Sensor Resolution:");
   Serial.println(sensors.getResolution(sensor), DEC); 
   
+  dht.begin();
+  
   rf12_initialize(nodeID, freq, networkGroup);                          // initialize RFM12B
   rf12_control(0xC040);                                                 // set low-battery level to 2.2V i.s.o. 3.1V
   delay(10);
@@ -98,9 +118,12 @@ void loop()
 { 
   digitalWrite(7,HIGH); delay(2);                                       // turn on DS18B20
   sensors.requestTemperatures();                                        // Send the command to get temperatures
-  float temp=(sensors.getTempCByIndex(0));
+  emontx.temp1 = (sensors.getTempCByIndex(0))*100;
+  // Reading temperature or humidity takes about 250 milliseconds!
+  // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
+  emontx.humidity = dht.readHumidity();
+  emontx.temp2 = dht.readTemperature();
   digitalWrite(7,LOW); 
-  emontx.temp=(temp*100);
   emontx.battery=readVcc();
   rf12_sleep(RF12_WAKEUP);
   // if ready to send + exit loop if it gets stuck as it seems too
