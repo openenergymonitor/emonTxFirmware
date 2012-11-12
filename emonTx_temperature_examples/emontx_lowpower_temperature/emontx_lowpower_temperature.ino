@@ -43,7 +43,7 @@ const int nodeID = 18;                                                  // emonT
 const int networkGroup = 210;                                           // emonTx RFM12B wireless network group - needs to be same as emonBase and emonGLCD
                                             
 const int sensorResolution = 11;                                        //DS18B20 resolution 9,10,11 or 12bit corresponding to (0.5, 0.25, 0.125, 0.0625 degrees C LSB), lower resolution means lower power
-const int time_between_readings= 5000;                                  //in ms
+const int time_between_readings= 20000;                                  //in ms
 
 #include <JeeLib.h>                                                     // Download JeeLib: http://github.com/jcw/jeelib
 #include <avr/sleep.h>
