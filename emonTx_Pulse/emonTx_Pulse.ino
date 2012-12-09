@@ -43,7 +43,7 @@ const int UNO = 1;                                                      // Set t
 #include <JeeLib.h>                                                     // Download JeeLib: http://github.com/jcw/jeelib
 ISR(WDT_vect) { Sleepy::watchdogEvent(); }
   
-typedef struct { int power, pulse, misc1, misc2; } PayloadTX;
+typedef struct { int power, pulse} PayloadTX;
 PayloadTX emontx;                                                     // neat way of packaging data for RF comms
 
 const int LEDpin = 9;  
