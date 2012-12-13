@@ -31,7 +31,7 @@
 const int nodeID = 20;                                                  // emonTx temperature RFM12B node ID - should be unique on network
 const int networkGroup = 1;                                           // emonTx RFM12B wireless network group - needs to be same as emonBase and emonGLCD
                                            
-const int time_between_readings= 5000;                                  //in ms
+const int time_between_readings= 20000;                                  //20 s in ms
 
 #include <JeeLib.h>                                                     // Download JeeLib: http://github.com/jcw/jeelib
 #include <avr/sleep.h>
