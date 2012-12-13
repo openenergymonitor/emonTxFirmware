@@ -27,9 +27,9 @@
  
 */
 
-#define freq RF12_868MHZ                                                // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
+#define freq RF12_433MHZ                                                // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 const int nodeID = 20;                                                  // emonTx temperature RFM12B node ID - should be unique on network
-const int networkGroup = 1;                                           // emonTx RFM12B wireless network group - needs to be same as emonBase and emonGLCD
+const int networkGroup = 210;                                           // emonTx RFM12B wireless network group - needs to be same as emonBase and emonGLCD
                                            
 const int time_between_readings= 20000;                                  //20 s in ms
 
