@@ -28,10 +28,25 @@
 */
 
 #define freq RF12_433MHZ                                                // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
-const int nodeID = 20;                                                  // emonTx temperature RFM12B node ID - should be unique on network
+const int nodeID = 21;                                                  // emonTx RFM12B node ID - should be unique on network, see recomended node ID range below
 const int networkGroup = 210;                                           // emonTx RFM12B wireless network group - needs to be same as emonBase and emonGLCD
+
+/*Recommended node ID range
+
+------------------------------------------------------------------------------------------------------------
+-ID-	-Node Type- 
+0	- Special allocation in JeeLib RFM12 driver - reserved for OOK use
+1-4     - Control nodes 
+5-10	- Energy monitoring nodes
+11-14	--Un-assigned --
+15-16	- Base Station & logging nodes
+17-30	- Environmental sensing nodes (temperature humidity etc.)
+31	- Special allocation in JeeLib RFM12 driver - Node31 can communicate with nodes on any network group
+-------------------------------------------------------------------------------------------------------------
+
+*/
                                            
-const int time_between_readings= 20000;                                  //20 s in ms
+const int time_between_readings= 60000;                                  //60s in ms - FREQUENCY OF READINGS 
 
 #include <JeeLib.h>                                                     // Download JeeLib: http://github.com/jcw/jeelib
 #include <avr/sleep.h>
@@ -76,7 +91,7 @@ void setup() {
  
   pinMode(7,OUTPUT);                                                    // DHT22 power control pin - see jumper setup instructions above
   digitalWrite(7,HIGH);                                                 // turn on DHT22
-  delay(10);
+  delay(2000);                                                          // wait 2s for DH22 to warm up
   dht.begin();
 
   rf12_initialize(nodeID, freq, networkGroup);                          // initialize RFM12B
@@ -90,13 +105,13 @@ void setup() {
 void loop()
 { 
   
-  digitalWrite(7,HIGH); delay(2);                                                                        // Send the command to get temperatures
+  digitalWrite(7,HIGH); delay(2000);                                     //wait 2s for sensor                                                                // Send the command to get temperatures
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
   emontx.humidity = ((dht.readHumidity())*10);
   emontx.temp = ((dht.readTemperature())*10);
   Serial.println(emontx.humidity); 
   delay(5);
-  digitalWrite(7,LOW); 
+  //digitalWrite(7,LOW); 
   emontx.battery=readVcc();
   
    // check if returns are valid, if they are NaN (not a number) then something went wrong!
