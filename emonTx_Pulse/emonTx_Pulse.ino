@@ -59,6 +59,7 @@ void setup()
 {
   Serial.begin(9600);
   Serial.println("emonTX Pulse example");
+  delay(100);
              
   rf12_initialize(nodeID, freq, networkGroup);                          // initialize RF
   rf12_sleep(RF12_SLEEP);
@@ -74,7 +75,12 @@ void setup()
 void loop() 
 { 
   emontx.pulse = pulseCount; pulseCount=0; 
-  send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
+  send_rf_data();  // *SEND RF DATA* - see emontx_lib
+
+  Serial.print(emontx.power);
+  Serial.print("W ");
+  Serial.println(emontx.pulse);
+
   emontx_sleep(10);                                                     // sleep or delay in seconds - see emontx_lib
   digitalWrite(LEDpin, HIGH); delay(2); digitalWrite(LEDpin, LOW);      // flash LED
 }
