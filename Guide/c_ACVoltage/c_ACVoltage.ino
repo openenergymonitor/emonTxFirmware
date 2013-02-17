@@ -46,7 +46,7 @@ void setup()
 {  
   Serial.begin(9600);
   
-  ct1.voltageTX(234.26, 1.7);          // Calibration, phase_shift
+  ct1.voltageTX(228.268, 1.7);          // Calibration, phase_shift
   ct1.currentTX(1, 111.1);             // CT channel, calibration.
 }
 

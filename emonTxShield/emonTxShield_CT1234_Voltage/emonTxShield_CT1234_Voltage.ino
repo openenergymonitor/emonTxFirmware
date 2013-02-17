@@ -70,7 +70,7 @@ void setup()
   if (CT3) ct3.current(3, 60.606);                                     // emonTx Shield Calibration factor = (100A / 0.05A) / 33 Ohms
   if (CT4) ct4.current(4, 60.606); 
   
-  if (CT1) ct1.voltage(0, 234.26, 1.7);                                // ct.voltageTX(ADC input, calibration, phase_shift) - make sure to select correct calibration for AC-AC adapter  http://openenergymonitor.org/emon/modules/emontx/firmware/calibration                                         
+  if (CT1) ct1.voltage(0, 228.268, 1.7);                                // ct.voltageTX(ADC input, calibration, phase_shift) - make sure to select correct calibration for AC-AC adapter  http://openenergymonitor.org/emon/modules/emontx/firmware/calibration. Default set for Ideal Power adapter                                         
   if (CT2) ct2.voltage(0, 234.26, 1.7);                                
   if (CT3) ct3.voltage(0, 234.26, 1.7);
   if (CT4) ct4.voltage(0, 234.26, 1.7);

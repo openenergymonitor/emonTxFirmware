@@ -91,9 +91,9 @@ int inPinV = 2;
 int inPinI1 = 3;
 int inPinI2 = 0;
 int inPinI3 = 1;
-//Calibration coefficients
+//Calibration coefficients - see http://openenergymonitor.org/emon/modules/emontx/firmware/calibration%20
 //These need to be set in order to obtain accurate results
-double Vcal = 234.26;							// Calibration constant for voltage input
+double Vcal = 228.268;							// Calibration - constant for voltage input - for ideal power voltage adapter 
 double Ical1 = 134.00;							// Calibration constant for current transformer 1
 double Ical2 = 134.00;							// Calibration constant for current transformer 2
 double Ical3 = 134.00;							// Calibration constant for current transformer 3

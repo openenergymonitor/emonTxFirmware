@@ -1,7 +1,7 @@
 /*
- emonTx Shield CT123 + Voltage example
+ emonTx Shield 4 x CT + Voltage example
  
- An example sketch for the emontx module for
+ An example sketch for the emontx Arduino shield module for
  CT and AC voltage sample electricity monitoring. Enables real power and Vrms calculations. 
  
  Part of the openenergymonitor.org project
@@ -27,11 +27,10 @@
 #define FILTERSETTLETIME 5000                                           //  Time (ms) to allow the filters to settle before sending data
 
 const int CT1 = 1; 
-const int CT2 = 1;                                                      // Set to 0 to disable CT channel 2
+const int CT2 = 1;                                                      // Set to 0 to disable 
 const int CT3 = 1;
 const int CT4 = 1;
 
-// Set to 0 to disable CT channel 3
 
 #define freq RF12_433MHZ                                                // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 const int nodeID = 10;                                                  // emonTx RFM12B node ID
@@ -68,7 +67,7 @@ void setup()
    
   if (CT1) ct1.current(1, 60.606);                                     // Setup emonTX CT channel (ADC input, calibration)
   if (CT2) ct2.current(2, 60.606);                                     // Calibration factor = CT ratio / burden resistance
-  if (CT3) ct3.current(3, 60.606);                                     // Calibration factor = (100A / 0.05A) / 33 Ohms
+  if (CT3) ct3.current(3, 60.606);                                     // emonTx Shield Calibration factor = (100A / 0.05A) / 33 Ohms
   if (CT4) ct4.current(4, 60.606); 
   
   if (CT1) ct1.voltage(0, 234.26, 1.7);                                // ct.voltageTX(ADC input, calibration, phase_shift) - make sure to select correct calibration for AC-AC adapter  http://openenergymonitor.org/emon/modules/emontx/firmware/calibration                                         
