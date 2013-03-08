@@ -20,7 +20,11 @@ DallasTemperature sensors(&oneWire);
 
 void setup()
 {
+  delay(1000);
   Serial.begin(9600);
+  Serial.println("Temperature search");
+  Serial.println("waiting 6 seconds before printing");
+  delay(6000);
 
   sensors.begin();
   
