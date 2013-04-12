@@ -14,11 +14,6 @@ EnergyMonitor ct1, ct2, ct3, ct4;        // Create two instances
 
 #define FILTERSETTLETIME 5000         //  Time (ms) to allow the filters to settle before sending data
 
-const int CT1 = 1; 
-const int CT2 = 1;                    // Set to 0 to disable CT channel 2
-const int CT3 = 1;                    // Set to 0 to disable CT channel 3
-const int CT4 = 1;                    // Set to 0 to disable CT channel 3
-
 #define freq RF12_433MHZ                                                        // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 const int nodeID = 10;                                                          // emonTx RFM12B node ID
 const int networkGroup = 210;  
@@ -28,30 +23,32 @@ typedef struct { int power1, power2, power3, power4, battery; } PayloadTX;     /
 
 boolean settled = false;
 const int LEDpin=6;                                                            //emonTx V3 LED
-
+boolean CT1, CT2, CT3, CT4; 
 
 
 
 void setup()
 {  
   rf12_initialize(nodeID,freq,networkGroup);     // initialize RFM12B
-  //rf12_sleep(0);                        //rf12 sleep seems to cause issue on the RFu, not sure why? Need to look into this
+  //rf12_sleep(0);                              //rf12 sleep seems to cause issue on the RFu, not sure why? Need to look into this
   
-   
+  if (analogRead(1) > 0) CT1 = 1;               //check to see if CT is connected to CT1 input, if so enable that channel
+  if (analogRead(2) > 0) CT2 = 1;               //check to see if CT is connected to CT2 input, if so enable that channel
+  if (analogRead(3) > 0) CT3 = 1;               //check to see if CT is connected to CT3 input, if so enable that channel
+  if (analogRead(4) > 0) CT4 = 1;               //check to see if CT is connected to CT4 input, if so enable that channel
   
   Serial.begin(9600);
   Serial.println("emonTx V3 Current Only Example");
   
-  if (CT1) ct1.currentTX3(1, 90.909);             // CT channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
-  if (CT2) ct2.currentTX3(2, 90.909);             // CT channel 2, calibration.
-  if (CT3) ct3.currentTX3(3, 90.909);             // CT channel 3, calibration. 
+  if (CT1) ct1.current(1, 90.909);             // CT channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
+  if (CT2) ct2.current(2, 90.909);             // CT channel 2, calibration.
+  if (CT3) ct3.current(3, 90.909);             // CT channel 3, calibration. 
   //CT 3 is high accuracy @ low power -  4.5kW Max 
-  if (CT4) ct4.currentTX3(4, 16.66);             // CT channel 4, calibration.    calibration (2000 turns / 120 Ohm burden resistor = 16.66)
+  if (CT4) ct4.current(4, 16.66);             // CT channel 4, calibration.    calibration (2000 turns / 120 Ohm burden resistor = 16.66)
   
  
   pinMode(LEDpin, OUTPUT);
   digitalWrite(LEDpin, HIGH); delay(500); digitalWrite(LEDpin, LOW);      //turn on then off LED to indicate power up
-  
   
 }
 

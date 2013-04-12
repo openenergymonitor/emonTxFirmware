@@ -20,17 +20,17 @@ void setup()
   rf12_initialize(10,RF12_868MHZ,210);     // initialize RFM12B
   //rf12_sleep(0);                        //rf12 sleep seems to cause issue on the RFu, not sure why? Need to look into this
   
-  ct1.voltageTX3(274.2556, 1.7);          // Calibration, phase_shift
-  ct2.voltageTX3(274.2556, 1.7);          // Calibration, phase_shift
-  ct3.voltageTX3(274.2556, 1.7);          // Calibration, phase_shift
-  ct4.voltageTX3(274.2556, 1.7);          // Calibration, phase_shift
+  ct1.voltage(274.2556, 1.7);          // Calibration, phase_shift
+  ct2.voltage(274.2556, 1.7);          // Calibration, phase_shift
+  ct3.voltage(274.2556, 1.7);          // Calibration, phase_shift
+  ct4.voltage(274.2556, 1.7);          // Calibration, phase_shift
   
-  ct1.currentTX3(1, 90.909);             // CT channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
-  ct2.currentTX3(2, 90.909);             // CT channel 2, calibration.
-  ct3.currentTX3(3, 90.909);             // CT channel 2, calibration.
+  ct1.current(1, 90.909);             // CT channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
+  ct2.current(2, 90.909);             // CT channel 2, calibration.
+  ct3.current(3, 90.909);             // CT channel 2, calibration.
   
   //CT 3 is high accuracy @ low power -  4.5kW Max 
-  ct4.currentTX3(4, 16.66);             // CT channel 2, calibration.    calibration (2000 turns / 120 Ohm burden resistor = 16.66)
+  ct4.current(4, 16.66);             // CT channel 2, calibration.    calibration (2000 turns / 120 Ohm burden resistor = 16.66)
   
   pinMode(6, OUTPUT);
 }

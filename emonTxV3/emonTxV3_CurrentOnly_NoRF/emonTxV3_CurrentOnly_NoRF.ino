@@ -19,12 +19,12 @@ void setup()
   Serial.begin(9600);
   Serial.println("emonTx V3 Current Only Example");
   
-  ct1.currentTX3(1, 90.909);             // CT channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
-  ct2.currentTX3(2, 90.909);             // CT channel 2, calibration.
-  ct3.currentTX3(3, 90.909);             // CT channel 2, calibration.
+  ct1.current(1, 90.909);             // CT channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
+  ct2.current(2, 90.909);             // CT channel 2, calibration.
+  ct3.current(3, 90.909);             // CT channel 2, calibration.
   
   //CT 3 is high accuracy @ low power -  4.5kW Max 
-  ct4.currentTX3(4, 16.66);             // CT channel 2, calibration.    calibration (2000 turns / 120 Ohm burden resistor = 16.66)
+  ct4.current(4, 16.66);             // CT channel 2, calibration.    calibration (2000 turns / 120 Ohm burden resistor = 16.66)
   pinMode(6, OUTPUT);
 }
 
