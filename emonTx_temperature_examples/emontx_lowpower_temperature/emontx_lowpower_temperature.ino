@@ -28,7 +28,6 @@
 
   Libraries in the standard arduino libraries folder:
 	- JeeLib		https://github.com/jcw/jeelib
-	- EmonLib		https://github.com/openenergymonitor/EmonLib.git
 	- OneWire library	http://www.pjrc.com/teensy/td_libs_OneWire.html
 	- DallasTemperature	http://download.milesburton.com/Arduino/MaximTemperature
 
