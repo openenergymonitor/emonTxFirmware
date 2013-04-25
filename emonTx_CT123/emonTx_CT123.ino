@@ -30,7 +30,7 @@ const int CT1 = 1;
 const int CT2 = 1;                                                      // Set to 0 to disable CT channel 2
 const int CT3 = 1;                                                      // Set to 0 to disable CT channel 3
 
-#define freq RF12_433MHZ                                                // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
+#define freq RF12_868MHZ                                                // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 const int nodeID = 10;                                                  // emonTx RFM12B node ID
 const int networkGroup = 210;                                           // emonTx RFM12B wireless network group - needs to be same as emonBase and emonGLCD
 
@@ -106,6 +106,6 @@ void loop()
   { 
     send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
     digitalWrite(LEDpin, HIGH); delay(2); digitalWrite(LEDpin, LOW);      // flash LED
-    emontx_sleep(5);                                                      // sleep or delay in seconds - see emontx_lib
+    emontx_sleep(1);                                                      // sleep or delay in seconds - see emontx_lib
   }
 }

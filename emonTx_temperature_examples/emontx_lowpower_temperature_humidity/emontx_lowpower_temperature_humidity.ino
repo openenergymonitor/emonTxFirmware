@@ -28,13 +28,10 @@
 
   Libraries in the standard arduino libraries folder:
 	- JeeLib		https://github.com/jcw/jeelib
-	- EmonLib		https://github.com/openenergymonitor/EmonLib.git
 	- OneWire library	http://www.pjrc.com/teensy/td_libs_OneWire.html
 	- DallasTemperature	http://download.milesburton.com/Arduino/MaximTemperature
         - DHT22 Humidity        https://github.com/adafruit/DHT-sensor-library - be sure to rename the sketch folder to remove the '-'
-  Other files in project directory (should appear in the arduino tabs above)
-	- emontx_lib.ino
-	- print_to_serial.ino
+ 
  
 */
 
