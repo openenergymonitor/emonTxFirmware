@@ -49,8 +49,22 @@
  Connect a pure resistive load (e.g. a heater) to L1 and adjust Phasecal1 to display a power factor of 1.00.
  Do the same for L2 and L3. If it not possible to keep Phasecal within the range 0 - 2, it is permissible to
  change "#define PHASE2 8" and/or "#define PHASE3 17"
- 
+
 */
+
+/*Recommended node ID allocation
+------------------------------------------------------------------------------------------------------------
+-ID-	-Node Type- 
+0	- Special allocation in JeeLib RFM12 driver - reserved for OOK use
+1-4     - Control nodes 
+5-10	- Energy monitoring nodes
+11-14	--Un-assigned --
+15-16	- Base Station & logging nodes
+17-30	- Environmental sensing nodes (temperature humidity etc.)
+31	- Special allocation in JeeLib RFM12 driver - Node31 can communicate with nodes on any network group
+-------------------------------------------------------------------------------------------------------------
+*/
+
 #define FILTERSETTLETIME 5000                                           //  Time (ms) to allow the filters to settle before sending data
 
 // #define DEBUGGING									// enable this line to include debugging print statements

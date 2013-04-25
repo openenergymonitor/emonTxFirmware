@@ -7,6 +7,19 @@
   Licence: GNU GPL V3
 */
 
+/*Recommended node ID allocation
+------------------------------------------------------------------------------------------------------------
+-ID-	-Node Type- 
+0	- Special allocation in JeeLib RFM12 driver - reserved for OOK use
+1-4     - Control nodes 
+5-10	- Energy monitoring nodes
+11-14	--Un-assigned --
+15-16	- Base Station & logging nodes
+17-30	- Environmental sensing nodes (temperature humidity etc.)
+31	- Special allocation in JeeLib RFM12 driver - Node31 can communicate with nodes on any network group
+-------------------------------------------------------------------------------------------------------------
+*/
+
 #include <RFu_JeeLib.h>                        //https://github.com/openenergymonitor/RFu_jeelib        
 ISR(WDT_vect) { Sleepy::watchdogEvent(); }     // Attached JeeLib sleep function to Atmega328 watchdog -enables MCU to be put into sleep mode inbetween readings to reduce power consumption 
 

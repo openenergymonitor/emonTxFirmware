@@ -1,9 +1,23 @@
 /*
   
-  emonTxV3 Current Only Example - Read from the four CT channels and Tx values via RFM12B us
+  emonTxV3 Current Only (Apparent Power) Example - Read from the four CT channels and Tx values via RFM12B wireless 
+
    -----------------------------------------
   Part of the openenergymonitor.org project
   Licence: GNU GPL V3
+*/
+
+/*Recommended node ID allocation
+------------------------------------------------------------------------------------------------------------
+-ID-	-Node Type- 
+0	- Special allocation in JeeLib RFM12 driver - reserved for OOK use
+1-4     - Control nodes 
+5-10	- Energy monitoring nodes
+11-14	--Un-assigned --
+15-16	- Base Station & logging nodes
+17-30	- Environmental sensing nodes (temperature humidity etc.)
+31	- Special allocation in JeeLib RFM12 driver - Node31 can communicate with nodes on any network group
+-------------------------------------------------------------------------------------------------------------
 */
 
 #include <RFu_JeeLib.h>                        //https://github.com/openenergymonitor/RFu_jeelib        
