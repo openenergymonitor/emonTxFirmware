@@ -54,7 +54,6 @@
 const int nodeID = 18;                                                  // emonTx temperature RFM12B node ID - should be unique on network
 const int networkGroup = 210;                                           // emonTx RFM12B wireless network group - needs to be same as emonBase and emonGLCD
                                             
-const int sensorResolution = 11;                                        //DS18B20 resolution 9,10,11 or 12bit corresponding to (0.5, 0.25, 0.125, 0.0625 degrees C LSB), lower resolution means lower power
 const int time_between_readings= 20000;                                  //in ms
 
 #include <JeeLib.h>                                                     // Download JeeLib: http://github.com/jcw/jeelib
@@ -93,10 +92,7 @@ void setup() {
   delay(10);
   
   sensors.begin();
-  if (!sensors.getAddress(sensor, 0)) Serial.println("Unable to find temperarture senosr");
-  sensors.setResolution(sensor, sensorResolution);
-  Serial.print("Temperature Sensor Resolution:");
-  Serial.println(sensors.getResolution(sensor), DEC); 
+  if (!sensors.getAddress(sensor, 0)) Serial.println("Unable to find DS18B20 Temperature Sensor");
   
   rf12_initialize(nodeID, freq, networkGroup);                          // initialize RFM12B
   rf12_control(0xC040);                                                 // set low-battery level to 2.2V i.s.o. 3.1V
