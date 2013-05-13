@@ -37,10 +37,27 @@
  
 */
 
+/*Recommended node ID allocation
+------------------------------------------------------------------------------------------------------------
+-ID-	-Node Type- 
+0	- Special allocation in JeeLib RFM12 driver - reserved for OOK use
+1-4     - Control nodes 
+5-10	- Energy monitoring nodes
+11-14	--Un-assigned --
+15-16	- Base Station & logging nodes
+17-30	- Environmental sensing nodes (temperature humidity etc.)
+31	- Special allocation in JeeLib RFM12 driver - Node31 can communicate with nodes on any network group
+-------------------------------------------------------------------------------------------------------------
+*/
+
 #define freq RF12_433MHZ                                                // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 const int nodeID = 18;                                                  // emonTx temperature RFM12B node ID - should be unique on network
 const int networkGroup = 210;                                           // emonTx RFM12B wireless network group - needs to be same as emonBase and emonGLCD
+<<<<<<< HEAD
                                                                                  //DS18B20 resolution 9,10,11 or 12bit corresponding to (0.5, 0.25, 0.125, 0.0625 degrees C LSB), lower resolution means lower power
+=======
+                                            
+>>>>>>> 5db2b8a5b2c7f36ad0882060fc25965b2462f464
 const int time_between_readings= 20000;                                  //in ms
 
 #include <JeeLib.h>                                                     // Download JeeLib: http://github.com/jcw/jeelib

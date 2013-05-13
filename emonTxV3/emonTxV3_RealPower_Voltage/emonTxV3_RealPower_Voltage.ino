@@ -7,6 +7,19 @@
   Licence: GNU GPL V3
 */
 
+/*Recommended node ID allocation
+------------------------------------------------------------------------------------------------------------
+-ID-	-Node Type- 
+0	- Special allocation in JeeLib RFM12 driver - reserved for OOK use
+1-4     - Control nodes 
+5-10	- Energy monitoring nodes
+11-14	--Un-assigned --
+15-16	- Base Station & logging nodes
+17-30	- Environmental sensing nodes (temperature humidity etc.)
+31	- Special allocation in JeeLib RFM12 driver - Node31 can communicate with nodes on any network group
+-------------------------------------------------------------------------------------------------------------
+*/
+
 #include <RFu_JeeLib.h>                        //https://github.com/openenergymonitor/RFu_jeelib        
 ISR(WDT_vect) { Sleepy::watchdogEvent(); }     // Attached JeeLib sleep function to Atmega328 watchdog -enables MCU to be put into sleep mode inbetween readings to reduce power consumption 
 
@@ -33,13 +46,14 @@ void setup()
   rf12_initialize(nodeID,freq,networkGroup);    // initialize RFM12B
   rf12_sleep(RF12_SLEEP) ;                       //rf12 sleep seems to cause issue on the RFu, not sure why? Need to look into this
   
-  if (analogRead(1) > 0) CT1 = 1;               //check to see if CT is connected to CT1 input, if so enable that channel
+  //emonTxV3 CT channel will read ADC 0 when nothing is connected due to switched jack plugs connecting ADC to 0V when no jack is inserted
+  if (analogRead(1) > 0) CT1 = 1;               //check to see if CT is connected to CT1 input, if so enable that channel 
   if (analogRead(2) > 0) CT2 = 1;               //check to see if CT is connected to CT2 input, if so enable that channel
   if (analogRead(3) > 0) CT3 = 1;               //check to see if CT is connected to CT3 input, if so enable that channel
   if (analogRead(4) > 0) CT4 = 1;               //check to see if CT is connected to CT4 input, if so enable that channel
   
   Serial.begin(9600);
-  Serial.println("emonTx V3 Current Only Example");
+  Serial.println("emonTx V3 Real Power Example");
   
   ct1.voltage(0, 265.573, 1.7);          // Calibration, phase_shift
   ct2.voltage(0, 265.573, 1.7);          // Calibration, phase_shift
@@ -54,7 +68,7 @@ void setup()
   
    
   pinMode(LEDpin, OUTPUT);
-  digitalWrite(LEDpin, HIGH); delay(5000); digitalWrite(LEDpin, LOW);      //turn on then off LED to indicate power up
+  digitalWrite(LEDpin, HIGH); delay(5000); digitalWrite(LEDpin, LOW);      //long flash LED to indicate power up success
   
 }
 
@@ -86,7 +100,7 @@ void loop()
   emontx.power4 = ct4.realPower;  
   }
   
-  emontx.Vrms = ct1.Vrms*100;  
+  emontx.Vrms = ct1.Vrms*100;         //AC RMS voltage - convert to integer ready for RF transmission (divide by 0.01 using emoncms input process to convert back to two decimal places)
   
   
   Serial.print(" "); Serial.print(emontx.Vrms);
@@ -99,8 +113,8 @@ void loop()
   { 
     send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
     digitalWrite(LEDpin, HIGH); delay(5); digitalWrite(LEDpin, LOW);      // flash LED
-    //emontx_sleep(5);      // sleep or delay in seconds - see emontx_lib
-    delay(5000);
+    emontx_sleep(5);      // sleep in seconds 
+    delay(500);           // allow power rail to settle after wakeup 
 }
   
  
@@ -109,7 +123,7 @@ void loop()
 void send_rf_data()
 {
   rf12_sleep(RF12_WAKEUP);                                   //TO DO need to test if RFM12 sleep works on RFu
-  rf12_sendNow(0, &emontx, sizeof emontx);                     //send temperature data via RFM12B using new rf12_sendNow wrapper
+  rf12_sendNow(0, &emontx, sizeof emontx);                   //send temperature data via RFM12B using new rf12_sendNow wrapper
   // set the sync mode to 2 if the fuses are still the Arduino default
   // mode 3 (full powerdown) can only be used with 258 CK startup fuses
   rf12_sendWait(2);
@@ -117,5 +131,5 @@ void send_rf_data()
 }
 
 void emontx_sleep(int seconds) {
-  Sleepy::loseSomeTime(seconds*1000);
+  Sleepy::loseSomeTime(seconds*1000);                     //JeeLib ATmega328 sleep function 
 }

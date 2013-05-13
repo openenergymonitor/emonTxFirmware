@@ -17,13 +17,9 @@
 
   Libraries in the standard arduino libraries folder:
 	- JeeLib		https://github.com/jcw/jeelib
-	- EmonLib		https://github.com/openenergymonitor/EmonLib.git
-	- OneWire library	http://www.pjrc.com/teensy/td_libs_OneWire.html
-	- DallasTemperature	http://download.milesburton.com/Arduino/MaximTemperature
+        - DHT22 Humidity        https://github.com/adafruit/DHT-sensor-library - be sure to rename the sketch folder to remove the '-'
 
-  Other files in project directory (should appear in the arduino tabs above)
-	- emontx_lib.ino
-	- print_to_serial.ino
+
  
 */
 
@@ -31,8 +27,7 @@
 const int nodeID = 21;                                                  // emonTx RFM12B node ID - should be unique on network, see recomended node ID range below
 const int networkGroup = 210;                                           // emonTx RFM12B wireless network group - needs to be same as emonBase and emonGLCD
 
-/*Recommended node ID range
-
+/*Recommended node ID allocation
 ------------------------------------------------------------------------------------------------------------
 -ID-	-Node Type- 
 0	- Special allocation in JeeLib RFM12 driver - reserved for OOK use
@@ -43,7 +38,6 @@ const int networkGroup = 210;                                           // emonT
 17-30	- Environmental sensing nodes (temperature humidity etc.)
 31	- Special allocation in JeeLib RFM12 driver - Node31 can communicate with nodes on any network group
 -------------------------------------------------------------------------------------------------------------
-
 */
                                            
 const int time_between_readings= 60000;                                  //60s in ms - FREQUENCY OF READINGS 

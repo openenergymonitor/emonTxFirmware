@@ -24,6 +24,20 @@
 	- emontx_lib.ino
  
 */
+
+/*Recommended node ID allocation
+------------------------------------------------------------------------------------------------------------
+-ID-	-Node Type- 
+0	- Special allocation in JeeLib RFM12 driver - reserved for OOK use
+1-4     - Control nodes 
+5-10	- Energy monitoring nodes
+11-14	--Un-assigned --
+15-16	- Base Station & logging nodes
+17-30	- Environmental sensing nodes (temperature humidity etc.)
+31	- Special allocation in JeeLib RFM12 driver - Node31 can communicate with nodes on any network group
+-------------------------------------------------------------------------------------------------------------
+*/
+
 #define FILTERSETTLETIME 5000                                           //  Time (ms) to allow the filters to settle before sending data
 
 const int CT1 = 1; 
@@ -71,9 +85,9 @@ void setup()
   if (CT4) ct4.current(4, 60.606); 
   
   if (CT1) ct1.voltage(0, 228.268, 1.7);                                // ct.voltageTX(ADC input, calibration, phase_shift) - make sure to select correct calibration for AC-AC adapter  http://openenergymonitor.org/emon/modules/emontx/firmware/calibration. Default set for Ideal Power adapter                                         
-  if (CT2) ct2.voltage(0, 234.26, 1.7);                                
-  if (CT3) ct3.voltage(0, 234.26, 1.7);
-  if (CT4) ct4.voltage(0, 234.26, 1.7);
+  if (CT2) ct2.voltage(0, 228.268, 1.7);                                
+  if (CT3) ct3.voltage(0, 228.268, 1.7);
+  if (CT4) ct4.voltage(0, 228.268, 1.7);
   
   rf12_initialize(nodeID, freq, networkGroup);                          // initialize RFM12B
   rf12_sleep(RF12_SLEEP);
