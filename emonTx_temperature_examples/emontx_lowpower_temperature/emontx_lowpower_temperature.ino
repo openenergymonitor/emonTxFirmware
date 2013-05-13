@@ -29,7 +29,7 @@
   Libraries in the standard arduino libraries folder:
 	- JeeLib		https://github.com/jcw/jeelib
 	- OneWire library	http://www.pjrc.com/teensy/td_libs_OneWire.html
-	- DallasTemperature	http://download.milesburton.com/Arduino/MaximTemperature
+	- DallasTemperature	http://download.milesburton.com/Arduino/MaximTemperature/DallasTemperature_LATEST.zip
 
   Other files in project directory (should appear in the arduino tabs above)
 	- emontx_lib.ino
@@ -40,8 +40,7 @@
 #define freq RF12_433MHZ                                                // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 const int nodeID = 18;                                                  // emonTx temperature RFM12B node ID - should be unique on network
 const int networkGroup = 210;                                           // emonTx RFM12B wireless network group - needs to be same as emonBase and emonGLCD
-                                            
-const int sensorResolution = 11;                                        //DS18B20 resolution 9,10,11 or 12bit corresponding to (0.5, 0.25, 0.125, 0.0625 degrees C LSB), lower resolution means lower power
+                                                                                 //DS18B20 resolution 9,10,11 or 12bit corresponding to (0.5, 0.25, 0.125, 0.0625 degrees C LSB), lower resolution means lower power
 const int time_between_readings= 20000;                                  //in ms
 
 #include <JeeLib.h>                                                     // Download JeeLib: http://github.com/jcw/jeelib
@@ -80,10 +79,7 @@ void setup() {
   delay(10);
   
   sensors.begin();
-  if (!sensors.getAddress(sensor, 0)) Serial.println("Unable to find temperarture senosr");
-  sensors.setResolution(sensor, sensorResolution);
-  Serial.print("Temperature Sensor Resolution:");
-  Serial.println(sensors.getResolution(sensor), DEC); 
+  if (!sensors.getAddress(sensor, 0)) Serial.println("Unable to find DS18B20 Temperature Sensor");
   
   rf12_initialize(nodeID, freq, networkGroup);                          // initialize RFM12B
   rf12_control(0xC040);                                                 // set low-battery level to 2.2V i.s.o. 3.1V
@@ -95,7 +91,7 @@ void setup() {
 
 void loop()
 { 
-  digitalWrite(7,HIGH); delay(2);                                       // turn on DS18B20
+  digitalWrite(7,HIGH); delay(2);  // turn on DS18B20 and wait for it to come online
   sensors.requestTemperatures();                                        // Send the command to get temperatures
   float temp=(sensors.getTempCByIndex(0));
   digitalWrite(7,LOW); 
