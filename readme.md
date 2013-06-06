@@ -1,5 +1,7 @@
 # EmonTx - Wireless energy-monitoring node 
 
+Part of the openenergymonitor.org project
+
 Main EmonTx page: 
 http://openenergymonitor.org/emon/emontx
 
@@ -34,6 +36,16 @@ The EmonTx code guide goes through main components required to put a full emontx
 **Note:** CT must be clipped round either the Live or Neutral wire, not both! 
 
 When the example has been successfully uploaded the green LED should blink quickly once very 10's
+
+
+# License
+The emonTx hardware designs (schematics and CAD files) are licensed under a Creative Commons Attribution-ShareAlike 3.0 Unported License.
+
+The emonTx firmware is released under the GNU GPL V3 license
+
+The documentation is subject to GNU Free Documentation License 
+
+The emonTx hardware designs follow the terms of the OSHW (Open-source hardware) Statement of Principles 1.0.
 
 
 
