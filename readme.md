@@ -35,7 +35,7 @@ The EmonTx code guide goes through main components required to put a full emontx
 
 **Note:** CT must be clipped round either the Live or Neutral wire, not both! 
 
-When the example has been successfully uploaded the green LED should blink quickly once very 10's
+When the example has been successfully uploaded the green LED should blink quickly once every 10's
 
 
 # License
