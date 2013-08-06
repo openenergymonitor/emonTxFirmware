@@ -7,19 +7,6 @@
   Licence: GNU GPL V3
 */
 
-/*Recommended node ID allocation
-------------------------------------------------------------------------------------------------------------
--ID-	-Node Type- 
-0	- Special allocation in JeeLib RFM12 driver - reserved for OOK use
-1-4     - Control nodes 
-5-10	- Energy monitoring nodes
-11-14	--Un-assigned --
-15-16	- Base Station & logging nodes
-17-30	- Environmental sensing nodes (temperature humidity etc.)
-31	- Special allocation in JeeLib RFM12 driver - Node31 can communicate with nodes on any network group
--------------------------------------------------------------------------------------------------------------
-*/
-
 #include <RFu_JeeLib.h>                        //https://github.com/openenergymonitor/RFu_jeelib        
 ISR(WDT_vect) { Sleepy::watchdogEvent(); }     // Attached JeeLib sleep function to Atmega328 watchdog -enables MCU to be put into sleep mode inbetween readings to reduce power consumption 
 
@@ -29,8 +16,8 @@ EnergyMonitor ct1, ct2, ct3, ct4;        // Create two instances
 #define FILTERSETTLETIME 5000         //  Time (ms) to allow the filters to settle before sending data
 
 #define freq RF12_433MHZ                                                        // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
-const int nodeID = 210;                                                          // emonTx RFM12B node ID
-const int networkGroup = 1;  
+const int nodeID = 10;                                                          // emonTx RFM12B node ID
+const int networkGroup = 210;  
 
 typedef struct { int power1, power2, power3, power4, Vrms; } PayloadTX;     // create structure - a neat way of packaging data for RF comms
   PayloadTX emontx; 
@@ -38,8 +25,6 @@ typedef struct { int power1, power2, power3, power4, Vrms; } PayloadTX;     // c
 boolean settled = false;
 const int LEDpin=6;                                                            //emonTx V3 LED
 boolean CT1, CT2, CT3, CT4; 
-
-int TIME_BETWEEN_READINGS=5;                                                   //time between readings in s
 
 
 
@@ -80,6 +65,7 @@ void setup()
 
 void loop()
 {
+  
   if (CT1) {
   ct1.calcVI(20,2000);                 // Calculate all. No.of half wavelengths (crossings), time-out  
   emontx.power1 = ct1.realPower;
@@ -113,8 +99,9 @@ void loop()
   if (settled)                                                            // send data only after filters have settled
   { 
     send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
-    digitalWrite(LEDpin, HIGH); delay(10); digitalWrite(LEDpin, LOW);     // flash LED
-    delay(TIME_BETWEEN_READINGS*1000);                                    // use delay instead of sleep since we're powering from AC
+    digitalWrite(LEDpin, HIGH); delay(5); digitalWrite(LEDpin, LOW);      // flash LED
+    emontx_sleep(5);      // sleep in seconds 
+    delay(500);           // allow power rail to settle after wakeup 
 }
   
  
@@ -130,3 +117,6 @@ void send_rf_data()
   rf12_sleep(RF12_SLEEP);
 }
 
+void emontx_sleep(int seconds) {
+  Sleepy::loseSomeTime(seconds*1000);                     //JeeLib ATmega328 sleep function 
+}
