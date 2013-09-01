@@ -29,8 +29,8 @@ EnergyMonitor ct1, ct2, ct3, ct4;        // Create two instances
 #define FILTERSETTLETIME 5000         //  Time (ms) to allow the filters to settle before sending data
 
 #define freq RF12_433MHZ                                                        // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
-const int nodeID = 210;                                                          // emonTx RFM12B node ID
-const int networkGroup = 1;  
+const int nodeID = 10;                                                          // emonTx RFM12B node ID
+const int networkGroup = 210;  
 
 typedef struct { int power1, power2, power3, power4, Vrms; } PayloadTX;     // create structure - a neat way of packaging data for RF comms
   PayloadTX emontx; 
@@ -57,16 +57,16 @@ void setup()
   Serial.begin(9600);
   Serial.println("emonTx V3 Real Power Example");
   
-  ct1.voltage(0, 265.573, 1.7);          // Calibration, phase_shift
-  ct2.voltage(0, 265.573, 1.7);          // Calibration, phase_shift
-  ct3.voltage(0, 265.573, 1.7);          // Calibration, phase_shift
-  ct4.voltage(0, 265.573, 1.7);          // Calibration, phase_shift
+  ct1.voltage(0, 270.89, 1.7);          // Calibration, phase_shift
+  ct2.voltage(0, 270.89, 1.7);          // Calibration, phase_shift
+  ct3.voltage(0, 270.89, 1.7);          // Calibration, phase_shift
+  ct4.voltage(0, 270.89, 1.7);          // Calibration, phase_shift
   
-  ct1.current(1, 90.909);             // CT channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
-  ct2.current(2, 90.909);             // CT channel 2, calibration.
-  ct3.current(3, 90.909);             // CT channel 3, calibration. 
+  ct1.current(1, 87.564);             // CT channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
+  ct2.current(2, 87.564);             // CT channel 2, calibration.
+  ct3.current(3, 87.564);             // CT channel 3, calibration. 
   //CT 3 is high accuracy @ low power -  4.5kW Max 
-  ct4.current(4, 16.66);             // CT channel 4, calibration.    calibration (2000 turns / 120 Ohm burden resistor = 16.66)
+  ct4.current(4, 16.26);             // CT channel 4, calibration.    calibration (2000 turns / 120 Ohm burden resistor = 16.66)
   
    
   pinMode(LEDpin, OUTPUT);
@@ -84,6 +84,9 @@ void loop()
   ct1.calcVI(20,2000);                 // Calculate all. No.of half wavelengths (crossings), time-out  
   emontx.power1 = ct1.realPower;
   Serial.print(emontx.power1);  
+  //Serial.print(ct1.apparentPower);
+  //Serial.print(ct1.powerFactor);
+  //Serial.print(ct1.apparentIrms);
   }
   
   if (CT2) {
@@ -103,9 +106,10 @@ void loop()
   
   emontx.Vrms = ct1.Vrms*100;         //AC RMS voltage - convert to integer ready for RF transmission (divide by 0.01 using emoncms input process to convert back to two decimal places)
   
+
   
   Serial.print(" "); Serial.print(emontx.Vrms);
-  Serial.println(); delay(100);
+  Serial.println(); delay(20);
   
   // because millis() returns to zero after 50 days ! 
   if (!settled && millis() > FILTERSETTLETIME) settled = true;

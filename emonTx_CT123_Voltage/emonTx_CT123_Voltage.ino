@@ -78,7 +78,7 @@ void setup()
   Serial.print(" Network: "); 
   Serial.println(networkGroup);
   
-  ct1.voltageTX(228.268, 1.7);                                         // ct.voltageTX(calibration, phase_shift) - make sure to select correct calibration for AC-AC adapter  http://openenergymonitor.org/emon/modules/emontx/firmware/calibration. Default is set for Ideal Power voltage adapter. 
+  ct1.voltageTX(236.2, 1.7);                                         // ct.voltageTX(calibration, phase_shift) - make sure to select correct calibration for AC-AC adapter  http://openenergymonitor.org/emon/modules/emontx/firmware/calibration. Default is set for Ideal Power voltage adapter. 
   ct1.currentTX(1, 111.1);                                            // Setup emonTX CT channel (channel (1,2 or 3), calibration)
                                                                       // CT Calibration factor = CT ratio / burden resistance
   ct2.voltageTX(234.26, 1.7);                                         // CT Calibration factor = (100A / 0.05A) x 18 Ohms
@@ -127,6 +127,6 @@ void loop()
   { 
     send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
     digitalWrite(LEDpin, HIGH); delay(2); digitalWrite(LEDpin, LOW);      // flash LED
-    emontx_sleep(5);                                                      // sleep or delay in seconds - see emontx_lib
+    emontx_sleep(5);      // sleep or delay in seconds - see emontx_lib
   }
 }
