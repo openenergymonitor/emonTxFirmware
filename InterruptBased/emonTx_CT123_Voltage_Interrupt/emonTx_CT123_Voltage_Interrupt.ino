@@ -57,9 +57,8 @@ double realPower, apparentPower, powerFactor, Vrms, Irms,frequency;
 
 //Calibration coeficients
 //These need to be set in order to obtain accurate results
-double VCAL = 275;
-double ICAL = 133.3;
-double PHASECAL= 1.7;
+double VCAL = 228.3;
+double ICAL = 111.1;
 int supply_voltage = 3300;
 
 double V_RATIO = VCAL *((supply_voltage/1000.0) / 1023.0);
@@ -71,17 +70,17 @@ signed int lastSampleV,sampleV;
 signed long shifted_filterV;
 float sumV, total_sumV;
 
-int inPinI1 = 0;
+int inPinI1 = 3;
 signed int lastSampleI1,sampleI1;
 signed long shifted_filterI1;
 float sumI1,sumP1,total_sumI1,total_sumP1;
 
-int inPinI2 = 1;
+int inPinI2 = 0;
 signed int lastSampleI2,sampleI2;
 signed long shifted_filterI2;
 float sumI2,sumP2,total_sumI2,total_sumP2;
 
-int inPinI3 = 3;
+int inPinI3 = 1;
 signed int lastSampleI3,sampleI3;
 signed long shifted_filterI3;
 float sumI3,sumP3,total_sumI3,total_sumP3;
