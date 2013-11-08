@@ -20,6 +20,8 @@
 -------------------------------------------------------------------------------------------------------------
 */
 
+#define emonTxV3                                //Tell emonLib this is the emonTx V3 - don't read Vcc assume Vcc = 3.3V as is always the case on emonTx V3 eliminates bandgap error and need for calibration http://harizanov.com/2013/09/thoughts-on-avr-adc-accuracy/
+
 #include <RFu_JeeLib.h>                        //https://github.com/openenergymonitor/RFu_jeelib        
 ISR(WDT_vect) { Sleepy::watchdogEvent(); }     // Attached JeeLib sleep function to Atmega328 watchdog -enables MCU to be put into sleep mode inbetween readings to reduce power consumption 
 
