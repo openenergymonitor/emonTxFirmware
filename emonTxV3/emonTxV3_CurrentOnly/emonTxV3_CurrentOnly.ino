@@ -55,11 +55,11 @@ void setup()
   Serial.begin(9600);
   Serial.println("emonTx V3 Current Only Example");
   
-  if (CT1) ct1.current(1, 87.564);             // CT channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
-  if (CT2) ct2.current(2, 87.564);             // CT channel 2, calibration.
-  if (CT3) ct3.current(3, 87.564);             // CT channel 3, calibration. 
+  if (CT1) ct1.current(1, 85.75996);             // CT channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
+  if (CT2) ct2.current(2, 85.75996);             // CT channel 2, calibration.
+  if (CT3) ct3.current(3, 85.75996);             // CT channel 3, calibration. 
   //CT 3 is high accuracy @ low power -  4.5kW Max 
-  if (CT4) ct4.current(4, 16.26);             // CT channel 4, calibration.    calibration (2000 turns / 120 Ohm burden resistor = 16.66)
+  if (CT4) ct4.current(4, 16.66);             // CT channel 4, calibration.    calibration (2000 turns / 120 Ohm burden resistor = 16.66)
   
  
   pinMode(LEDpin, OUTPUT);
