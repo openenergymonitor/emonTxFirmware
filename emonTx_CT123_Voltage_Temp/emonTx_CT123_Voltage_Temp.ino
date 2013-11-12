@@ -66,7 +66,7 @@ EnergyMonitor ct1,ct2,ct3;                                              // Creat
 OneWire oneWire(ONE_WIRE_BUS);                                          // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
 DallasTemperature sensors(&oneWire);                                    // Pass our oneWire reference to Dallas Temperature.
 
-DeviceAddress address_T1 = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+DeviceAddress address_T1 = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }; //The DS address is not needed, on startup it will detect the first sensor
 
 typedef struct { int power1, power2, power3, Vrms, T1; } PayloadTX;		// neat way of packaging data for RF comms
 PayloadTX emontx;
@@ -106,8 +106,8 @@ void setup()
   
   //obtain #1 sensor
   tempSensors = sensors.getDeviceCount();
-  if (tempSensors!=0){
-	sensors.getAddress(address_T1, 0);									//get the first detected sensor
+  if (tempSensors != 0){
+	sensors.getAddress(address_T1, 0);									//get the address of the first detected sensor
   }  
 
   pinMode(LEDpin, OUTPUT);                                              // Setup indicator LED
@@ -118,7 +118,7 @@ void setup()
 
 void loop() 
 { 
-  if (tempSensors!=0){
+  if (tempSensors != 0){
 	sensors.requestTemperatures();										// Request Temperature from sensors
   }
   
@@ -142,7 +142,7 @@ void loop()
   
   Serial.print(" "); Serial.print(ct1.Vrms);
   
-  if (tempSensors!=0){
+  if (tempSensors != 0){
 	  emontx.T1 = (sensors.getTempC(address_T1) * 100);					// Temperature on Celcius multiplied by 100
 	  Serial.print(" "); Serial.print(emontx.T1);
   }
