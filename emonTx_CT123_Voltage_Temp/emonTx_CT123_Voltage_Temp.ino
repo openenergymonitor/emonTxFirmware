@@ -68,7 +68,7 @@ DallasTemperature sensors(&oneWire);                                    // Pass 
 
 DeviceAddress address_T1 = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
-typedef struct { int power1, power2, power3, Vrms, T1; } PayloadTX;         // neat way of packaging data for RF comms
+typedef struct { int power1, power2, power3, Vrms, T1; } PayloadTX;		// neat way of packaging data for RF comms
 PayloadTX emontx;
 
 const int LEDpin = 9;                                                   // On-board emonTx LED 
@@ -107,7 +107,7 @@ void setup()
   //obtain #1 sensor
   tempSensors = sensors.getDeviceCount();
   if (tempSensors!=0){
-		sensors.getAddress(address_T1, 0)								//get the first detected sensor
+	sensors.getAddress(address_T1, 0);									//get the first detected sensor
   }  
 
   pinMode(LEDpin, OUTPUT);                                              // Setup indicator LED
@@ -119,17 +119,17 @@ void setup()
 void loop() 
 { 
   if (tempSensors!=0){
-	sensors.requestTemperatures();										//temperature
+	sensors.requestTemperatures();										// Request Temperature from sensors
   }
   
   ct1.calcVI(20,2000);                                                  // Calculate all. No.of crossings, time-out 
   emontx.power1 = ct1.realPower;
   Serial.print(emontx.power1); 
   
-  emontx.Vrms = ct1.Vrms*100;                                          // AC Mains rms voltage 
+  emontx.Vrms = ct1.Vrms*100;                                          	// AC Mains rms voltage 
   
   if (CT2) {  
-    ct2.calcVI(20,2000);                                               //ct.calcVI(number of crossings to sample, time out (ms) if no waveform is detected)                                         
+    ct2.calcVI(20,2000);                                               	//ct.calcVI(number of crossings to sample, time out (ms) if no waveform is detected)                                         
     emontx.power2 = ct2.realPower;
     Serial.print(" "); Serial.print(emontx.power2);
   }
@@ -143,7 +143,7 @@ void loop()
   Serial.print(" "); Serial.print(ct1.Vrms);
   
   if (tempSensors!=0){
-	  emontx.T1 = (sensors.getTempC(address_T1) * 100);					//temperature on Celcius multiplied by 100
+	  emontx.T1 = (sensors.getTempC(address_T1) * 100);					// Temperature on Celcius multiplied by 100
 	  Serial.print(" "); Serial.print(emontx.T1);
   }
 
