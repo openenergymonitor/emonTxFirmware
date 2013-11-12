@@ -30,19 +30,34 @@ EnergyMonitor ct1, ct2, ct3, ct4;
 
 #define FILTERSETTLETIME 5000                                         // Time (ms) to allow the filters to settle before sending data
 
+
+
+//----------------------------emonTx V3 Settings---------------------------------------------------------------------------------------------------------------
+const byte Vrms=240;                                                   // Vrms for apparent power readings (when no AC-AC voltage sample is present)
+const byte TIME_BETWEEN_READINGS=10;                                   //Time between readings   
+const float Ical=85.75996;
+const float Ical4=16.66;
+const int no_of_samples=1480; 
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------------------------------
+
+
+//-----------------------RFM12B SETTINGS----------------------------------------------------------------------------------------------------
 #define freq RF12_433MHZ                                              // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 const int nodeID = 10;                                                // emonTx RFM12B node ID
 const int networkGroup = 210;  
-
 typedef struct { int power1, power2, power3, power4; } PayloadTX;     // create structure - a neat way of packaging data for RF comms
   PayloadTX emontx; 
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------------------------------
 
+
+//Random Variables 
 boolean settled = false;
 const byte LEDpin=6;                                                   // emonTx V3 LED
-boolean CT1, CT2, CT3, CT4, debug; 
+boolean CT1, CT2, CT3, CT4, ACAC, debug; 
 
-const byte Vrms=240;
-const int TIME_BETWEEN_READINGS=10;                                   //Time between readings   
+
 
 void setup()
 { 
@@ -64,21 +79,22 @@ void setup()
     Serial.begin(9600);
     Serial.println("emonTx V3 Current Only Example");
     Serial.println("OpenEnergyMonitor.org");
-    Serial.print("Node: "); 
-    Serial.print(nodeID); 
+    Serial.print("Vrms assumed to be "); Serial.print(Vrms); Serial.println("V");
+    Serial.print("CT 1-3 Calibration: "); Serial.println(Ical);
+    Serial.print("CT 4 Calibration: "); Serial.println(Ical4);
+    Serial.print("Node: "); Serial.print(nodeID); 
     Serial.print(" Freq: "); 
     if (freq == RF12_433MHZ) Serial.print("433Mhz");
     if (freq == RF12_868MHZ) Serial.print("868Mhz");
     if (freq == RF12_915MHZ) Serial.print("915Mhz"); 
-    Serial.print(" Network: "); 
-    Serial.println(networkGroup);
+    Serial.print(" Network: "); Serial.println(networkGroup);
   }
   
-  if (CT1) ct1.current(1, 85.75996);             // CT ADC channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
-  if (CT2) ct2.current(2, 85.75996);             // CT ADC channel 2, calibration.
-  if (CT3) ct3.current(3, 85.75996);             // CT ADC channel 3, calibration. 
+  if (CT1) ct1.current(1, Ical);             // CT ADC channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
+  if (CT2) ct2.current(2, Ical);             // CT ADC channel 2, calibration.
+  if (CT3) ct3.current(3, Ical);             // CT ADC channel 3, calibration. 
   //CT 3 is high accuracy @ low power -  4.5kW Max @ 240V 
-  if (CT4) ct4.current(4, 16.66);                                      // CT channel ADC 4, calibration.    calibration (2000 turns / 120 Ohm burden resistor = 16.66)
+  if (CT4) ct4.current(4, Ical4);                                      // CT channel ADC 4, calibration.    calibration (2000 turns / 120 Ohm burden resistor = 16.66)
   
  
  delay(5000); digitalWrite(LEDpin, LOW);                                //turn on then off LED to indicate power up has finished
@@ -90,23 +106,23 @@ void loop()
 {
   
   if (CT1) {
-  emontx.power1 = ct1.calcIrms(1480)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
+  emontx.power1 = ct1.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
   if (debug==1) Serial.print(emontx.power1); 
 
   }
   
   if (CT2) {
-  emontx.power2 = ct2.calcIrms(1480)*Vrms;                               // Calculate Apparent Power 2 1480 is  number of samples
+  emontx.power2 = ct2.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 2 1480 is  number of samples
   if (debug==1) Serial.print(emontx.power2);  
   }
   
   if (CT3) {
-  emontx.power3 = ct3.calcIrms(1480)*Vrms;                               // Calculate Apparent Power 3 - 1480 is  number of samples
+  emontx.power3 = ct3.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 3 - 1480 is  number of samples
   if (debug==1) Serial.print(emontx.power3);  
   }
   
   if (CT4) {
-  emontx.power4 = ct4.calcIrms(1480)*Vrms;                               // Calculate Apparent Power 4 - 1480 is  number of samples
+  emontx.power4 = ct4.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 4 - 1480 is  number of samples
   if (debug==1) Serial.print(emontx.power4);  
   }
   
