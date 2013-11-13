@@ -80,17 +80,16 @@ void setup()
   pinMode(LEDpin, OUTPUT); 
   digitalWrite(LEDpin,HIGH); delay(3000); digitalWrite(LEDpin,LOW);
   
-  rf12_initialize(nodeID,freq,networkGroup);    // initialize RFM12B and send test sequency
-  
-  delay(20); emontx.power1=1; 
-  rf12_sendNow(0, &emontx, sizeof emontx);
-  delay(10); emontx.power1=2; 
-  rf12_sendNow(0, &emontx, sizeof emontx);
-  delay(10); emontx.power1=3; 
-  rf12_sendNow(0, &emontx, sizeof emontx);
+    rf12_initialize(nodeID, freq, networkGroup);                          // initialize RFM12B
+   for (int i=0; i<10; i++)                                              //Send RFM12B test sequence (for factory testing)
+   {
+     emontx.power1=i; 
+     rf12_sendNow(0, &emontx, sizeof emontx);
+     delay(100);
+   }
   rf12_sendWait(2);
-  
-  rf12_sleep(RF12_SLEEP) ;                      
+  emontx.power1=0;
+  rf12_sleep(RF12_SLEEP);                    
   
   if (analogRead(1) > 0) {CT1 = 1; CT_count++;} else CT1=0;              //check to see if CT is connected to CT1 input, if so enable that channel
   if (analogRead(2) > 0) {CT2 = 1; CT_count++;} else CT2=0;              //check to see if CT is connected to CT2 input, if so enable that channel
