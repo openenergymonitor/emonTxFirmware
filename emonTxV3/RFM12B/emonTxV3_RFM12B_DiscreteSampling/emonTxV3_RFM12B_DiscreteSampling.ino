@@ -70,7 +70,7 @@ typedef struct { int power1, power2, power3, power4, Vrms; } PayloadTX;     // c
 boolean settled = false;
 const byte LEDpin=6;                                                   // emonTx V3 LED
 boolean CT1, CT2, CT3, CT4, ACAC, debug; 
-
+byte CT_count;
 
 
 void setup()
@@ -88,11 +88,23 @@ void setup()
   
   rf12_sleep(RF12_SLEEP) ;                      
   
-  if (analogRead(1) > 0) CT1 = 1;               //check to see if CT is connected to CT1 input, if so enable that channel
-  if (analogRead(2) > 0) CT2 = 1;               //check to see if CT is connected to CT2 input, if so enable that channel
-  if (analogRead(3) > 0) CT3 = 1;               //check to see if CT is connected to CT3 input, if so enable that channel
-  if (analogRead(4) > 0) CT4 = 1;               //check to see if CT is connected to CT4 input, if so enable that channel
-  if (analogRead(0) > 500) ACAC=1;              //check for presence of AC-AC adapter 
+  if (analogRead(1) > 0) {CT1 = 1; CT_count++;} else CT1=0;              //check to see if CT is connected to CT1 input, if so enable that channel
+  if (analogRead(2) > 0) {CT2 = 1; CT_count++;} else CT2=0;              //check to see if CT is connected to CT2 input, if so enable that channel
+  if (analogRead(3) > 0) {CT3 = 1; CT_count++;} else CT3=0;              //check to see if CT is connected to CT3 input, if so enable that channel
+  if (analogRead(4) > 0) {CT4 = 1; CT_count++;} else CT4=0;             //check to see if CT is connected to CT4 input, if so enable that channel
+  
+ 
+  // Quick check to see if there is a voltage waveform present on the ACAC Voltage input
+  // Check consists of calculating the RMS from 100 samples of the voltage input.
+  unsigned long sum = 0;
+  for (int i=0; i<100; i++)
+  {
+    int raw = (analogRead(0) - 512);
+    int square = (raw * raw);
+    sum += square;
+  }
+  if ((sum / 100) > 1000) ACAC=1; else ACAC=0;
+  
   
   if (Serial) debug = 1; else debug=0;          //if serial UART to USB is connected show debug O/P. If not then disable serial
   
@@ -101,11 +113,13 @@ void setup()
     Serial.begin(9600);
     Serial.println("emonTx V3 Current Only Example");
     Serial.println("OpenEnergyMonitor.org");
+    delay(1000);
     Serial.print("CT 1-3 Calibration: "); Serial.println(Ical);
     Serial.print("CT 4 Calibration: "); Serial.println(Ical4);
+    delay(1000);
     if (ACAC) 
     {
-      Serial.print("AC-AC adapter detected - Real Power measurements enabled");
+      Serial.println("AC-AC adapter detected - Real Power measurements enabled");
       Serial.println("assuming powering from AC-AC adapter (jumper closed)");
       Serial.print("Vcal: "); Serial.println(Vcal);
       Serial.print("Phase Shift: "); Serial.println(phase_shift);
@@ -116,19 +130,28 @@ void setup()
        Serial.print("Assuming VRMS to be "); Serial.print(Vrms); Serial.println("V");
        Serial.println("Assuming powering from batteries / 5V USB - power saving mode enabled");
      }  
+     
+     delay(2000);
 
-       
-    if (CT1) Serial.println("CT 1 detected");
-    if (CT2) Serial.println("CT 2 detected");
-    if (CT3) Serial.println("CT 3 detected");
-    if (CT4) Serial.println("CT 4 detected");
+    if (CT_count==0) Serial.println("NO CT's detected");
+    else   
+    {
+      if (CT1) Serial.println("CT 1 detected");
+      if (CT2) Serial.println("CT 2 detected");
+      if (CT3) Serial.println("CT 3 detected");
+      if (CT4) Serial.println("CT 4 detected");
+    }
     
+    delay(2000);
+    
+    Serial.println("RFM12B Initiated: ");
     Serial.print("Node: "); Serial.print(nodeID); 
     Serial.print(" Freq: "); 
     if (freq == RF12_433MHZ) Serial.print("433Mhz");
     if (freq == RF12_868MHZ) Serial.print("868Mhz");
     if (freq == RF12_915MHZ) Serial.print("915Mhz"); 
     Serial.print(" Network: "); Serial.println(networkGroup);
+    delay(5000);
   }
   
   
@@ -175,11 +198,11 @@ void loop()
    }
    else
      emontx.power1 = ct1.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
-   if (debug==1) Serial.print(emontx.power1); 
+   if (debug==1) {Serial.print(emontx.power1); Serial.print(" ");} 
 
   }
   
-  if (CT1) 
+  if (CT2) 
   {
    if (ACAC) 
    {
@@ -187,7 +210,7 @@ void loop()
    }
    else
      emontx.power2 = ct2.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
-   if (debug==1) Serial.print(emontx.power2); 
+   if (debug==1) {Serial.print(emontx.power2); Serial.print(" ");}  
 
   }
 
@@ -199,7 +222,7 @@ void loop()
    }
    else
      emontx.power3 = ct3.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
-   if (debug==1) Serial.print(emontx.power3); 
+   if (debug==1) {Serial.print(emontx.power3); Serial.print(" ");} 
 
   }
   
@@ -212,14 +235,18 @@ void loop()
    }
    else
      emontx.power4 = ct4.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
-   if (debug==1) Serial.print(emontx.power4); 
+   if (debug==1) {Serial.print(emontx.power4); Serial.print(" ");} 
 
   }
   
   
-  if (ACAC) emontx.Vrms = ct1.Vrms*100;                                             //AC RMS voltage - convert to integer ready for RF transmission (divide by 0.1 using emoncms input process to convert back to one decimal places) 
- 
-  if (debug==1) {Serial.println(); delay(20);}
+  if (ACAC) 
+  {
+    emontx.Vrms = ct1.Vrms*100;                                             //AC RMS voltage - convert to integer ready for RF transmission (divide by 0.1 using emoncms input process to convert back to one decimal places) 
+    if ((debug==1) && (!CT_count==0))  Serial.print(ct1.Vrms);
+  }
+  
+  if ((debug==1) && (!CT_count==0)) {Serial.println(); delay(20);}
   
   // because millis() returns to zero after 50 days ! 
   if (!settled && millis() > FILTERSETTLETIME) settled = true;
