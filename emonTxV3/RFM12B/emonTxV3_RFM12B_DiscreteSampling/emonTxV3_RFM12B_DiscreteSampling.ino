@@ -38,7 +38,7 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); }                            // Attache
 #include "EmonLib.h"                                                  // Include EmonLib energy monitoring library https://github.com/openenergymonitor/EmonLib
 EnergyMonitor ct1, ct2, ct3, ct4;       
 
-#define FILTERSETTLETIME 5000                                         // Time (ms) to allow the filters to settle before sending data
+
 
 
 
@@ -51,7 +51,8 @@ const float Vcal=                 270.89;
 const float phase_shift=          1.7;
 const int no_of_samples=          1480; 
 const int no_of_half_wavelengths= 20;
-const int timeout=                2000;
+const int timeout=                2000;                               //emonLib timeout 
+#define FILTERSETTLETIME 5000                                         // Time (ms) to allow the filters to settle before sending data
 //-------------------------------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -76,6 +77,9 @@ byte CT_count;
 void setup()
 { 
  
+  pinMode(LEDpin, OUTPUT); 
+  digitalWrite(LEDpin,HIGH); delay(3000); digitalWrite(LEDpin,LOW);
+  
   rf12_initialize(nodeID,freq,networkGroup);    // initialize RFM12B and send test sequency
   
   delay(20); emontx.power1=1; 
@@ -96,18 +100,33 @@ void setup()
  
   // Quick check to see if there is a voltage waveform present on the ACAC Voltage input
   // Check consists of calculating the RMS from 100 samples of the voltage input.
+  delay(1000);            //wait for settle
+  
   unsigned long sum = 0;
   for (int i=0; i<100; i++)
   {
-    int raw = (analogRead(0) - 512);
+    int raw = (analogRead(0)-512);
     int square = (raw * raw);
     sum += square;
   }
-  if ((sum / 100) > 1000) ACAC=1; else ACAC=0;
+  if (sum > 600000) ACAC=1; else ACAC=0;
   
-  
+ 
+  if (ACAC) 
+ {
+    for (int i=0; i<10; i++) 
+    { 
+      digitalWrite(LEDpin, HIGH); delay(200);
+      digitalWrite(LEDpin, LOW); delay(300);
+    }
+ }
+ else 
+ {
+   delay(1000);
+   digitalWrite(LEDpin, HIGH); delay(2000); digitalWrite(LEDpin, LOW);                               
+ }
+ 
   if (Serial) debug = 1; else debug=0;          //if serial UART to USB is connected show debug O/P. If not then disable serial
-  
   if (debug==1)
   {
     Serial.begin(9600);
@@ -130,8 +149,6 @@ void setup()
        Serial.print("Assuming VRMS to be "); Serial.print(Vrms); Serial.println("V");
        Serial.println("Assuming powering from batteries / 5V USB - power saving mode enabled");
      }  
-     
-     delay(2000);
 
     if (CT_count==0) Serial.println("NO CT's detected");
     else   
@@ -142,8 +159,6 @@ void setup()
       if (CT4) Serial.println("CT 4 detected");
     }
     
-    delay(2000);
-    
     Serial.println("RFM12B Initiated: ");
     Serial.print("Node: "); Serial.print(nodeID); 
     Serial.print(" Freq: "); 
@@ -151,7 +166,6 @@ void setup()
     if (freq == RF12_868MHZ) Serial.print("868Mhz");
     if (freq == RF12_915MHZ) Serial.print("915Mhz"); 
     Serial.print(" Network: "); Serial.println(networkGroup);
-    delay(5000);
   }
   
   
@@ -170,20 +184,7 @@ void setup()
     if (CT4) ct4.voltage(0, Vcal, phase_shift);          // ADC pin, Calibration, phase_shift
   }
  
- pinMode(LEDpin, OUTPUT);  
  
- if (ACAC) 
- {
-    for (int i; i <=5; i++) 
-    { 
-      digitalWrite(LEDpin, HIGH); delay(1000);
-      digitalWrite(LEDpin, LOW); delay(1000);
-    }
- }
- else 
- {
-   digitalWrite(LEDpin, HIGH); delay(2000); digitalWrite(LEDpin, LOW);                               
- }
 }
 
 void loop()
@@ -258,7 +259,7 @@ void loop()
     if (ACAC)
     {
      delay(TIME_BETWEEN_READINGS*1000);
-     digitalWrite(LEDpin, HIGH); delay(10); digitalWrite(LEDpin, LOW);    // flash LED - turn off to save power
+     digitalWrite(LEDpin, HIGH); delay(200); digitalWrite(LEDpin, LOW);    // flash LED - turn off to save power
     }
     
     else
