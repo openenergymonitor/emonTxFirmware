@@ -110,7 +110,7 @@ digitalWrite(LEDpin,LOW);
     int square = (raw * raw);
     sum += square;
   }
-  if (sum > 600000) ACAC=1; else ACAC=0;
+  if (sum > 300000) ACAC=1; else ACAC=0;
   
  
   if (ACAC) 
@@ -131,6 +131,7 @@ digitalWrite(LEDpin,LOW);
   if (debug==1)
   {
     Serial.begin(9600);
+    Serial.println(sum);
     Serial.println("emonTx V3 Current Only Example");
     Serial.println("OpenEnergyMonitor.org");
     delay(1000);
