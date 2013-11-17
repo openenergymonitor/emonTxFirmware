@@ -78,7 +78,7 @@ void setup()
 { 
  
   pinMode(LEDpin, OUTPUT); 
-  digitalWrite(LEDpin,HIGH); delay(3000); digitalWrite(LEDpin,LOW);
+  digitalWrite(LEDpin,HIGH); 
   
     rf12_initialize(nodeID, freq, networkGroup);                          // initialize RFM12B
    for (int i=0; i<10; i++)                                              //Send RFM12B test sequence (for factory testing)
@@ -89,7 +89,9 @@ void setup()
    }
   rf12_sendWait(2);
   emontx.power1=0;
-  rf12_sleep(RF12_SLEEP);                    
+  rf12_sleep(RF12_SLEEP);   
+ 
+digitalWrite(LEDpin,LOW);  
   
   if (analogRead(1) > 0) {CT1 = 1; CT_count++;} else CT1=0;              //check to see if CT is connected to CT1 input, if so enable that channel
   if (analogRead(2) > 0) {CT2 = 1; CT_count++;} else CT2=0;              //check to see if CT is connected to CT2 input, if so enable that channel
@@ -165,7 +167,8 @@ void setup()
     if (freq == RF12_868MHZ) Serial.print("868Mhz");
     if (freq == RF12_915MHZ) Serial.print("915Mhz"); 
     Serial.print(" Network: "); Serial.println(networkGroup);
-  }
+delay(500);  
+}
   
   
     
