@@ -47,7 +47,7 @@ const byte Vrms=                  240;                                          
 const byte TIME_BETWEEN_READINGS= 10;                                   //Time between readings   
 const float Ical=                 85.75996;
 const float Ical4=                16.66;
-const float Vcal=                 270.89;
+const float Vcal=                 284.9667;
 const float phase_shift=          1.7;
 const int no_of_samples=          1480; 
 const int no_of_half_wavelengths= 20;
@@ -110,7 +110,7 @@ digitalWrite(LEDpin,LOW);
     int square = (raw * raw);
     sum += square;
   }
-  if (sum > 300000) ACAC=1; else ACAC=0;
+  if (sum > 00000) ACAC=1; else ACAC=0;
   
  
   if (ACAC) 
