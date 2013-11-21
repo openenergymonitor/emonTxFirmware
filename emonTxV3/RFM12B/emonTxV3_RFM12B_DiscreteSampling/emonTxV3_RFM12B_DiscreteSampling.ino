@@ -43,7 +43,7 @@ EnergyMonitor ct1, ct2, ct3, ct4;
 
 
 //----------------------------emonTx V3 Settings---------------------------------------------------------------------------------------------------------------
-const byte Vrms=                  240;                                                   // Vrms for apparent power readings (when no AC-AC voltage sample is present)
+const byte Vrms=                  230;                                  // Vrms for apparent power readings (when no AC-AC voltage sample is present)
 const byte TIME_BETWEEN_READINGS= 10;                                   //Time between readings   
 const float Ical=                 85.75996;
 const float Ical4=                16.66;
@@ -52,7 +52,8 @@ const float phase_shift=          1.7;
 const int no_of_samples=          1480; 
 const int no_of_half_wavelengths= 20;
 const int timeout=                2000;                               //emonLib timeout 
-#define FILTERSETTLETIME 5000                                         // Time (ms) to allow the filters to settle before sending data
+const int ACAC_DETECTION_LEVEL=   3000;
+#define FILTERSETTLETIME          5000                                 // Time (ms) to allow the filters to settle before sending data
 //-------------------------------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -110,7 +111,7 @@ digitalWrite(LEDpin,LOW);
     int square = (raw * raw);
     sum += square;
   }
-  if (sum > 00000) ACAC=1; else ACAC=0;
+  if (sum > ACAC_DETECTION_LEVEL) ACAC=1; else ACAC=0;
   
  
   if (ACAC) 
