@@ -38,6 +38,8 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); }                            // Attache
 #include "EmonLib.h"                                                  // Include EmonLib energy monitoring library https://github.com/openenergymonitor/EmonLib
 EnergyMonitor ct1, ct2, ct3, ct4;       
 
+#include <OneWire.h>                                                  //http://www.pjrc.com/teensy/td_libs_OneWire.html
+#include <DallasTemperature.h>                                        //http://download.milesburton.com/Arduino/MaximTemperature/DallasTemperature_LATEST.zip
 
 
 
@@ -53,16 +55,30 @@ const int no_of_samples=          1480;
 const int no_of_half_wavelengths= 20;
 const int timeout=                2000;                               //emonLib timeout 
 const int ACAC_DETECTION_LEVEL=   3000;
+const int TEMPERATURE_PRECISION=  11;                                   //9 (93.8ms),10 (187.5ms) ,11 (375ms) or 12 (750ms) bits equal to resplution of 0.5C, 0.25C, 0.125C and 0.0625C
 #define FILTERSETTLETIME          5000                                 // Time (ms) to allow the filters to settle before sending data
+#define ASYNC_DELAY 375                                               // DS18B20 conversion delay - 9bit requres 95ms, 10bit 187ms, 11bit 375ms and 12bit resolution takes 750ms
 //-------------------------------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------------------------------
 
+
+//----------------------------emonTx V3 hard-wired connections--------------------------------------------------------------------------------------------------------------- 
+const byte LEDpin=                6;                              // emonTx V3 LED
+const byte DS18B20_PWR=           5;                              // DS18B20 Power
+#define ONE_WIRE_BUS              19                              // DS18B20 Data                     
+//-------------------------------------------------------------------------------------------------------------------------------------------
+
+//Setup DS128B20
+OneWire oneWire(ONE_WIRE_BUS);
+DallasTemperature sensors(&oneWire);
+
+//-------------------------------------------------------------------------------------------------------------------------------------------
 
 //-----------------------RFM12B SETTINGS----------------------------------------------------------------------------------------------------
 #define freq RF12_433MHZ                                              // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 const int nodeID = 10;                                                // emonTx RFM12B node ID
 const int networkGroup = 210;  
-typedef struct { int power1, power2, power3, power4, Vrms; } PayloadTX;     // create structure - a neat way of packaging data for RF comms
+typedef struct { int power1, power2, power3, power4, Vrms, temp; } PayloadTX;     // create structure - a neat way of packaging data for RF comms
   PayloadTX emontx; 
 //-------------------------------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------------------------------
@@ -70,15 +86,17 @@ typedef struct { int power1, power2, power3, power4, Vrms; } PayloadTX;     // c
 
 //Random Variables 
 boolean settled = false;
-const byte LEDpin=6;                                                   // emonTx V3 LED
-boolean CT1, CT2, CT3, CT4, ACAC, debug; 
-byte CT_count;
-
+boolean CT1, CT2, CT3, CT4, ACAC, debug, DS18B20_STATUS; 
+byte CT_count=0;
+int numSensors;
+//addresses of sensors, MAX 4!!  
+byte allAddress [4][8];  // 8 bytes per address
 
 void setup()
 { 
  
   pinMode(LEDpin, OUTPUT); 
+  pinMode(DS18B20_PWR, OUTPUT);
   digitalWrite(LEDpin,HIGH); 
   
     rf12_initialize(nodeID, freq, networkGroup);                          // initialize RFM12B
@@ -93,7 +111,7 @@ void setup()
   rf12_sleep(RF12_SLEEP);   
  
 digitalWrite(LEDpin,LOW);  
-  
+
   if (analogRead(1) > 0) {CT1 = 1; CT_count++;} else CT1=0;              //check to see if CT is connected to CT1 input, if so enable that channel
   if (analogRead(2) > 0) {CT2 = 1; CT_count++;} else CT2=0;              //check to see if CT is connected to CT2 input, if so enable that channel
   if (analogRead(3) > 0) {CT3 = 1; CT_count++;} else CT3=0;              //check to see if CT is connected to CT3 input, if so enable that channel
@@ -102,7 +120,7 @@ digitalWrite(LEDpin,LOW);
  
   // Quick check to see if there is a voltage waveform present on the ACAC Voltage input
   // Check consists of calculating the RMS from 100 samples of the voltage input.
-  delay(1000);            //wait for settle
+  delay(500);            //wait for settle
   
   unsigned long sum = 0;
   for (int i=0; i<100; i++)
@@ -128,6 +146,26 @@ digitalWrite(LEDpin,LOW);
    digitalWrite(LEDpin, HIGH); delay(2000); digitalWrite(LEDpin, LOW);                               
  }
  
+ 
+ //################################################################################################################################
+  //Setup and for presence of DS18B20
+  //################################################################################################################################
+  digitalWrite(DS18B20_PWR, HIGH); delay(50); 
+  sensors.begin();
+  sensors.setWaitForConversion(false);                             //disable automatic temperature conversion to reduce time spent awake, conversion will be implemented manually in sleeping http://harizanov.com/2013/07/optimizing-ds18b20-code-for-low-power-applications/ 
+  numSensors=(sensors.getDeviceCount()); 
+  
+  byte j=0;                                        // search for one wire devices and
+                                                   // copy to device address arrays.
+  while ((j < numSensors) && (oneWire.search(allAddress[j])))  j++;
+  digitalWrite(DS18B20_PWR, LOW);
+  
+  if (numSensors==0) DS18B20_STATUS=0; 
+    else DS18B20_STATUS=1;
+
+  
+//################################################################################################################################
+
   if (Serial) debug = 1; else debug=0;          //if serial UART to USB is connected show debug O/P. If not then disable serial
   if (debug==1)
   {
@@ -161,7 +199,8 @@ digitalWrite(LEDpin,LOW);
       if (CT3) Serial.println("CT 3 detected");
       if (CT4) Serial.println("CT 4 detected");
     }
-    
+    if (DS18B20_STATUS==1) {Serial.print("Detected "); Serial.print(numSensors); Serial.println(" DS18B20..using this for temperature reading");}
+      else Serial.println("Unable to detect DS18B20 temperature sensor");
     Serial.println("RFM12B Initiated: ");
     Serial.print("Node: "); Serial.print(nodeID); 
     Serial.print(" Freq: "); 
@@ -256,6 +295,26 @@ void loop()
   // because millis() returns to zero after 50 days ! 
   if (!settled && millis() > FILTERSETTLETIME) settled = true;
 
+  
+    if (DS18B20_STATUS==1)
+  {
+     digitalWrite(DS18B20_PWR, HIGH); Sleepy::loseSomeTime(50); 
+     for(int j=0;j<numSensors;j++) sensors.setResolution(allAddress[j], TEMPERATURE_PRECISION);      // and set the a to d conversion resolution of each.
+     sensors.requestTemperatures();                                        // Send the command to get temperatures
+     Sleepy::loseSomeTime(ASYNC_DELAY); //Must wait for conversion, since we use ASYNC mode
+     float temp=(sensors.getTempC(allAddress[0]));
+     digitalWrite(DS18B20_PWR, LOW);
+     if ((temp<125.0) && (temp>-40.0)) emontx.temp=(temp*10);            //if reading is within range for the sensor convert float to int ready to send via RF
+     if (debug==1) {Serial.print("temperature: "); Serial.println(emontx.temp*0.1); delay(20);}
+  }
+  
+  
+  
+  
+  
+  
+  
+  
   if (settled)                                                            // send data only after filters have settled
   { 
     send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
