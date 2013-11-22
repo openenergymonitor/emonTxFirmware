@@ -2,6 +2,10 @@
   
   emonTxV3 Current Only (Apparent Power) Example - Read from the four CT channels and Tx values via SRF wireless 
   This is a low power sketch designed to sleep inbetween readings to converve power when running of batteries
+  
+  *BETA CODE* - THIS EXAMPLE HAS NOT BEEN TESTED MUCH AND IS INCOMPLEATE 
+  Any improvements / contributions welcome
+  
    -----------------------------------------
   Part of the openenergymonitor.org project
   Licence: GNU GPL V3
@@ -18,6 +22,8 @@ Not yet definef for SRF
 
 
 #include "EmonLib.h"                     // http://github.com/openenergymonitor/emonlib
+#define emonTxV3                                                      // Tell emonLib this is the emonTx V3 - don't read Vcc assume Vcc = 3.3V as is always the case on emonTx V3 eliminates bandgap error and need for calibration http://harizanov.com/2013/09/thoughts-on-avr-adc-accuracy/
+
 #include <LLAPSerial.h>                  // https://github.com/CisecoPlc/LLAPSerial
 
 
