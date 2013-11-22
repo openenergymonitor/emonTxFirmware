@@ -1,13 +1,14 @@
 //      Code by Robin Emley (calypso_rae on Open Energy Monitor Forum) - September 2013
 //      Updated November 2013 to include analog and LED pins for the emonTx V3 by Glyn Hudson
+//      *IMPORTANT NOTE* - Although this code has been extensivly tested by Robin Emley on the emonTx V2 it has not been tested on the emonTx V3, it should work fine by calibration may need to be tweaked
 
 // Robin: "This sketch provides continuous monitoring of real power on four channels, 
 // as may be useful for the emonTx V3.  It is loosely based  on my existing 
 // sketch, Mk2i_PV_Router_rev5b.ino.  The interrupt-based kernel was kindly 
 // provided by Jorg Becker."
 
-#include <Arduino.h> // may not be needed, but it's probably a good idea to include this
-#include <RFu_JeeLib.h>     // JeeLib is available at from: http://github.com/openenergymonitor/RFu_jeelib
+#include <Arduino.h>         // may not be needed, but it's probably a good idea to include this
+#include <RFu_JeeLib.h>     // RFu_JeeLib is available at from: http://github.com/openenergymonitor/RFu_jeelib
 
 // In this sketch, the ADC is free-running with a cycle time of ~104uS.
 
