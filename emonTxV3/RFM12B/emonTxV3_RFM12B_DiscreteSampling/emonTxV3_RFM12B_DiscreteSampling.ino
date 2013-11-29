@@ -96,7 +96,7 @@ void setup()
 { 
  
   pinMode(LEDpin, OUTPUT); 
-  pinMode(DS18B20_PWR, OUTPUT);
+  pinMode(DS18B20_PWR, OUTPUT);  
   digitalWrite(LEDpin,HIGH); 
   
     rf12_initialize(nodeID, freq, networkGroup);                          // initialize RFM12B
