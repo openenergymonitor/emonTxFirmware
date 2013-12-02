@@ -1,13 +1,14 @@
-// This sketch provides continuous monitoring of real power on four channels, 
+//      Code by Robin Emley (calypso_rae on Open Energy Monitor Forum) - September 2013
+//      Updated November 2013 to include analog and LED pins for the emonTx V3 by Glyn Hudson
+//      *IMPORTANT NOTE* - Although this code has been extensivly tested by Robin Emley on the emonTx V2 it has not been tested on the emonTx V3, it should work fine by calibration may need to be tweaked
+
+// Robin: "This sketch provides continuous monitoring of real power on four channels, 
 // as may be useful for the emonTx V3.  It is loosely based  on my existing 
 // sketch, Mk2i_PV_Router_rev5b.ino.  The interrupt-based kernel was kindly 
-// provided by Jorg Becker.
-//
-//      Robin Emley (calypso_rae on Open Energy Monitor Forum)
-//      September 2013
+// provided by Jorg Becker."
 
-#include <Arduino.h> // may not be needed, but it's probably a good idea to include this
-#include <JeeLib.h>     // JeeLib is available at from: http://github.com/jcw/jeelib
+#include <Arduino.h>         // may not be needed, but it's probably a good idea to include this
+#include <RFu_JeeLib.h>     // RFu_JeeLib is available at from: http://github.com/openenergymonitor/RFu_jeelib
 
 // In this sketch, the ADC is free-running with a cycle time of ~104uS.
 
@@ -16,7 +17,7 @@
 //#define WORKLOAD_CHECK  
 
 // ----------------- RF setup  ---------------------
-#define freq RF12_868MHZ // Use the freq to match the module you have.
+#define freq RF12_433MHZ // Use the freq to match the module you have.
 
 const int nodeID = 10;  // emonTx RFM12B node ID
 const int networkGroup = 210;  // emonTx RFM12B wireless network group - needs to be same as emonBase and emonGLCD 
@@ -49,13 +50,13 @@ enum polarities {NEGATIVE, POSITIVE};
 // dig pin 11 is for the RFM12B module (SDI) 
 // dig pin 12 is for the RFM12B module (SDO) 
 // dig pin 13 is for the RFM12B module (CLK) 
-const byte LedPin = 9;
+const byte LedPin = 6;                          //emonTx V3 LED pin
 
-// analogue input pins (for emonTx V2):
-const byte voltageSensor = 2;       // analogue
-const byte currentSensor_CT1 = 3;   // analogue
-const byte currentSensor_CT2 = 0;   // analogue
-const byte currentSensor_CT3 = 1;   // analogue
+// analogue input pins (for emonTx V3):
+const byte voltageSensor = 0;       // analogue
+const byte currentSensor_CT1 = 1;   // analogue
+const byte currentSensor_CT2 = 2;   // analogue
+const byte currentSensor_CT3 = 3;   // analogue
 const byte currentSensor_CT4 = 4;   // analogue
 
 

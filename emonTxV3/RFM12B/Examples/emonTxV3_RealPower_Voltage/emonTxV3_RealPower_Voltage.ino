@@ -7,6 +7,21 @@
   Licence: GNU GPL V3
 */
 
+/*Recommended node ID allocation
+------------------------------------------------------------------------------------------------------------
+-ID-	-Node Type- 
+0	- Special allocation in JeeLib RFM12 driver - reserved for OOK use
+1-4     - Control nodes 
+5-10	- Energy monitoring nodes
+11-14	--Un-assigned --
+15-16	- Base Station & logging nodes
+17-30	- Environmental sensing nodes (temperature humidity etc.)
+31	- Special allocation in JeeLib RFM12 driver - Node31 can communicate with nodes on any network group
+-------------------------------------------------------------------------------------------------------------
+*/
+
+#define emonTxV3                                                      // Tell emonLib this is the emonTx V3 - don't read Vcc assume Vcc = 3.3V as is always the case on emonTx V3 eliminates bandgap error and need for calibration http://harizanov.com/2013/09/thoughts-on-avr-adc-accuracy/
+
 #include <RFu_JeeLib.h>                        //https://github.com/openenergymonitor/RFu_jeelib        
 ISR(WDT_vect) { Sleepy::watchdogEvent(); }     // Attached JeeLib sleep function to Atmega328 watchdog -enables MCU to be put into sleep mode inbetween readings to reduce power consumption 
 
@@ -26,6 +41,8 @@ boolean settled = false;
 const int LEDpin=6;                                                            //emonTx V3 LED
 boolean CT1, CT2, CT3, CT4; 
 
+int TIME_BETWEEN_READINGS=5;                                                   //time between readings in s
+
 
 
 void setup()
@@ -42,16 +59,16 @@ void setup()
   Serial.begin(9600);
   Serial.println("emonTx V3 Real Power Example");
   
-  ct1.voltage(0, 265.573, 1.7);          // Calibration, phase_shift
-  ct2.voltage(0, 265.573, 1.7);          // Calibration, phase_shift
-  ct3.voltage(0, 265.573, 1.7);          // Calibration, phase_shift
-  ct4.voltage(0, 265.573, 1.7);          // Calibration, phase_shift
+  ct1.voltage(0, 270.89, 1.7);          // Calibration, phase_shift
+  ct2.voltage(0, 270.89, 1.7);          // Calibration, phase_shift
+  ct3.voltage(0, 270.89, 1.7);          // Calibration, phase_shift
+  ct4.voltage(0, 270.89, 1.7);          // Calibration, phase_shift
   
-  ct1.current(1, 90.909);             // CT channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
-  ct2.current(2, 90.909);             // CT channel 2, calibration.
-  ct3.current(3, 90.909);             // CT channel 3, calibration. 
+  ct1.current(1, 87.564);             // CT channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
+  ct2.current(2, 87.564);             // CT channel 2, calibration.
+  ct3.current(3, 87.564);             // CT channel 3, calibration. 
   //CT 3 is high accuracy @ low power -  4.5kW Max 
-  ct4.current(4, 16.66);             // CT channel 4, calibration.    calibration (2000 turns / 120 Ohm burden resistor = 16.66)
+  ct4.current(4, 16.26);             // CT channel 4, calibration.    calibration (2000 turns / 120 Ohm burden resistor = 16.66)
   
    
   pinMode(LEDpin, OUTPUT);
@@ -65,11 +82,13 @@ void setup()
 
 void loop()
 {
-  
   if (CT1) {
   ct1.calcVI(20,2000);                 // Calculate all. No.of half wavelengths (crossings), time-out  
   emontx.power1 = ct1.realPower;
   Serial.print(emontx.power1);  
+  //Serial.print(ct1.apparentPower);
+  //Serial.print(ct1.powerFactor);
+  //Serial.print(ct1.apparentIrms);
   }
   
   if (CT2) {
@@ -89,9 +108,10 @@ void loop()
   
   emontx.Vrms = ct1.Vrms*100;         //AC RMS voltage - convert to integer ready for RF transmission (divide by 0.01 using emoncms input process to convert back to two decimal places)
   
+
   
   Serial.print(" "); Serial.print(emontx.Vrms);
-  Serial.println(); delay(100);
+  Serial.println(); delay(20);
   
   // because millis() returns to zero after 50 days ! 
   if (!settled && millis() > FILTERSETTLETIME) settled = true;
@@ -99,9 +119,8 @@ void loop()
   if (settled)                                                            // send data only after filters have settled
   { 
     send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
-    digitalWrite(LEDpin, HIGH); delay(5); digitalWrite(LEDpin, LOW);      // flash LED
-    emontx_sleep(5);      // sleep in seconds 
-    delay(500);           // allow power rail to settle after wakeup 
+    digitalWrite(LEDpin, HIGH); delay(10); digitalWrite(LEDpin, LOW);     // flash LED
+    delay(TIME_BETWEEN_READINGS*1000);                                    // use delay instead of sleep since we're powering from AC
 }
   
  
@@ -117,6 +136,3 @@ void send_rf_data()
   rf12_sleep(RF12_SLEEP);
 }
 
-void emontx_sleep(int seconds) {
-  Sleepy::loseSomeTime(seconds*1000);                     //JeeLib ATmega328 sleep function 
-}
