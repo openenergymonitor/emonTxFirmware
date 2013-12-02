@@ -29,7 +29,7 @@ The EmonTx code guide goes through main components required to put a full emontx
 
 * **emonTx_CT123_Voltage** - Real Power - Use this example if using an AC-AC adapter with as well as CT sensors. AC-AC plug-in adapter to monitors AC RMS voltage and give real power and current direction readings. 
 
-* **emonTx_CT123_Voltage_Temp** - Real Power & temperature- Use this example if using an AC-AC adapter with as well as CT sensors. It also detects the DS18B20 's connected and report the temperature of them. http://openenergymonitor.org/emon/buildingblocks/DS18B20-temperature-sensing 
+* **emonTx_CT123_Voltage_Temp** - Real Power & temperature- Use this example if using an AC-AC adapter with as well as CT sensors. It also detects the DS18B20 's connected and report the temperature of them. 
 
 * **emonTx_Pulse** - Use for counting pulses from pulse output utility meter (flashing LED). Optical sensor can be used to detect pulses. 
 
