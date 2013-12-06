@@ -110,41 +110,35 @@ void setup()
   emontx.power1=0;
   rf12_sleep(RF12_SLEEP);   
  
-digitalWrite(LEDpin,LOW);  
+   
 
   if (analogRead(1) > 0) {CT1 = 1; CT_count++;} else CT1=0;              //check to see if CT is connected to CT1 input, if so enable that channel
   if (analogRead(2) > 0) {CT2 = 1; CT_count++;} else CT2=0;              //check to see if CT is connected to CT2 input, if so enable that channel
   if (analogRead(3) > 0) {CT3 = 1; CT_count++;} else CT3=0;              //check to see if CT is connected to CT3 input, if so enable that channel
   if (analogRead(4) > 0) {CT4 = 1; CT_count++;} else CT4=0;             //check to see if CT is connected to CT4 input, if so enable that channel
   
- 
   // Quick check to see if there is a voltage waveform present on the ACAC Voltage input
   // Check consists of calculating the RMS from 100 samples of the voltage input.
-  delay(500);            //wait for settle
+  Sleepy::loseSomeTime(10000);            //wait for settle
+  digitalWrite(LEDpin,LOW); 
   
-  unsigned long sum = 0;
-  for (int i=0; i<100; i++)
-  {
-    int raw = (analogRead(0)-512);
-    int square = (raw * raw);
-    sum += square;
-  }
-  if (sum > ACAC_DETECTION_LEVEL) ACAC=1; else ACAC=0;
-  
+  // Calculate if there is an ACAC adapter on analog input 0
+  double vrms = calc_rms(0,1780) * 2.75;
+  if (vrms>90) ACAC = 1; else ACAC=0;
  
   if (ACAC) 
- {
+  {
     for (int i=0; i<10; i++) 
     { 
       digitalWrite(LEDpin, HIGH); delay(200);
       digitalWrite(LEDpin, LOW); delay(300);
     }
- }
- else 
- {
-   delay(1000);
-   digitalWrite(LEDpin, HIGH); delay(2000); digitalWrite(LEDpin, LOW);                               
- }
+  }
+  else 
+  {
+    delay(1000);
+    digitalWrite(LEDpin, HIGH); delay(2000); digitalWrite(LEDpin, LOW);                               
+  }
  
  
  //################################################################################################################################
@@ -170,13 +164,16 @@ digitalWrite(LEDpin,LOW);
   if (debug==1)
   {
     Serial.begin(9600);
-    Serial.println(sum);
-    Serial.println("emonTx V3 Current Only Example");
+    Serial.println("emonTx V3 Discrete Sampling");
     Serial.println("OpenEnergyMonitor.org");
     delay(1000);
     Serial.print("CT 1-3 Calibration: "); Serial.println(Ical);
     Serial.print("CT 4 Calibration: "); Serial.println(Ical4);
     delay(1000);
+
+    Serial.print("RMS Voltage on AC-AC Adapter input is: ~");
+    Serial.print(vrms,0); Serial.println("V");
+      
     if (ACAC) 
     {
       Serial.println("AC-AC adapter detected - Real Power measurements enabled");
@@ -341,4 +338,16 @@ void send_rf_data()
 
 void emontx_sleep(int seconds) {
   Sleepy::loseSomeTime(seconds*1000);
+}
+
+double calc_rms(int pin, int samples)
+{
+  unsigned long sum = 0;
+  for (int i=0; i<samples; i++) // 178 samples takes about 20ms
+  {
+    int raw = (analogRead(0)-512);
+    sum += (raw * raw);
+  }
+  double rms = sqrt(1.0 * sum / samples);
+  return rms;
 }
