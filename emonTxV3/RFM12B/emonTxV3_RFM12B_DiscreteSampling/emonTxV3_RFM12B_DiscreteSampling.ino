@@ -47,9 +47,14 @@ EnergyMonitor ct1, ct2, ct3, ct4;
 //----------------------------emonTx V3 Settings---------------------------------------------------------------------------------------------------------------
 const byte Vrms=                  230;                                  // Vrms for apparent power readings (when no AC-AC voltage sample is present)
 const byte TIME_BETWEEN_READINGS= 10;                                   //Time between readings   
-const float Ical=                 85.75996;
-const float Ical4=                16.66;
-const float Vcal=                 284.9667;
+
+const float Ical1=                90.9;                                 // (2000 turns / 22 Ohm burden) = 90.9
+const float Ical2=                90.9;                                 // (2000 turns / 22 Ohm burden) = 90.9
+const float Ical3=                90.9;                                 // (2000 turns / 22 Ohm burden) = 90.9
+const float Ical4=                16.6;                                 // (2000 turns / 120 Ohm burden) = 16.6
+
+const float Vcal=                 276.9;                                // (230V x 13) / (9V x 1.2) = 276.9
+
 const float phase_shift=          1.7;
 const int no_of_samples=          1480; 
 const int no_of_half_wavelengths= 20;
@@ -167,7 +172,9 @@ void setup()
     Serial.println("emonTx V3 Discrete Sampling");
     Serial.println("OpenEnergyMonitor.org");
     delay(1000);
-    Serial.print("CT 1-3 Calibration: "); Serial.println(Ical);
+    Serial.print("CT 1 Calibration: "); Serial.println(Ical1);
+    Serial.print("CT 2 Calibration: "); Serial.println(Ical2);
+    Serial.print("CT 3 Calibration: "); Serial.println(Ical3);
     Serial.print("CT 4 Calibration: "); Serial.println(Ical4);
     delay(1000);
 
@@ -210,9 +217,9 @@ delay(500);
   
   
     
-  if (CT1) ct1.current(1, Ical);             // CT ADC channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
-  if (CT2) ct2.current(2, Ical);             // CT ADC channel 2, calibration.
-  if (CT3) ct3.current(3, Ical);             // CT ADC channel 3, calibration. 
+  if (CT1) ct1.current(1, Ical1);             // CT ADC channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
+  if (CT2) ct2.current(2, Ical2);             // CT ADC channel 2, calibration.
+  if (CT3) ct3.current(3, Ical3);             // CT ADC channel 3, calibration. 
   //CT 3 is high accuracy @ low power -  4.5kW Max @ 240V 
   if (CT4) ct4.current(4, Ical4);                                      // CT channel ADC 4, calibration.    calibration (2000 turns / 120 Ohm burden resistor = 16.66)
   
