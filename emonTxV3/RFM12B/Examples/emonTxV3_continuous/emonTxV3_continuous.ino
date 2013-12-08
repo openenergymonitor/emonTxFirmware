@@ -110,12 +110,12 @@ unsigned int cycleCount = 0;
 //
 
 
-// 228 is the voltage calibration constant and 111 is current calibration constant
+// 228 is the voltage calibration constant and 90.9 is current calibration constant
 // Current calibration constant = 2000 / 22 Ohms burden resistor (The CT sensor has a ratio of 2000:1)
-const float powerCal_CT1 = (228*(3.3/1023))*(90.9*(3.3/1023));  // <---- powerCal value  
-const float powerCal_CT2 = (228*(3.3/1023))*(90.9*(3.3/1023));  // <---- powerCal value  
-const float powerCal_CT3 = (228*(3.3/1023))*(90.9*(3.3/1023));  // <---- powerCal value  
-const float powerCal_CT4 = (228*(3.3/1023))*(16.6*(3.3/1023));  // <---- powerCal value  (120R burden resistor)
+const float powerCal_CT1 = (228*(3.3/1023))*(90.9*(3.3/1023)); // <---- powerCal value
+const float powerCal_CT2 = (228*(3.3/1023))*(90.9*(3.3/1023)); // <---- powerCal value
+const float powerCal_CT3 = (228*(3.3/1023))*(90.9*(3.3/1023)); // <---- powerCal value
+const float powerCal_CT4 = (228*(3.3/1023))*(16.6*(3.3/1023)); // <---- powerCal value (2000 / 120R burden resistor)
 
 //const float powerCal_CT1 = 0.0416;  // <---- powerCal value  
 //const float powerCal_CT2 = 0.0416;  // <---- powerCal value  
