@@ -58,16 +58,19 @@ void setup()
   Serial.begin(9600);
   Serial.println("emonTx V3 Real Power Example");
   
-  ct1.voltage(0, 282.5777, 1.7);          // Calibration, phase_shift
-  ct2.voltage(0, 282.5777, 1.7);          // Calibration, phase_shift
-  ct3.voltage(0, 282.5777, 1.7);          // Calibration, phase_shift
-  ct4.voltage(0, 282.5777, 1.7);          // Calibration, phase_shift
+  // (230V x 13) / (9V * 1.2) = 276.9
+  // 13: voltage divider factor
+  // 1.2: 20% output voltage increase due to open circuit)
+  ct1.voltage(0, 276.9, 1.7);          // Calibration, phase_shift 
+  ct2.voltage(0, 276.9, 1.7);          // Calibration, phase_shift
+  ct3.voltage(0, 276.9, 1.7);          // Calibration, phase_shift
+  ct4.voltage(0, 276.9, 1.7);          // Calibration, phase_shift
   
-  ct1.current(1, 81.47196);             // CT channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
-  ct2.current(2, 81.47196);             // CT channel 2, calibration.
-  ct3.current(3, 81.47196);             // CT channel 3, calibration. 
+  ct1.current(1, 90.9);             // CT channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
+  ct2.current(2, 90.9);             // CT channel 2, calibration.
+  ct3.current(3, 90.9);             // CT channel 3, calibration. 
   //CT 3 is high accuracy @ low power -  4.5kW Max 
-  ct4.current(4, 16.02734);             // CT channel 4, calibration.    calibration (2000 turns / 120 Ohm burden resistor = 16.66)
+  ct4.current(4, 16.6);             // CT channel 4, calibration.    calibration (2000 turns / 120 Ohm burden resistor = 16.66)
   
    
   pinMode(LEDpin, OUTPUT);
@@ -122,8 +125,8 @@ void loop()
   { 
     send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
     digitalWrite(LEDpin, HIGH); delay(10); digitalWrite(LEDpin, LOW);     // flash LED
-    delay(500);                                    // use delay instead of sleep since we're powering from AC
-}
+    delay(10000);                                    // use delay instead of sleep since we're powering from AC
+  }
   
  
 }

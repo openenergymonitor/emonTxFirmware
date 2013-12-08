@@ -35,8 +35,8 @@ EnergyMonitor ct1, ct2, ct3, ct4;
 //----------------------------emonTx V3 Settings---------------------------------------------------------------------------------------------------------------
 const byte Vrms=240;                                                   // Vrms for apparent power readings (when no AC-AC voltage sample is present)
 const byte TIME_BETWEEN_READINGS=10;                                   //Time between readings   
-const float Ical=81.47196;
-const float Ical4=16.02734;
+const float Ical=90.9;
+const float Ical4=16.6;
 const int no_of_samples=1480; 
 //-------------------------------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------------------------------
@@ -149,5 +149,5 @@ void send_rf_data()
 }
 
 void emontx_sleep(int seconds) {
-  Sleepy::loseSomeTime(500);
+  Sleepy::loseSomeTime(seconds*1000);
 }
