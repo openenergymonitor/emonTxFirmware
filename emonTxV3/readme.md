@@ -18,9 +18,8 @@ Main emonTx V3 documentation:
 
 
 ### RFM12B Examples:
-**Caution: These have not been tested or calibrated extensively** 
 
-* *emonTxV3_4chan_continuous*
+* *emonTxV3_continuous*
 * *emonTxV3_CurrentOnly*
 * *emonTxV3_RealPower_Voltage*
 * *emonTxV3_Pulse* - pulse counting example for interfacing with utility meter see [technical wiki documentation](http://wiki.openenergymonitor.org/index.php?title=EmonTx_V3#Utility_Meter_Interface)
