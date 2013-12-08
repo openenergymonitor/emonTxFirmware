@@ -109,13 +109,26 @@ unsigned int cycleCount = 0;
 // to start with is therefore 1/20 = 0.05 (Watts per ADC-step squared)
 //
 
+// Voltage calibration constant:
 
-// 228 is the voltage calibration constant and 90.9 is current calibration constant
+// AC-AC Voltage adapter is designed to step down the voltage from 230V to 9V
+// but the AC Voltage adapter is running open circuit and so output voltage is
+// likely to be 20% higher than 9V (9 x 1.2) = 10.8V. 
+// Open circuit step down = 230 / 10.8 = 21.3
+
+// The output voltage is then steped down further with the voltage divider which has 
+// values Rb = 10k, Rt = 120k (which will reduce the voltage by 13 times.
+
+// The combined step down is therefore 21.3 x 13 = 276.9 which is the 
+// theoretical calibration constant entered below.
+
+// Current calibration constant:
 // Current calibration constant = 2000 / 22 Ohms burden resistor (The CT sensor has a ratio of 2000:1)
-const float powerCal_CT1 = (228*(3.3/1023))*(90.9*(3.3/1023)); // <---- powerCal value
-const float powerCal_CT2 = (228*(3.3/1023))*(90.9*(3.3/1023)); // <---- powerCal value
-const float powerCal_CT3 = (228*(3.3/1023))*(90.9*(3.3/1023)); // <---- powerCal value
-const float powerCal_CT4 = (228*(3.3/1023))*(16.6*(3.3/1023)); // <---- powerCal value (2000 / 120R burden resistor)
+
+const float powerCal_CT1 = (276.9*(3.3/1023))*(90.9*(3.3/1023)); // <---- powerCal value
+const float powerCal_CT2 = (276.9*(3.3/1023))*(90.9*(3.3/1023)); // <---- powerCal value
+const float powerCal_CT3 = (276.9*(3.3/1023))*(90.9*(3.3/1023)); // <---- powerCal value
+const float powerCal_CT4 = (276.9*(3.3/1023))*(16.6*(3.3/1023)); // <---- powerCal value (2000 / 120R burden resistor)
 
 //const float powerCal_CT1 = 0.0416;  // <---- powerCal value  
 //const float powerCal_CT2 = 0.0416;  // <---- powerCal value  
