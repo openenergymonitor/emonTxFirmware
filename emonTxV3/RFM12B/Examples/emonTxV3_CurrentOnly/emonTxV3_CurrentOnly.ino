@@ -35,8 +35,8 @@ EnergyMonitor ct1, ct2, ct3, ct4;
 //----------------------------emonTx V3 Settings---------------------------------------------------------------------------------------------------------------
 const byte Vrms=240;                                                   // Vrms for apparent power readings (when no AC-AC voltage sample is present)
 const byte TIME_BETWEEN_READINGS=10;                                   //Time between readings   
-const float Ical=85.75996;
-const float Ical4=16.66;
+const float Ical=90.9;
+const float Ical4=16.6;
 const int no_of_samples=1480; 
 //-------------------------------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------------------------------
@@ -107,23 +107,23 @@ void loop()
   
   if (CT1) {
   emontx.power1 = ct1.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
-  if (debug==1) Serial.print(emontx.power1); 
+  if (debug==1) Serial.print(emontx.power1); Serial.print(" ");
 
   }
   
   if (CT2) {
   emontx.power2 = ct2.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 2 1480 is  number of samples
-  if (debug==1) Serial.print(emontx.power2);  
+  if (debug==1) Serial.print(emontx.power2); Serial.print(" ");  
   }
   
   if (CT3) {
   emontx.power3 = ct3.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 3 - 1480 is  number of samples
-  if (debug==1) Serial.print(emontx.power3);  
+  if (debug==1) Serial.print(emontx.power3); Serial.print(" "); 
   }
   
   if (CT4) {
   emontx.power4 = ct4.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 4 - 1480 is  number of samples
-  if (debug==1) Serial.print(emontx.power4);  
+  if (debug==1) Serial.print(emontx.power4); Serial.print(" "); 
   }
   
   if (debug==1) {Serial.println(); delay(20);}

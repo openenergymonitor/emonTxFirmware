@@ -40,8 +40,7 @@ typedef struct { int power1, power2, power3, power4, Vrms; } PayloadTX;     // c
 boolean settled = false;
 const int LEDpin=6;                                                            //emonTx V3 LED
 boolean CT1, CT2, CT3, CT4; 
-
-int TIME_BETWEEN_READINGS=5;                                                   //time between readings in s
+                                                 //time between readings in s
 
 
 
@@ -59,16 +58,19 @@ void setup()
   Serial.begin(9600);
   Serial.println("emonTx V3 Real Power Example");
   
-  ct1.voltage(0, 270.89, 1.7);          // Calibration, phase_shift
-  ct2.voltage(0, 270.89, 1.7);          // Calibration, phase_shift
-  ct3.voltage(0, 270.89, 1.7);          // Calibration, phase_shift
-  ct4.voltage(0, 270.89, 1.7);          // Calibration, phase_shift
+  // (230V x 13) / (9V * 1.2) = 276.9
+  // 13: voltage divider factor
+  // 1.2: 20% output voltage increase due to open circuit)
+  ct1.voltage(0, 276.9, 1.7);          // Calibration, phase_shift 
+  ct2.voltage(0, 276.9, 1.7);          // Calibration, phase_shift
+  ct3.voltage(0, 276.9, 1.7);          // Calibration, phase_shift
+  ct4.voltage(0, 276.9, 1.7);          // Calibration, phase_shift
   
-  ct1.current(1, 87.564);             // CT channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
-  ct2.current(2, 87.564);             // CT channel 2, calibration.
-  ct3.current(3, 87.564);             // CT channel 3, calibration. 
+  ct1.current(1, 90.9);             // CT channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
+  ct2.current(2, 90.9);             // CT channel 2, calibration.
+  ct3.current(3, 90.9);             // CT channel 3, calibration. 
   //CT 3 is high accuracy @ low power -  4.5kW Max 
-  ct4.current(4, 16.26);             // CT channel 4, calibration.    calibration (2000 turns / 120 Ohm burden resistor = 16.66)
+  ct4.current(4, 16.6);             // CT channel 4, calibration.    calibration (2000 turns / 120 Ohm burden resistor = 16.66)
   
    
   pinMode(LEDpin, OUTPUT);
@@ -85,7 +87,7 @@ void loop()
   if (CT1) {
   ct1.calcVI(20,2000);                 // Calculate all. No.of half wavelengths (crossings), time-out  
   emontx.power1 = ct1.realPower;
-  Serial.print(emontx.power1);  
+  Serial.print(emontx.power1); Serial.print(" "); 
   //Serial.print(ct1.apparentPower);
   //Serial.print(ct1.powerFactor);
   //Serial.print(ct1.apparentIrms);
@@ -94,24 +96,27 @@ void loop()
   if (CT2) {
   ct2.calcVI(20,2000);                 // Calculate all. No.of half wavelengths (crossings), time-out  
   emontx.power2 = ct2.realPower;
-  }
+  Serial.print(emontx.power2); Serial.print(" "); 
+}
   
   if (CT3) {
   ct3.calcVI(20,2000);                 // Calculate all. No.of half wavelengths (crossings), time-out  
   emontx.power3 = ct3.realPower; 
-  }
+  Serial.print(emontx.power3); Serial.print(" "); 
+}
   
   if (CT4) {
   ct4.calcVI(20,2000);                 // Calculate all. No.of half wavelengths (crossings), time-out  
   emontx.power4 = ct4.realPower;  
-  }
+  Serial.print(emontx.power4); Serial.print(" ");   
+}
   
   emontx.Vrms = ct1.Vrms*100;         //AC RMS voltage - convert to integer ready for RF transmission (divide by 0.01 using emoncms input process to convert back to two decimal places)
   
 
   
-  Serial.print(" "); Serial.print(emontx.Vrms);
-  Serial.println(); delay(20);
+  Serial.println(emontx.Vrms);
+  delay(20);
   
   // because millis() returns to zero after 50 days ! 
   if (!settled && millis() > FILTERSETTLETIME) settled = true;
@@ -120,8 +125,8 @@ void loop()
   { 
     send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
     digitalWrite(LEDpin, HIGH); delay(10); digitalWrite(LEDpin, LOW);     // flash LED
-    delay(TIME_BETWEEN_READINGS*1000);                                    // use delay instead of sleep since we're powering from AC
-}
+    delay(10000);                                    // use delay instead of sleep since we're powering from AC
+  }
   
  
 }
