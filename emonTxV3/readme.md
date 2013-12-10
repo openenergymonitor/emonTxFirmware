@@ -18,10 +18,14 @@ Main emonTx V3 documentation:
 
 
 ### RFM12B Examples:
+* *emonTxV3_3phase_Voltage* - 3-phase sketch 
 
-* *emonTxV3_continuous*
-* *emonTxV3_CurrentOnly*
-* *emonTxV3_RealPower_Voltage*
+* *emonTxV3_CurrentOnly* - Apparent Power Example - Use this example if only using CT sensors. Monitors AC current using one CT sensor and transmit data via wireless using RFM12B to emonBase.
+
+* *emonTxV3_RealPower_Voltage* -Real Power - Use this example if using an AC-AC adapter with as well as CT sensors. AC-AC plug-in adapter to monitors AC RMS voltage and give real power and current direction readings.
+
+* *emonTxV3_continuous* - PLL continuous sampling example contributed by MartinR, as used in PV controller MK2
+
 * *emonTxV3_Pulse* - pulse counting example for interfacing with utility meter see [technical wiki documentation](http://wiki.openenergymonitor.org/index.php?title=EmonTx_V3#Utility_Meter_Interface)
 
 ## SRF Firmware
