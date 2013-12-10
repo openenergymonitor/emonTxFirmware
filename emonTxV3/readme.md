@@ -8,8 +8,8 @@ Main emonTx V3 documentation:
 
 ## RFM12B Firmware
 
-### *emonTxV3_RFM12B_Discrete Sampling* - MAIN EMONTX V3 FIRMWARE DECEMBER 2013
-**TESTED AND CALIBRATED - all pre-assembled emonTx V3's are shpped with this firmware**
+### MAIN EMONTX V3 FIRMWARE *emonTxV3_RFM12B_Discrete Sampling* - 
+**TESTED AND CALIBRATED - all pre-assembled emonTx V3's are shipped with this firmware**
 
 * Detection of AC-AC adapter sets Apparent Power / Real Power Sampling accordingly
 * Detection of battery / USB 5V or AC > DC power method and sets sleep mode accordingly
