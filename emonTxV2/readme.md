@@ -1,4 +1,4 @@
-# EeonTx V2 - Wireless energy-monitoring node 
+# emonTx V2 - Wireless energy-monitoring node 
 
 Part of the openenergymonitor.org project
 
