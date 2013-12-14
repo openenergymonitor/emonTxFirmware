@@ -69,8 +69,8 @@ const int TEMPERATURE_PRECISION=  11;                                   //9 (93.
 
 //----------------------------emonTx V3 hard-wired connections--------------------------------------------------------------------------------------------------------------- 
 const byte LEDpin=                6;                              // emonTx V3 LED
-const byte DS18B20_PWR=           5;                              // DS18B20 Power
-#define ONE_WIRE_BUS              19                              // DS18B20 Data                     
+const byte DS18B20_PWR=           19;                              // DS18B20 Power
+#define ONE_WIRE_BUS              5                              // DS18B20 Data                     
 //-------------------------------------------------------------------------------------------------------------------------------------------
 
 //Setup DS128B20
