@@ -40,7 +40,7 @@ boolean CT1, CT2, CT3, CT4;
 int Irms1, Irms2, Irms3, Irms4, Power1, Power2, Power3, Power4;
 
 const int SLEEP_TIME_BETWEEN_READINGS=5;               //In seconds
-const int Vrms=240;                                   //Hard coded VRMS
+const int Vrms=230;                                   //Hard coded VRMS
 //-------------------------Define emonTx V3 hardwired connections -----------------
 const byte  LEDpin=6;     
 const byte ADC_AC=0;
@@ -65,11 +65,11 @@ void setup()
   Serial.begin(115200);
   Serial.println("emonTx V3 Current Only - SRF LLAP Example");
   
-  if (CT1) ct1.current(ADC_CT1, 85.75996);             // CT channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
-  if (CT2) ct2.current(ADC_CT2, 85.75996);             // CT channel 2, calibration.
-  if (CT3) ct3.current(ADC_CT3, 85.75996  );             // CT channel 3, calibration. 
+  if (CT1) ct1.current(ADC_CT1, 90.9);             // CT channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
+  if (CT2) ct2.current(ADC_CT2, 90.9);             // CT channel 2, calibration.
+  if (CT3) ct3.current(ADC_CT3, 90.9  );             // CT channel 3, calibration. 
   //CT 4 is high accuracy @ low power -  4.5kW Max 
-  if (CT4) ct4.current(ADC_CT4, 16.66);             // CT channel 4, calibration.    calibration (2000 turns / 120 Ohm burden resistor = 16.66)
+  if (CT4) ct4.current(ADC_CT4, 16.6);             // CT channel 4, calibration.    calibration (2000 turns / 120 Ohm burden resistor = 16.66)
   
   //-------------Start UP SRF, enable SRF sleep mode 2------------------------------
   //http://openmicros.org/index.php/articles/88-ciseco-product-documentation/260-srf-configuration       
