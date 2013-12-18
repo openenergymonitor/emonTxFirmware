@@ -150,9 +150,9 @@ void send_rf_data()
   digitalWrite(SRF_SLEEP_PIN, LOW);         //  wake up SRF Radio
   delay(10);
   if (CT1) LLAP.sendInt("P1",Power1);        //name, int variable
-  if (CT2) LLAP.sendInt("P1",Power2);          
-  if (CT3) LLAP.sendInt("P1",Power3);              
-  if (CT4) LLAP.sendInt("P1",Power4);             
+  if (CT2) LLAP.sendInt("P2",Power2);          
+  if (CT3) LLAP.sendInt("P3",Power3);              
+  if (CT4) LLAP.sendInt("P4",Power4);             
   delay(10);
   digitalWrite(SRF_SLEEP_PIN, HIGH);        // pull sleep pin high to enter SRF sleep 2
   
