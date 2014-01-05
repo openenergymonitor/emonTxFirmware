@@ -69,7 +69,7 @@ void setup()
   ct1.current(1, 90.9);             // CT channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
   ct2.current(2, 90.9);             // CT channel 2, calibration.
   ct3.current(3, 90.9);             // CT channel 3, calibration. 
-  //CT 3 is high accuracy @ low power -  4.5kW Max 
+  //CT 4 is high accuracy @ low power -  4.5kW Max 
   ct4.current(4, 16.6);             // CT channel 4, calibration.    calibration (2000 turns / 120 Ohm burden resistor = 16.66)
   
    
