@@ -28,10 +28,10 @@ Not yet definef for SRF
 
 
 
-#define DEVICEID "E1"	                // this is the LLAP device ID
+#define DEVICEID "10"	                        // this is the LLAP device ID - 10 to match emonTx - must be numerical to work with emoncms
 EnergyMonitor ct1, ct2, ct3, ct4;        // Create emonLib instances for each channel
 
-#define FILTERSETTLETIME 5000         //  Time (ms) to allow the filters to settle before sending data
+#define FILTERSETTLETIME 5000      //  Time (ms) to allow the filters to settle before sending data
 
 
 
@@ -57,6 +57,7 @@ const byte SRF_SLEEP_PIN=4 ;   //SRF Sleep - pull sleep pin high - sleep 2 disab
 void setup()
 {  
   
+   pinMode(LEDpin, OUTPUT); digitalWrite(LEDpin, HIGH);
   if (analogRead(ADC_CT1) > 0) CT1 = 1;               //check to see if CT is connected to CT1 input, if so enable that channel
   if (analogRead(ADC_CT2) > 0) CT2 = 1;               //check to see if CT is connected to CT2 input, if so enable that channel
   if (analogRead(ADC_CT3) > 0) CT3 = 1;               //check to see if CT is connected to CT3 input, if so enable that channel
@@ -96,8 +97,8 @@ void setup()
    Serial.print("ABCDEFGHIJKLMNOPQRSTUVWX");
  //-----------------------------------------------------------------------------
  
-  pinMode(LEDpin, OUTPUT);
-  digitalWrite(LEDpin, HIGH); delay(5000); digitalWrite(LEDpin, LOW);      //turn on then off LED to indicate power up
+ 
+   digitalWrite(LEDpin, LOW);      //turn on then off LED to indicate power up
   
 }
 
