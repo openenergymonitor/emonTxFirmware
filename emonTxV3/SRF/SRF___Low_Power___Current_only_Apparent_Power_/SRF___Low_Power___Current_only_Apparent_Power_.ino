@@ -57,7 +57,7 @@ const byte SRF_SLEEP_PIN=4 ;   //SRF Sleep - pull sleep pin high - sleep 2 disab
 void setup()
 {  
   
-   pinMode(LEDpin, OUTPUT); digitalWrite(LEDpin, HIGH);
+  pinMode(LEDpin, OUTPUT); 
   if (analogRead(ADC_CT1) > 0) CT1 = 1;               //check to see if CT is connected to CT1 input, if so enable that channel
   if (analogRead(ADC_CT2) > 0) CT2 = 1;               //check to see if CT is connected to CT2 input, if so enable that channel
   if (analogRead(ADC_CT3) > 0) CT3 = 1;               //check to see if CT is connected to CT3 input, if so enable that channel
@@ -66,7 +66,7 @@ void setup()
   Serial.begin(115200);
   Serial.println("emonTx V3 Current Only - SRF LLAP Example");
   
-  if (CT1) ct1.current(ADC_CT1, 90.9);             // CT channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
+  ct1.current(ADC_CT1, 90.9);             // CT channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
   if (CT2) ct2.current(ADC_CT2, 90.9);             // CT channel 2, calibration.
   if (CT3) ct3.current(ADC_CT3, 90.9  );             // CT channel 3, calibration. 
   //CT 4 is high accuracy @ low power -  4.5kW Max 
@@ -97,8 +97,9 @@ void setup()
    Serial.print("ABCDEFGHIJKLMNOPQRSTUVWX");
  //-----------------------------------------------------------------------------
  
- 
-   digitalWrite(LEDpin, LOW);      //turn on then off LED to indicate power up
+digitalWrite(LEDpin, HIGH);
+delay(2000);
+digitalWrite(LEDpin, LOW);      //turn on then off LED to indicate power up
   
 }
 
@@ -106,12 +107,12 @@ void setup()
 void loop()
 {
   
-  if (CT1) {
+  //Read from CT1 as default
   Irms1 = ct1.calcIrms(1480);   // Calculate Apparent Power 1 assuming 240Vrms AC - 1480 is  number of samples
   Serial.print(Irms1); Serial.print(" ");
   Power1=Irms1*Vrms;
 
-  }
+  
   
   if (CT2) {
   Irms2 = ct2.calcIrms(1480);   // Calculate Apparent Power 2 assuming 240Vrms AC - 1480 is  number of samples
@@ -139,7 +140,7 @@ void loop()
   if (settled)                                                            // send data only after filters have settled
   { 
     send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
-    //digitalWrite(LEDpin, HIGH); delay(5); digitalWrite(LEDpin, LOW);      // flash LED
+    digitalWrite(LEDpin, HIGH); delay(5); digitalWrite(LEDpin, LOW);      // flash LED
     emontx_sleep(SLEEP_TIME_BETWEEN_READINGS);                                                      // sleep or delay in seconds - see emontx_lib
   }
   
@@ -156,10 +157,9 @@ void send_rf_data()
   if (CT4) LLAP.sendInt("P4",Power4);             
   delay(10);
   digitalWrite(SRF_SLEEP_PIN, HIGH);        // pull sleep pin high to enter SRF sleep 2
-  
  
 }
 
 void emontx_sleep(int seconds) {
-  LLAP.sleepForaWhile(seconds*1000);
+  LLAP.sleepForaWhile(5000);
 }

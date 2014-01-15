@@ -103,8 +103,13 @@ void setup()
   pinMode(LEDpin, OUTPUT); 
   pinMode(DS18B20_PWR, OUTPUT);  
   digitalWrite(LEDpin,HIGH); 
+
+  Serial.begin(9600);
+  Serial.println("emonTx V3 Discrete Sampling");
+  Serial.println("OpenEnergyMonitor.org");
+  Serial.println("Performing power-on tests.....please wait 10s");
   
-    rf12_initialize(nodeID, freq, networkGroup);                          // initialize RFM12B
+  rf12_initialize(nodeID, freq, networkGroup);                          // initialize RFM12B
    for (int i=0; i<10; i++)                                              //Send RFM12B test sequence (for factory testing)
    {
      emontx.power1=i; 
@@ -117,11 +122,13 @@ void setup()
  
    
 
-  if (analogRead(1) > 0) {CT1 = 1; CT_count++;} else CT1=0;              //check to see if CT is connected to CT1 input, if so enable that channel
-  if (analogRead(2) > 0) {CT2 = 1; CT_count++;} else CT2=0;              //check to see if CT is connected to CT2 input, if so enable that channel
-  if (analogRead(3) > 0) {CT3 = 1; CT_count++;} else CT3=0;              //check to see if CT is connected to CT3 input, if so enable that channel
-  if (analogRead(4) > 0) {CT4 = 1; CT_count++;} else CT4=0;             //check to see if CT is connected to CT4 input, if so enable that channel
+  if (analogRead(1) > 0) {CT1 = 1; CT_count++;} else CT1=0;              // check to see if CT is connected to CT1 input, if so enable that channel
+  if (analogRead(2) > 0) {CT2 = 1; CT_count++;} else CT2=0;              // check to see if CT is connected to CT2 input, if so enable that channel
+  if (analogRead(3) > 0) {CT3 = 1; CT_count++;} else CT3=0;              // check to see if CT is connected to CT3 input, if so enable that channel
+  if (analogRead(4) > 0) {CT4 = 1; CT_count++;} else CT4=0;              //  check to see if CT is connected to CT4 input, if so enable that channel
   
+  if ( CT_count == 0) CT1=1;                                              // If no CT's are connect ed CT1-4 then by default read from CT1
+
   // Quick check to see if there is a voltage waveform present on the ACAC Voltage input
   // Check consists of calculating the RMS from 100 samples of the voltage input.
   Sleepy::loseSomeTime(10000);            //wait for settle
@@ -133,7 +140,7 @@ void setup()
  
   if (ACAC) 
   {
-    for (int i=0; i<10; i++) 
+    for (int i=0; i<10; i++)                                              // indicate AC has been detected by flashing LED 10 times
     { 
       digitalWrite(LEDpin, HIGH); delay(200);
       digitalWrite(LEDpin, LOW); delay(300);
@@ -142,7 +149,7 @@ void setup()
   else 
   {
     delay(1000);
-    digitalWrite(LEDpin, HIGH); delay(2000); digitalWrite(LEDpin, LOW);                               
+    digitalWrite(LEDpin, HIGH); delay(2000); digitalWrite(LEDpin, LOW);   // indicate DC power has been detected by turing LED on then off
   }
  
  
@@ -151,7 +158,7 @@ void setup()
   //################################################################################################################################
   digitalWrite(DS18B20_PWR, HIGH); delay(50); 
   sensors.begin();
-  sensors.setWaitForConversion(false);                             //disable automatic temperature conversion to reduce time spent awake, conversion will be implemented manually in sleeping http://harizanov.com/2013/07/optimizing-ds18b20-code-for-low-power-applications/ 
+  sensors.setWaitForConversion(false);             //disable automatic temperature conversion to reduce time spent awake, conversion will be implemented manually in sleeping http://harizanov.com/2013/07/optimizing-ds18b20-code-for-low-power-applications/ 
   numSensors=(sensors.getDeviceCount()); 
   
   byte j=0;                                        // search for one wire devices and
@@ -168,10 +175,6 @@ void setup()
   if (Serial) debug = 1; else debug=0;          //if serial UART to USB is connected show debug O/P. If not then disable serial
   if (debug==1)
   {
-    Serial.begin(9600);
-    Serial.println("emonTx V3 Discrete Sampling");
-    Serial.println("OpenEnergyMonitor.org");
-    delay(1000);
     Serial.print("CT 1 Calibration: "); Serial.println(Ical1);
     Serial.print("CT 2 Calibration: "); Serial.println(Ical2);
     Serial.print("CT 3 Calibration: "); Serial.println(Ical3);
@@ -195,7 +198,7 @@ void setup()
        Serial.println("Assuming powering from batteries / 5V USB - power saving mode enabled");
      }  
 
-    if (CT_count==0) Serial.println("NO CT's detected");
+    if (CT_count==0) Serial.println("NO CT's detected, sampling from CT1 by default");
     else   
     {
       if (CT1) Serial.println("CT 1 detected");
@@ -212,8 +215,10 @@ void setup()
     if (freq == RF12_868MHZ) Serial.print("868Mhz");
     if (freq == RF12_915MHZ) Serial.print("915Mhz"); 
     Serial.print(" Network: "); Serial.println(networkGroup);
-delay(500);  
-}
+   delay(500);  
+  }
+  else 
+    Serial.end();
   
   
     
@@ -290,7 +295,7 @@ void loop()
   
   if (ACAC) 
   {
-    emontx.Vrms = ct1.Vrms*100;                                             //AC RMS voltage - convert to integer ready for RF transmission (divide by 0.1 using emoncms input process to convert back to one decimal places) 
+    emontx.Vrms = ct1.Vrms*100;                                             //AC RMS voltage - convert to integer ready for RF transmission (divide by 0.1 using emoncms input process to convert back to two decimal places) 
     if ((debug==1) && (!CT_count==0))  Serial.print(ct1.Vrms);
   }
   
