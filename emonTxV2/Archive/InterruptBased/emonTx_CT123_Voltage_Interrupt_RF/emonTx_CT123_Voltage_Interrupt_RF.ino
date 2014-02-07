@@ -44,7 +44,7 @@
   
 */
 #include <JeeLib.h> 
-#define freq RF12_433MHZ                                                // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
+#define RF_freq RF12_433MHZ                                                // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 const int nodeID = 10;                                                  // emonTx RFM12B node ID
 const int networkGroup = 210; 
 typedef struct { int power1, Vrms, frequency; } PayloadTX;         // neat way of packaging data for RF comms
@@ -109,7 +109,7 @@ void setup()
   Serial.begin(9600);
   Serial.println("emonTx_CT123_Voltage_Interrupt");
   
-    rf12_initialize(nodeID, freq, networkGroup);         
+    rf12_initialize(nodeID, RF_freq, networkGroup);         
   
   // REFS0 sets AVcc with external capacitor on AREF pin
   // CT1PIN sets the analog input pin to start reading from

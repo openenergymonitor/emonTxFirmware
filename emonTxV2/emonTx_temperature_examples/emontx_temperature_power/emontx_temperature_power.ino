@@ -24,7 +24,7 @@
  
 */
 
-#define freq RF12_433MHZ                                                // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
+#define RF_freq RF12_433MHZ                                                // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 const int nodeID = 10;                                                  // emonTx RFM12B node ID
 const int networkGroup = 210;                                           // emonTx RFM12B wireless network group - needs to be same as emonBase and emonGLCD
 
@@ -75,7 +75,7 @@ void setup() {
                                                                         // CT Calibration factor = (100A / 0.05A) x 18 Ohms
   sensors.begin();
   
-  rf12_initialize(10, freq, 210);                                       // initialize RF
+  rf12_initialize(10, RF_freq, 210);                                       // initialize RF
   rf12_sleep(RF12_SLEEP);
   
   pinMode(LEDpin, OUTPUT);   

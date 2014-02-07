@@ -9,7 +9,7 @@
 //
 
 #include <JeeLib.h>      // Download JeeLib: http://github.com/jcw/jeelib
-#define freq RF12_868MHZ // Use the freq to match the module you have.
+#define RF_freq RF12_868MHZ // Use the RF_freq to match the module you have.
 
 const int TXnodeID = 10;
 const int myNode = 15;
@@ -39,15 +39,15 @@ void setup()
   Serial.print("Node: "); 
   Serial.print(myNode); 
   Serial.print(" Freq: "); 
-  if (freq == RF12_433MHZ) Serial.print("433Mhz");
-  if (freq == RF12_868MHZ) Serial.print("868Mhz");
-  if (freq == RF12_915MHZ) Serial.print("915Mhz"); 
+  if (RF_freq == RF12_433MHZ) Serial.print("433Mhz");
+  if (RF_freq == RF12_868MHZ) Serial.print("868Mhz");
+  if (RF_freq == RF12_915MHZ) Serial.print("915Mhz"); 
   Serial.print(" Network: "); 
   Serial.println(networkGroup);
   delay(1000);
   rf12_set_cs(10); //emonTx, emonGLCD, NanodeRF, JeeNode
 
-  rf12_initialize(myNode, freq, networkGroup);  
+  rf12_initialize(myNode, RF_freq, networkGroup);  
 
   pinMode(onBoard_LEDpin, OUTPUT);  
 }

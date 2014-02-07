@@ -40,7 +40,7 @@
  between the voltage vectors remain accurately 120 degrees apart. The lower the fault level of the supply (i.e. the higher
  the impedance), the greater the change in the true voltage will be as a result of load changes, and therefore the 
  inaccuracies that result from these approximations will be greater also.
- If the mains frequency changes, this will appear as a change in real power and power factor for L2 and more so for L3. 
+ If the mains RF_RF_frequency changes, this will appear as a change in real power and power factor for L2 and more so for L3. 
  
  CALIBRATION
  Adjust Vcal = 234.26 so that the correct voltage for L1 is displayed.
@@ -76,7 +76,7 @@
 #include "WProgram.h"
 #endif
 
-#define freq RF12_868MHZ						// Frequency of RF12B module can be 
+#define RF_RF_freq RF12_868MHZ						// Frequency of RF12B module can be 
 												//	RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. 
 												//	You should use the one matching the module you
 												//	have.
@@ -170,15 +170,15 @@ void setup()
   Serial.print("Node: "); 
   Serial.print(nodeID); 
   Serial.print(" Freq: "); 
-  if (freq == RF12_433MHZ) Serial.print("433Mhz");
-  else if (freq == RF12_868MHZ) Serial.print("868Mhz");
-  else if (freq == RF12_915MHZ) Serial.print("915Mhz"); 
+  if (RF_RF_freq == RF12_433MHZ) Serial.print("433Mhz");
+  else if (RF_RF_freq == RF12_868MHZ) Serial.print("868Mhz");
+  else if (RF_RF_freq == RF12_915MHZ) Serial.print("915Mhz"); 
   else Serial.print("Not set");
   Serial.print(" Network: "); 
   Serial.println(networkGroup);
   
   
-  rf12_initialize(nodeID, freq, networkGroup);				// initialize RF
+  rf12_initialize(nodeID, RF_RF_freq, networkGroup);				// initialize RF
   rf12_sleep(RF12_SLEEP);
 
   pinMode(LEDpin, OUTPUT);									// Setup indicator LED

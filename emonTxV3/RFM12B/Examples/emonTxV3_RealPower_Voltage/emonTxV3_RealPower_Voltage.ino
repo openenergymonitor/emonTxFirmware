@@ -30,7 +30,7 @@ EnergyMonitor ct1, ct2, ct3, ct4;        // Create two instances
 
 #define FILTERSETTLETIME 5000         //  Time (ms) to allow the filters to settle before sending data
 
-#define freq RF12_433MHZ                                                        // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
+#define RF_freq RF12_433MHZ                                                        // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 const int nodeID = 10;                                                          // emonTx RFM12B node ID
 const int networkGroup = 210;  
 
@@ -46,7 +46,7 @@ boolean CT1, CT2, CT3, CT4;
 
 void setup()
 {  
-  rf12_initialize(nodeID,freq,networkGroup);    // initialize RFM12B
+  rf12_initialize(nodeID,RF_freq,networkGroup);    // initialize RFM12B
   rf12_sleep(RF12_SLEEP) ;                       //rf12 sleep seems to cause issue on the RFu, not sure why? Need to look into this
   
   //emonTxV3 CT channel will read ADC 0 when nothing is connected due to switched jack plugs connecting ADC to 0V when no jack is inserted

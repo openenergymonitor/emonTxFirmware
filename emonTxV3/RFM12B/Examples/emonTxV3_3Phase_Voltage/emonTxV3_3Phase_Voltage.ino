@@ -70,7 +70,7 @@ Include the line " #define CT4 " if the fourth C.T. is to be used.
 #include "WProgram.h"
 #endif
 
-#define freq RF12_433MHZ                         // Frequency of RF12B module can be 
+#define RF_freq RF12_433MHZ                         // Frequency of RF12B module can be 
                                                  //    RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. 
                                                  //  You should use the one matching the module you have.
 #define FILTERSETTLETIME 5000                    //  Time (ms) to allow the filters to settle before sending data
@@ -159,15 +159,15 @@ Serial.println("OpenEnergyMonitor.org");
 Serial.print("Node: "); 
 Serial.print(nodeID); 
 Serial.print(" Freq: "); 
-if (freq == RF12_433MHZ) Serial.print("433Mhz");
-else if (freq == RF12_868MHZ) Serial.print("868Mhz");
-else if (freq == RF12_915MHZ) Serial.print("915Mhz"); 
+if (RF_freq == RF12_433MHZ) Serial.print("433Mhz");
+else if (RF_freq == RF12_868MHZ) Serial.print("868Mhz");
+else if (RF_freq == RF12_915MHZ) Serial.print("915Mhz"); 
 else Serial.print("Not set");
 Serial.print(" Network: "); 
 Serial.println(networkGroup);
 
 
-rf12_initialize(nodeID, freq, networkGroup);     // initialize RF
+rf12_initialize(nodeID, RF_freq, networkGroup);     // initialize RF
 rf12_sleep(RF12_SLEEP);
 
 pinMode(LEDpin, OUTPUT);                         // Setup indicator LED

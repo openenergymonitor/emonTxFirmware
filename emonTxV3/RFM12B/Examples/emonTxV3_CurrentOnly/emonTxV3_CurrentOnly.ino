@@ -43,7 +43,7 @@ const int no_of_samples=1480;
 
 
 //-----------------------RFM12B SETTINGS----------------------------------------------------------------------------------------------------
-#define freq RF12_433MHZ                                              // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
+#define RF_freq RF12_433MHZ                                              // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 const int nodeID = 10;                                                // emonTx RFM12B node ID
 const int networkGroup = 210;  
 typedef struct { int power1, power2, power3, power4; } PayloadTX;     // create structure - a neat way of packaging data for RF comms
@@ -64,7 +64,7 @@ void setup()
   pinMode(LEDpin, OUTPUT);
   digitalWrite(LEDpin, HIGH); 
   
-  rf12_initialize(nodeID,freq,networkGroup);    // initialize RFM12B
+  rf12_initialize(nodeID,RF_freq,networkGroup);    // initialize RFM12B
   rf12_sleep(RF12_SLEEP) ;                      
   
   if (analogRead(1) > 0) CT1 = 1;               //check to see if CT is connected to CT1 input, if so enable that channel
@@ -84,9 +84,9 @@ void setup()
     Serial.print("CT 4 Calibration: "); Serial.println(Ical4);
     Serial.print("Node: "); Serial.print(nodeID); 
     Serial.print(" Freq: "); 
-    if (freq == RF12_433MHZ) Serial.print("433Mhz");
-    if (freq == RF12_868MHZ) Serial.print("868Mhz");
-    if (freq == RF12_915MHZ) Serial.print("915Mhz"); 
+    if (RF_freq == RF12_433MHZ) Serial.print("433Mhz");
+    if (RF_freq == RF12_868MHZ) Serial.print("868Mhz");
+    if (RF_freq == RF12_915MHZ) Serial.print("915Mhz"); 
     Serial.print(" Network: "); Serial.println(networkGroup);
   }
   

@@ -151,6 +151,7 @@ const float  phaseCal_CT2 = 1.0;
 const float  phaseCal_CT3 = 1.0;
 const float  phaseCal_CT4 = 1.0;
 
+int rfsendtimer = 0; // every time this gets to 10 we send an rf packet
 
 void setup()
 {  
@@ -443,13 +444,18 @@ void allGeneralProcessing()
         
         if ((cycleCount % 50) == 0)
         {         
-          tx_data.msgNumber = msgNumber++; // increment
           tx_data.power_CT1 = energyInBucket_long_CT1 * (powerCal_CT1/50);
           tx_data.power_CT2 = energyInBucket_long_CT2 * (powerCal_CT2/50);
           tx_data.power_CT3 = energyInBucket_long_CT3 * (powerCal_CT3/50);
           tx_data.power_CT4 = energyInBucket_long_CT4 * (powerCal_CT4/50);
 
-          send_rf_data();         
+          rfsendtimer++;
+          
+          if (rfsendtimer>=10) {
+            tx_data.msgNumber = msgNumber++; // increment
+            send_rf_data();  
+            rfsendtimer = 0;
+          }         
          
           Serial.print(tx_data.power_CT1);
           energyInBucket_long_CT1 = 0;         

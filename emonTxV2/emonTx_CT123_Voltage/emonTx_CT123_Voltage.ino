@@ -44,7 +44,7 @@
 const int CT2 = 1;                                                      // Set to 1 to enable CT channel 2
 const int CT3 = 1;                                                      // Set to 1 to enable CT channel 3
 
-#define freq RF12_433MHZ                                                // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
+#define RF_freq RF12_433MHZ                                                // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 const int nodeID = 10;                                                  // emonTx RFM12B node ID
 const int networkGroup = 210;                                           // emonTx RFM12B wireless network group - needs to be same as emonBase and emonGLCD needs to be same as emonBase and emonGLCD
 
@@ -72,9 +72,9 @@ void setup()
   Serial.print("Node: "); 
   Serial.print(nodeID); 
   Serial.print(" Freq: "); 
-  if (freq == RF12_433MHZ) Serial.print("433Mhz");
-  if (freq == RF12_868MHZ) Serial.print("868Mhz");
-  if (freq == RF12_915MHZ) Serial.print("915Mhz"); 
+  if (RF_freq == RF12_433MHZ) Serial.print("433Mhz");
+  if (RF_freq == RF12_868MHZ) Serial.print("868Mhz");
+  if (RF_freq == RF12_915MHZ) Serial.print("915Mhz"); 
   Serial.print(" Network: "); 
   Serial.println(networkGroup);
   
@@ -87,7 +87,7 @@ void setup()
   ct3.voltageTX(234.26, 1.7);
   ct3.currentTX(3, 111.1);
   
-  rf12_initialize(nodeID, freq, networkGroup);                          // initialize RF
+  rf12_initialize(nodeID, RF_freq, networkGroup);                          // initialize RF
   rf12_sleep(RF12_SLEEP);
 
   pinMode(LEDpin, OUTPUT);                                              // Setup indicator LED
