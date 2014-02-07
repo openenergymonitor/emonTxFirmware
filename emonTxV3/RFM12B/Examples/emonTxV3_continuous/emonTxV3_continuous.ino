@@ -17,7 +17,7 @@
 //#define WORKLOAD_CHECK  
 
 // ----------------- RF setup  ---------------------
-#define freq RF12_433MHZ // Use the freq to match the module you have.
+#define RF_freq RF12_433MHZ // Use the RF_RF_RF_RF_RF_freq to match the module you have.
 
 const int nodeID = 10;  // emonTx RFM12B node ID
 const int networkGroup = 210;  // emonTx RFM12B wireless network group - needs to be same as emonBase and emonGLCD 
@@ -155,7 +155,7 @@ int rfsendtimer = 0; // every time this gets to 10 we send an rf packet
 
 void setup()
 {  
-  rf12_initialize(nodeID, freq, networkGroup);             // initialize RF
+  rf12_initialize(nodeID, RF_freq, networkGroup);             // initialize RF
   rf12_sleep(RF12_SLEEP);
   
   Serial.begin(9600);                                      // initialize Serial interface
