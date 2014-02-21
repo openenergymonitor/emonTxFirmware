@@ -1,4 +1,8 @@
 // EmonTx V3 Direct Serial example
+// Useful for direct connection to Raspberry Pi or computer via USB to UART cable 
+// Forum thread: http://openenergymonitor.org/emon/node/3872
+
+
 
 // Tell emonLib this is the emonTx V3
 // - don't read Vcc assume Vcc = 3.3V as is always the case on emonTx V3
