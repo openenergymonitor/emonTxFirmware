@@ -149,11 +149,11 @@ const float powerCal_CT4 = (276.9*(3.3/1023))*(16.6*(3.3/1023)); // <---- powerC
 //
 // NB. Any tool which determines the optimal value of phaseCal must have a similar 
 // scheme for taking sample values as does this sketch!
-//
-const float  phaseCal_CT1 = 1.0;
-const float  phaseCal_CT2 = 1.0;
-const float  phaseCal_CT3 = 1.0;
-const float  phaseCal_CT4 = 1.0;
+// http://openenergymonitor.org/emon/node/3792#comment-18683
+const float  phaseCal_CT1 = 0.22;
+const float  phaseCal_CT2 = 0.41;
+const float  phaseCal_CT3 = 0.6;
+const float  phaseCal_CT4 = 1.25;
 
 int joules_CT1 = 0;
 int joules_CT2 = 0;
