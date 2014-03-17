@@ -42,6 +42,8 @@ int joules_CT2 = 0;
 int joules_CT3 = 0;
 int joules_CT4 = 0;
 
+long wtdrtime = 0;
+
 void setup()
 {
     Serial.begin(9600);
@@ -117,10 +119,7 @@ void loop()
         ct2.calcVI(20,2000);
         ct3.calcVI(20,2000);
         ct4.calcVI(20,2000);
-        
-        
-        // Calculate elapsed watt hours
-        
+            
         joules_CT1 += ct1.realPower * 10;
         wh_CT1 += joules_CT1 / 3600;
         joules_CT1 = joules_CT1 % 3600;
@@ -158,7 +157,10 @@ void loop()
         
     }
 
-    wdt_reset();
-    delay(1000);
+    if ((millis()-wtdrtime)>1000)
+    {
+       wtdrtime = millis();
+       wdt_reset();
+    }
 }
 
