@@ -32,6 +32,16 @@ byte allAddress [4][8];
 
 unsigned long lastreading;
 
+long wh_CT1 = 0;
+long wh_CT2 = 0;
+long wh_CT3 = 0;
+long wh_CT4 = 0;
+
+int joules_CT1 = 0;
+int joules_CT2 = 0;
+int joules_CT3 = 0;
+int joules_CT4 = 0;
+
 void setup()
 {
     Serial.begin(9600);
@@ -68,12 +78,23 @@ void setup()
     // (2000 turns / 120 Ohm burden resistor = 16.66)
     ct4.current(4, 16.6);
 
+    joules_CT1 = 0;
+    joules_CT2 = 0;
+    joules_CT3 = 0;
+    joules_CT4 = 0;
+
     wdt_enable(WDTO_8S);
+    
+    // reduces settle time
+    ct1.calcVI(20,2000);
+    ct2.calcVI(20,2000);
+    ct3.calcVI(20,2000);
+    ct4.calcVI(20,2000);
 }
 
 void loop()
 {
-    if ((millis()-lastreading)>10000)
+    if ((millis()-lastreading)>=10000)
     {
         lastreading = millis();
         
@@ -97,6 +118,25 @@ void loop()
         ct3.calcVI(20,2000);
         ct4.calcVI(20,2000);
         
+        
+        // Calculate elapsed watt hours
+        
+        joules_CT1 += ct1.realPower * 10;
+        wh_CT1 += joules_CT1 / 3600;
+        joules_CT1 = joules_CT1 % 3600;
+        
+        joules_CT2 += ct2.realPower * 10;
+        wh_CT2 += joules_CT2 / 3600;
+        joules_CT2 = joules_CT2 % 3600;
+
+        joules_CT3 += ct3.realPower * 10;
+        wh_CT3 += joules_CT3 / 3600;
+        joules_CT3 = joules_CT3 % 3600;
+
+        joules_CT4 += ct4.realPower * 10;
+        wh_CT4 += joules_CT4 / 3600;
+        joules_CT4 = joules_CT4 % 3600;
+        
         Serial.print(temp1); Serial.print(" ");
         Serial.print(temp2); Serial.print(" ");
         Serial.print(temp3); Serial.print(" ");
@@ -106,8 +146,16 @@ void loop()
         Serial.print(ct1.realPower); Serial.print(" "); 
         Serial.print(ct2.realPower); Serial.print(" ");
         Serial.print(ct3.realPower); Serial.print(" ");
-        Serial.print(ct4.realPower); Serial.print(" "); 
+        Serial.print(ct4.realPower); Serial.print(" ");
+       
+        Serial.print(wh_CT1); Serial.print(" "); 
+        Serial.print(wh_CT2); Serial.print(" ");
+        Serial.print(wh_CT3); Serial.print(" ");
+        Serial.print(wh_CT4); Serial.print(" "); 
+        
         Serial.println(ct1.Vrms);
+        
+        
     }
 
     wdt_reset();
