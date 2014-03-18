@@ -105,10 +105,11 @@ void setup()
   digitalWrite(LEDpin,HIGH); 
 
   Serial.begin(9600);
-  Serial.println("emonTx V3 Discrete Sampling");
+  Serial.println("emonTx V3 Discrete Sampling V1.1");
   Serial.println("OpenEnergyMonitor.org");
   Serial.println("Performing power-on tests.....please wait 10s");
   
+  delay(10);
   rf12_initialize(nodeID, RF_freq, networkGroup);                          // initialize RFM12B
    for (int i=0; i<10; i++)                                              //Send RFM12B test sequence (for factory testing)
    {
@@ -135,7 +136,8 @@ void setup()
   digitalWrite(LEDpin,LOW); 
   
   // Calculate if there is an ACAC adapter on analog input 0
-  double vrms = calc_rms(0,1780) * 2.75;
+  //double vrms = calc_rms(0,1780) * (Vcal * (3.3/1024) );
+  double vrms = calc_rms(0,1780) * 0.87;
   if (vrms>90) ACAC = 1; else ACAC=0;
  
   if (ACAC) 
@@ -358,8 +360,8 @@ double calc_rms(int pin, int samples)
   for (int i=0; i<samples; i++) // 178 samples takes about 20ms
   {
     int raw = (analogRead(0)-512);
-    sum += (raw * raw);
+    sum += (unsigned long)raw * raw;
   }
-  double rms = sqrt(1.0 * sum / samples);
+  double rms = sqrt((double)sum / samples);
   return rms;
 }
