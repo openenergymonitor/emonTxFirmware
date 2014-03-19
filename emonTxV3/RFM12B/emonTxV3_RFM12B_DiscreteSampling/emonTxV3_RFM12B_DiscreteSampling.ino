@@ -28,6 +28,11 @@
 17-30	- Environmental sensing nodes (temperature humidity etc.)
 31	- Special allocation in JeeLib RFM12 driver - Node31 can communicate with nodes on any network group
 -------------------------------------------------------------------------------------------------------------
+
+
+Change Log:
+V1.2 - fix bug which caused Vrms to be returned as zero if CT1 was not connected 
+V1.1 - fix bug in startup Vrms calculation, startup Vrms startup calculation is now more accuratre
 */
 
 #define emonTxV3                                                      // Tell emonLib this is the emonTx V3 - don't read Vcc assume Vcc = 3.3V as is always the case on emonTx V3 eliminates bandgap error and need for calibration http://harizanov.com/2013/09/thoughts-on-avr-adc-accuracy/
@@ -105,7 +110,7 @@ void setup()
   digitalWrite(LEDpin,HIGH); 
 
   Serial.begin(9600);
-  Serial.println("emonTx V3 Discrete Sampling V1.1");
+  Serial.println("emonTx V3 Discrete Sampling V1.2");
   Serial.println("OpenEnergyMonitor.org");
   Serial.println("Performing power-on tests.....please wait 10s");
   
@@ -244,12 +249,17 @@ void setup()
 void loop()
 {
   
-  if (ACAC) delay(200);                                //if powering from AC-AC allow time for power supply to settle                       
+  if (ACAC) {
+    delay(200);                                //if powering from AC-AC allow time for power supply to settle    
+    emontx.Vrms=0;                                    //Set Vrms to zero, this will be overwirtten by wither CT 1-4
+  }
+  
   if (CT1) 
   {
    if (ACAC) 
    {
      ct1.calcVI(no_of_half_wavelengths,timeout); emontx.power1=ct1.realPower;
+     emontx.Vrms=ct1.Vrms*100;
    }
    else
      emontx.power1 = ct1.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
@@ -262,6 +272,7 @@ void loop()
    if (ACAC) 
    {
      ct2.calcVI(no_of_half_wavelengths,timeout); emontx.power2=ct2.realPower;
+     emontx.Vrms=ct2.Vrms*100;
    }
    else
      emontx.power2 = ct2.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
@@ -274,6 +285,7 @@ void loop()
    if (ACAC) 
    {
      ct3.calcVI(no_of_half_wavelengths,timeout); emontx.power3=ct3.realPower;
+     emontx.Vrms=ct3.Vrms*100;
    }
    else
      emontx.power3 = ct3.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
@@ -287,6 +299,7 @@ void loop()
    if (ACAC) 
    {
      ct4.calcVI(no_of_half_wavelengths,timeout); emontx.power4=ct4.realPower;
+     emontx.Vrms=ct4.Vrms*100;
    }
    else
      emontx.power4 = ct4.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
@@ -296,9 +309,8 @@ void loop()
   
   
   if (ACAC) 
-  {
-    emontx.Vrms = ct1.Vrms*100;                                             //AC RMS voltage - convert to integer ready for RF transmission (divide by 0.1 using emoncms input process to convert back to two decimal places) 
-    if ((debug==1) && (!CT_count==0))  Serial.print(ct1.Vrms);
+  { 
+    if ((debug==1) && (!CT_count==0))  Serial.print(emontx.Vrms);
   }
   
   if ((debug==1) && (!CT_count==0)) {Serial.println(); delay(20);}
