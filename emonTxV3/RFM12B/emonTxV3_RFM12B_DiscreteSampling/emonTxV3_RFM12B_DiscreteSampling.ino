@@ -65,9 +65,9 @@ const int no_of_samples=          1480;
 const int no_of_half_wavelengths= 20;
 const int timeout=                2000;                               //emonLib timeout 
 const int ACAC_DETECTION_LEVEL=   3000;
-const int TEMPERATURE_PRECISION=  11;                                   //9 (93.8ms),10 (187.5ms) ,11 (375ms) or 12 (750ms) bits equal to resplution of 0.5C, 0.25C, 0.125C and 0.0625C
-#define FILTERSETTLETIME          5000                                 // Time (ms) to allow the filters to settle before sending data
-#define ASYNC_DELAY 375                                               // DS18B20 conversion delay - 9bit requres 95ms, 10bit 187ms, 11bit 375ms and 12bit resolution takes 750ms
+const int TEMPERATURE_PRECISION=  11;                 //9 (93.8ms),10 (187.5ms) ,11 (375ms) or 12 (750ms) bits equal to resplution of 0.5C, 0.25C, 0.125C and 0.0625C
+//#define FILTERSETTLETIME          25000                     // Time (ms) to allow the filters to settle before sending data
+#define ASYNC_DELAY 375                                          // DS18B20 conversion delay - 9bit requres 95ms, 10bit 187ms, 11bit 375ms and 12bit resolution takes 750ms
 //-------------------------------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -95,7 +95,7 @@ typedef struct { int power1, power2, power3, power4, Vrms, temp; } PayloadTX;   
 
 
 //Random Variables 
-boolean settled = false;
+//boolean settled = false;
 boolean CT1, CT2, CT3, CT4, ACAC, debug, DS18B20_STATUS; 
 byte CT_count=0;
 int numSensors;
@@ -116,7 +116,7 @@ void setup()
   
   delay(10);
   rf12_initialize(nodeID, RF_freq, networkGroup);                          // initialize RFM12B
-   for (int i=0; i<10; i++)                                              //Send RFM12B test sequence (for factory testing)
+   for (int i=10; i==0; i--)                                              //Send RFM12B test sequence (for factory testing)
    {
      emontx.power1=i; 
      rf12_sendNow(0, &emontx, sizeof emontx);
@@ -243,7 +243,21 @@ void setup()
     if (CT4) ct4.voltage(0, Vcal, phase_shift);          // ADC pin, Calibration, phase_shift
   }
  
- 
+  // Do some measurements to allow the software filter to settle - don't use the result
+  if (ACAC)
+  {
+    if (CT1) for (int j=0; j<5; j++) ct1.calcVI(no_of_half_wavelengths,timeout);
+    if (CT2) for (int j=0; j<5; j++) ct2.calcVI(no_of_half_wavelengths,timeout);
+    if (CT3) for (int j=0; j<5; j++) ct3.calcVI(no_of_half_wavelengths,timeout);
+    if (CT4) for (int j=0; j<5; j++) ct4.calcVI(no_of_half_wavelengths,timeout);
+   }
+   else
+  {
+    if (CT1) for (int j=0; j<5; j++) ct1.calcIrms(no_of_samples);
+    if (CT2) for (int j=0; j<5; j++) ct2.calcIrms(no_of_samples);
+    if (CT3) for (int j=0; j<5; j++) ct3.calcIrms(no_of_samples);
+    if (CT4) for (int j=0; j<5; j++) ct4.calcIrms(no_of_samples);
+   }
 }
 
 void loop()
@@ -316,7 +330,7 @@ void loop()
   if ((debug==1) && (!CT_count==0)) {Serial.println(); delay(20);}
   
   // because millis() returns to zero after 50 days ! 
-  if (!settled && millis() > FILTERSETTLETIME) settled = true;
+  //if (!settled && millis() > FILTERSETTLETIME) settled = true; - replaced by filter settle routine at end of setup
 
   
     if (DS18B20_STATUS==1)
@@ -338,8 +352,8 @@ void loop()
   
   
   
-  if (settled)                                                            // send data only after filters have settled
-  { 
+ // if (settled)                                                            // send data only after filters have settled
+  //{ 
     send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
     
     if (ACAC)
@@ -350,7 +364,7 @@ void loop()
     
     else
       emontx_sleep(TIME_BETWEEN_READINGS);                                  // sleep or delay in seconds 
-  }  
+//  }  
  
 }
 
