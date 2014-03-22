@@ -31,6 +31,7 @@
 
 
 Change Log:
+V1.3 - fix filter settle time to eliminate large inital reading
 V1.2 - fix bug which caused Vrms to be returned as zero if CT1 was not connected 
 V1.1 - fix bug in startup Vrms calculation, startup Vrms startup calculation is now more accuratre
 */
@@ -110,7 +111,7 @@ void setup()
   digitalWrite(LEDpin,HIGH); 
 
   Serial.begin(9600);
-  Serial.println("emonTx V3 Discrete Sampling V1.2");
+  Serial.println("emonTx V3 Discrete Sampling V1.3");
   Serial.println("OpenEnergyMonitor.org");
   Serial.println("Performing power-on tests.....please wait 10s");
   
