@@ -117,7 +117,7 @@ void setup()
   
   delay(10);
   rf12_initialize(nodeID, RF_freq, networkGroup);                          // initialize RFM12B
-   for (int i=10; i==0; i--)                                              //Send RFM12B test sequence (for factory testing)
+   for (int i=10; i>=0; i--)                                              //Send RFM12B test sequence (for factory testing)
    {
      emontx.power1=i; 
      rf12_sendNow(0, &emontx, sizeof emontx);
