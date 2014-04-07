@@ -23,10 +23,13 @@
 //#define WORKLOAD_CHECK  
 
 // ----------------- RF setup  ---------------------
-#define freq RF12_868MHZ // Use the freq to match the module you have.
 
-const int nodeID = 6;  // emonTx RFM12B node ID
-const int networkGroup = 1;  // emonTx RFM12B wireless network group - needs to be same as emonBase and emonGLCD 
+unsigned long sendinterval = 10000; // milliseconds
+
+#define freq RF12_433MHZ // Use the freq to match the module you have.
+
+const int nodeID = 10;  // emonTx RFM12B node ID
+const int networkGroup = 210;  // emonTx RFM12B wireless network group - needs to be same as emonBase and emonGLCD 
 const int UNO = 1;  // Set to 0 if you're not using the UNO bootloader (i.e using Duemilanove) 
                                                // - All Atmega's shipped from OpenEnergyMonitor come with Arduino Uno bootloader
  typedef struct { 
@@ -170,6 +173,8 @@ enum voltageZones lastPeakZoneVisited; // would be better as a static in the pro
 
 unsigned long lastsecond = millis();
 boolean laststate = true;
+unsigned long lastsendtime = 0;
+
 
 void setup()
 {  
@@ -394,6 +399,13 @@ void loop()
   }
 #endif
   
+  if ((millis()-lastsendtime)>sendinterval)
+  {
+    lastsendtime = millis();
+    send_rf_data();  //  dispatch the RF message
+    Serial.println(tx_data.msgNumber++);  
+  }
+  
 } // end of loop()
 
 
@@ -524,10 +536,9 @@ void allGeneralProcessing()
           case 100: 
             tx_data.msgNumber = msgNumber++;
   
-            send_rf_data();  //  dispatch the RF message
             sequenceCount = 0;
             Serial.print(separatorString);
-            Serial.println(tx_data.msgNumber++);           
+                     
             break;
           default: 
             if (sequenceCount > 100) {
