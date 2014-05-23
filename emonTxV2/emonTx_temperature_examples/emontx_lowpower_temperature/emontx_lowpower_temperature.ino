@@ -57,7 +57,8 @@ const int networkGroup = 210;                                           // emonT
 
 const int time_between_readings= 20000;                                  //in ms
 
-#include <JeeLib.h>                                                     // Download JeeLib: http://github.com/jcw/jeelib
+#define RF69_COMPAT 0 // set to 1 to use RFM69CW 
+#include <JeeLib.h>   // make sure V12 (latest) is used if using RFM69CW
 #include <avr/sleep.h>
 ISR(WDT_vect) { Sleepy::watchdogEvent(); }                              // Attached JeeLib sleep function to Atmega328 watchdog -enables MCU to be put into sleep mode inbetween readings to reduce power consumption 
 
