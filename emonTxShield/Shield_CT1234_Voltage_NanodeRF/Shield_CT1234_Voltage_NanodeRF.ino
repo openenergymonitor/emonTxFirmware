@@ -6,7 +6,8 @@
   
   Author: Trystan Lea
 */
-#include <JeeLib.h>
+#define RF69_COMPAT 0 // set to 1 to use RFM69CW 
+#include <JeeLib.h>   // make sure V12 (latest) is used if using RFM69CW
 #include "EmonLib.h"
 
 int node_id = 0;
