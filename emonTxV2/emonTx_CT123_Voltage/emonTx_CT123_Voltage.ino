@@ -51,7 +51,8 @@ const int networkGroup = 210;                                           // emonT
 const int UNO = 1;                                                      // Set to 0 if your not using the UNO bootloader (i.e using Duemilanove) - All Atmega's shipped from OpenEnergyMonitor come with Arduino Uno bootloader
 #include <avr/wdt.h>                                                    // the UNO bootloader 
 
-#include <JeeLib.h>                                                     // Download JeeLib: http://github.com/jcw/jeelib
+#define RF69_COMPAT 0 // set to 1 to use RFM69CW 
+#include <JeeLib.h>   // make sure V12 (latest) is used if using RFM69CW
 ISR(WDT_vect) { Sleepy::watchdogEvent(); }
 
 #include "EmonLib.h"

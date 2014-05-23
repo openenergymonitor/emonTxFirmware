@@ -5,7 +5,8 @@
   sent from this example.
 */
 
-#include <JeeLib.h>
+#define RF69_COMPAT 0 // set to 1 to use RFM69CW 
+#include <JeeLib.h>   // make sure V12 (latest) is used if using RFM69CW
 
 // this is added as we're using the watchdog for low-power waiting
 ISR(WDT_vect) { Sleepy::watchdogEvent(); }

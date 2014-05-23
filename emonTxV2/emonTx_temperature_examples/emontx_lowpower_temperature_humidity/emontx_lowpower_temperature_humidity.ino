@@ -55,7 +55,8 @@ const int networkGroup = 210;                                           // emonT
 const int sensorResolution = 11;                                        //DS18B20 resolution 9,10,11 or 12bit corresponding to (0.5, 0.25, 0.125, 0.0625 degrees C LSB), lower resolution means lower power
 const int time_between_readings= 5000;                                  //in ms
 
-#include <JeeLib.h>                                                     // Download JeeLib: http://github.com/jcw/jeelib
+#define RF69_COMPAT 0 // set to 1 to use RFM69CW 
+#include <JeeLib.h>   // make sure V12 (latest) is used if using RFM69CW
 #include <avr/sleep.h>
 ISR(WDT_vect) { Sleepy::watchdogEvent(); }                              // Attached JeeLib sleep function to Atmega328 watchdog -enables MCU to be put into sleep mode inbetween readings to reduce power consumption 
 
