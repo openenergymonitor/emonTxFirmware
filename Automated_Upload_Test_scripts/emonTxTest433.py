@@ -40,18 +40,20 @@ while(1):
 			print 'error..Rx Module is not responding'
 		ser.close()
 		print 'Attempting 433Mhz emonTx V3 firmware upload....'
-		cmd = 'avrdude -u  -c arduino -p ATMEGA328P -P /dev/ttyUSB0 -b 115200 -U flash:w:emonTxFirmware/emonTxV3/RFM12B/emonTxV3_RFM12B_DiscreteSampling/emonTxV3_RFM12B_DiscreteSampling.cpp433.hex'
+		cmd = 'avrdude -u  -c arduino -p ATMEGA328P -P /dev/ttyUSB0 -b 115200 -U flash:w:/home/pi/emonTxFirmware/emonTxV3/RFM12B/emonTxV3_RFM12B_DiscreteSampling/emonTxV3_RFM12B_DiscreteSampling.cpp433.hex'
 		subprocess.call(cmd, shell=True)
 
 		ser = serial.Serial('/dev/ttyAMA0', 9600, timeout=1)
 		linestr = ser.readline()
-		#print linestr
+		print linestr
 		#print len(linestr)
 		if (len(linestr)>0):
 			if (int(linestr[1] + linestr[2])==NodeID): 
 				print 'PASS!...RF RECEIVE SUCCESS from emonTx'
 			else:
 				print 'FAIL...RF received but not from the emonTx'
+		else: 
+			print 'FAIL...no RF received from emonTx'
 		ser.close()
 
 	if nb==8: 
@@ -64,25 +66,28 @@ while(1):
 		ser.write(freq)
 		#time.sleep(0.5)
 		linestr = ser.readline()
-		#print linestr
+		print linestr
 		if freq in linestr: 		#check RFM12Pi responce to check it's set frequenct OK	
 			print 'success..Rx Module set to receive on 868Mhz'
-			#print freq  
+			print freq  
 		else:
 			print 'error..Rx Module is not responding'
+
 		ser.close()
 		print 'Attempting 868Mhz emonTx V3 firmware upload....'
-		cmd = 'avrdude -u  -c arduino -p ATMEGA328P -P /dev/ttyUSB0 -b 115200 -U flash:w:emonTxFirmware/emonTxV3/RFM12B/emonTxV3_RFM12B_DiscreteSampling/emonTxV3_RFM12B_DiscreteSampling.cpp868.hex'
+		cmd = 'avrdude -u  -c arduino -p ATMEGA328P -P /dev/ttyUSB0 -b 115200 -U flash:w:/home/pi/emonTxFirmware/emonTxV3/RFM12B/emonTxV3_RFM12B_DiscreteSampling/emonTxV3_RFM12B_DiscreteSampling.cpp868.hex'
 		subprocess.call(cmd, shell=True)
 
 		ser = serial.Serial('/dev/ttyAMA0', 9600, timeout=1)
 		linestr = ser.readline()
-		#print linestr
+		print linestr
 		if (len(linestr)>0):
 			if (int(linestr[1] + linestr[2])==NodeID): 
 				print 'PASS!...RF RECEIVE SUCCESS from emonTx'
 			else:
 				print 'FAIL...RF received but not from the emonTx'
+		else: 
+			print 'FAIL...no RF received from emonTx'
 		ser.close()
 
 	if ((nb!=8) and (nb!=4)):
