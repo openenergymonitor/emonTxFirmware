@@ -1,17 +1,31 @@
-# emonTx V2 - Wireless energy-monitoring node 
+# emonTx Arduino Shield 
 
 Part of the openenergymonitor.org project
 
-Main emonTx V2 page: 
-http://openenergymonitor.org/emon/emontx
+Main emonTx shield page: 
+http://openenergymonitor.org/emon/emontxshield/smt
 
-Builds on JeeLabs software and compatible with JeeNode hardware
+Shop Item:
+http://shop.openenergymonitor.com/emontx-shield/
 
-## Libraries Needed
-* RFM12: http://github.com/jcw/jeelib
+
+## Libraries Needed 
 * Mains Voltage and current: https://github.com/openenergymonitor/EmonLib
+
+* RFM12: http://github.com/jcw/jeelib
 * Temperature control library: http://download.milesburton.com/Arduino/MaximTemperature/ (version 372 works with Arduino 1.0) and OneWire library: http://www.pjrc.com/teensy/td_libs_OneWire.html
 * ElsterMeterReader: https://github.com/openenergymonitor/ElsterMeterReader
+
+## Full emonTx Shield Firmware Examples 
+* **Shield_CT1234** - RFM12B - Apparent Power Example - Use this example if only using CT sensors. Monitors AC current using one CT sensor and transmit data via wireless using RFM12B to emonBase. 
+
+* **Shield_CT1234_Voltage** - RFM12B - Real Power - Use this example if using an AC-AC adapter with as well as CT sensors. AC-AC plug-in adapter to monitors AC RMS voltage and give real power and current direction readings transmit data via wireless using RFM12B to emonBase
+
+* **Shield_CT1234_Voltage_NanodeRF** - NO RF - Real Power - Use this example if using an AC-AC adapter with as well as CT sensors. AC-AC plug-in adapter to monitors AC RMS voltage and give real power and current direction readings. Designed for use with the emonTx Shield mounted on a nanode RF. No RF module is required on either shield or Nanode, the power readings are posted stright to emoncms.org via Etherent on the Nanode
+
+* **Shield_CT1234_SerialOnly** - NO RF - Real Power - Use this example if using an AC-AC adapter with as well as CT sensors. AC-AC plug-in adapter to monitors AC RMS voltage and give real power. Prints out power readings via Arduino Serial port. No RF required. 
+
+
 
 ## emonTx Code guide
 The EmonTx code guide goes through main components required to put a full emontx firmware together. It's recommended that you work through these examples first so that you have a good understanding of how the full firmware's work.
@@ -24,14 +38,7 @@ The EmonTx code guide goes through main components required to put a full emontx
 * [07 - Transmitting Data](https://github.com/openenergymonitor/emonTxFirmware/tree/master/emonTxV2/Guide/g_TransmittingData/g_TransmittingData.ino)
 * [08 - Watchdog](https://github.com/openenergymonitor/emonTxFirmware/tree/master/emonTxV2/Guide/h_watchdog/h_watchdog.ino)
 
-## Full emonTx V2 Firmware's
-* **Shield_CT1234** - RFM12B - Apparent Power Example - Use this example if only using CT sensors. Monitors AC current using one CT sensor and transmit data via wireless using RFM12B to emonBase. 
 
-* **Shield_CT1234_Voltage** - RFM12B - Real Power - Use this example if using an AC-AC adapter with as well as CT sensors. AC-AC plug-in adapter to monitors AC RMS voltage and give real power and current direction readings transmit data via wireless using RFM12B to emonBase
-
-* **Shield_CT1234_Voltage_NanodeRF** - NO RF - Real Power - Use this example if using an AC-AC adapter with as well as CT sensors. AC-AC plug-in adapter to monitors AC RMS voltage and give real power and current direction readings. Designed for use with the emonTx Shield mounted on a nanode RF. No RF module is required on either shield or Nanode, the power readings are posted stright to emoncms.org via Etherent on the Nanode
-
-* **Shield_CT1234_SerialOnly** - NO RF - Real Power - Use this example if using an AC-AC adapter with as well as CT sensors. AC-AC plug-in adapter to monitors AC RMS voltage and give real power. Prints out power readings via Arduino Serial port. No RF required. 
 
 **Note:** CT must be clipped round either the Live or Neutral wire, not both! 
 
