@@ -29,7 +29,7 @@ Open-hardware schematic and board files: http://solderpad.com/openenergymon/emon
 
 
 ### RFM12B Examples:
-* **emonTxV3_3phase_Voltage** - 3-phase sketch 
+* **emonTxV3_3phase_Voltage** - Approximate 3-phase sketch 
 
 * **emonTxV3_CurrentOnly** - Apparent Power Example - Use this example if only using CT sensors. Monitors AC current using one CT sensor and transmit data via wireless using RFM12B to emonBase.
 
@@ -37,7 +37,33 @@ Open-hardware schematic and board files: http://solderpad.com/openenergymon/emon
 
 * **emonTxV3_continuous** - PLL continuous sampling example contributed by MartinR, as used in PV controller MK2
 
+* **emonTxV3_continuous_kwhtotals*** - same as emonTxV3_continuous but also keeps track of current Kwh totals
+
+* **emonTxV3_continuous_kwhtotals_eeprom*** same as emonTxV3_continuous but also keeps track of current Kwh totals and saves to ATmega328 EEPROM
+
+* **emonTxV3_continuous_kwhtotals_noeeprom***
+
+* **emonTxV3_continuous_reciever*** Receiver example for Continuous Sampling
+
+* **EmonTxV3HeatpumpMonitor*** - Example for monitoring a heatpump with 4 x DS18B20 temperature sensors and 3 x CT current sensors and AC adapter
+
 * **emonTxV3_Pulse** - pulse counting example for interfacing with utility meter see [technical wiki documentation](http://wiki.openenergymonitor.org/index.php?title=EmonTx_V3#Utility_Meter_Interface)
+
+* **emonTxV3_RFM12B_DiscreteSampling_with_pulse*** - Same as emonTx V3 pulse example but also includes CT power discreatre sampling code
+
+
+### No RF Examples:
+There are example sketches which do not use or require an RF module 
+
+* ***emonTxV3_DirectSerial*** - Serial output of power readings. Useful for direct connection to RaspberryPi see [blog post]() 
+
+* ***LED_DigitalMeter*** - emonTx V3 to emulate solid state digital power meter by pulsing on-board red LED every 0.1Wh (default)
+
+* ***MVHRMonitor*** - Example for monitoring a mechanical ventilation heat recovery unit (MVHR)
+
+* ***HeatpumpMonitorSerial*** -  Example for monitoring a heatpump with 4 x DS18B20 temperature sensors and 3 x CT current sensors and AC adapter. With serial output for data for direct serial connection to baseStation
+
+* ***voltageFailureDetector*** - A test pad for the development of AC voltage sample failure logic
 
 ## SRF Firmware
 **Caution: These have not been tested or calibrated extensively** 
