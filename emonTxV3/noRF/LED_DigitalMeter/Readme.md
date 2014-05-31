@@ -1,4 +1,4 @@
-By Robert Wall - May 2014
+By Robin Emley - May 2014
 
 My DigitalMeterEmulator sketch, as originally released for use on an Arduino Uno or emonTx V2, has been really useful to me for checking the calibration status of any new hardware.  Having been recently been provided with an emonTx V3 for free, I though it may be helpful to upgrade this sketch for that platform.
 
