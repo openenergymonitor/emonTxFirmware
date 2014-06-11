@@ -19,8 +19,8 @@ Open-hardware schematic and board files: http://solderpad.com/openenergymon/emon
 
 ## RFM12B Firmware
 
-### MAIN EMONTX V3 FIRMWARE *emonTxV3_RFM12B_Discrete Sampling* - 
-**TESTED AND CALIBRATED - all pre-assembled emonTx V3's are shipped with this firmware**
+### MAIN EMONTX V3 FIRMWARE [*emonTxV3_RFM12B_Discrete Sampling* -](https://github.com/openenergymonitor/emonTxFirmware/tree/master/emonTxV3/RFM12B/emonTxV3_RFM12B_DiscreteSampling)
+**TESTED AND CALIBRATED - all pre-assembled emonTx V3's are shipped with this firmware, available on github as .ino and pre-complied .hex**
 
 * Detection of AC-AC adapter sets Apparent Power / Real Power Sampling accordingly
 * Detection of battery / USB 5V or AC > DC power method and sets sleep mode accordingly
