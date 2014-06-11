@@ -1,26 +1,14 @@
 //      Code by Robin Emley (calypso_rae on Open Energy Monitor Forum) - September 2013
 //      Updated November 2013 to include analog and LED pins for the emonTx V3 by Glyn Hudson
-//
-//      Upgrades by RAE, June 2014.  
-//      - The RF transmission interval can now be changed, it was previously fixed at once per second.
-//      - The on-board LED now gives a 40ms pulse when an RF message is sent
-//      - The RFM12B now remains active rather than routinely being put to sleep.  This is to
-//         avoid creating gaps in the continuous monitoring process.
-//      - When run on an emonTx V3, and using a standard SCT-013-000 CT , the calculated values 
-//         of powerCal appear to be within 5% of the optimal values.  
-//
-//      The interrupt-based kernel for this sketch was kindly provided by Jorg Becker.
+//      *IMPORTANT NOTE* - Although this code has been extensivly tested by Robin Emley on the emonTx V2 it has not been tested on the emonTx V3, it should work fine by calibration may need to be tweaked
+
+// Robin: "This sketch provides continuous monitoring of real power on four channels, 
+// as may be useful for the emonTx V3.  It is loosely based  on my existing 
+// sketch, Mk2i_PV_Router_rev5b.ino.  The interrupt-based kernel was kindly 
+// provided by Jorg Becker."
 
 #include <Arduino.h>         // may not be needed, but it's probably a good idea to include this
 #include <RFu_JeeLib.h>     // RFu_JeeLib is available at from: http://github.com/openenergymonitor/RFu_jeelib
-
-#define DATALOG_PERIOD_IN_SECONDS 5
-#define RF_SPARSITY 1 // normally set to 1.  Can be increased to investigate the effect of 
-                      //                         including or omitting RF transmissions
-#define CYCLES_PER_SECOND 50
-#define LED_ON 1
-#define LED_OFF 0
-
 
 // In this sketch, the ADC is free-running with a cycle time of ~104uS.
 
@@ -29,7 +17,7 @@
 //#define WORKLOAD_CHECK  
 
 // ----------------- RF setup  ---------------------
-#define RF_freq RF12_868MHZ // Use the RF_RF_RF_RF_RF_freq to match the module you have.
+#define RF_freq RF12_433MHZ // Use the RF_RF_RF_RF_RF_freq to match the module you have.
 
 const int nodeID = 10;  // emonTx RFM12B node ID
 const int networkGroup = 210;  // emonTx RFM12B wireless network group - needs to be same as emonBase and emonGLCD 
@@ -40,7 +28,7 @@ typedef struct { byte dumpState; int msgNumber; } Tx_struct;    //  data for RF 
 Tx_struct tx_data;
 */
  typedef struct { 
-//   int msgNumber; 
+   int msgNumber; 
    int power_CT1;
    int power_CT2;
    int power_CT3;
@@ -64,12 +52,12 @@ enum polarities {NEGATIVE, POSITIVE};
 // dig pin 13 is for the RFM12B module (CLK) 
 const byte LedPin = 6;                          //emonTx V3 LED pin
 
-// analogue input pins (for emonTx V3): 
+// analogue input pins (for emonTx V3):
 const byte voltageSensor = 0;       // analogue
 const byte currentSensor_CT1 = 1;   // analogue
 const byte currentSensor_CT2 = 2;   // analogue
-const byte currentSensor_CT3 = 3;   // analogue 
-const byte currentSensor_CT4 = 4;   // analogue 
+const byte currentSensor_CT3 = 3;   // analogue
+const byte currentSensor_CT4 = 4;   // analogue
 
 
 // --------------  general global variables -----------------
@@ -142,10 +130,10 @@ const float powerCal_CT2 = (276.9*(3.3/1023))*(90.9*(3.3/1023)); // <---- powerC
 const float powerCal_CT3 = (276.9*(3.3/1023))*(90.9*(3.3/1023)); // <---- powerCal value
 const float powerCal_CT4 = (276.9*(3.3/1023))*(16.6*(3.3/1023)); // <---- powerCal value (2000 / 120R burden resistor)
 
-//const float powerCal_CT1 = 0.044;  // <---- powerCal value  
-//const float powerCal_CT2 = 0.044;  // <---- powerCal value  
-//const float powerCal_CT3 = 0.044;  // <---- powerCal value  
-//const float powerCal_CT4 = 0.044;  // <---- powerCal value  
+//const float powerCal_CT1 = 0.0416;  // <---- powerCal value  
+//const float powerCal_CT2 = 0.0416;  // <---- powerCal value  
+//const float powerCal_CT3 = 0.0416;  // <---- powerCal value  
+//const float powerCal_CT4 = 0.0416;  // <---- powerCal value  
                         
 // phaseCal is used to alter the phase of the voltage waveform relative to the
 // current waveform.  The algorithm interpolates between the most recent pair
@@ -164,29 +152,18 @@ const float  phaseCal_CT3 = 0.6;
 const float  phaseCal_CT4 = 1.25;
 
 int rfsendtimer = 0; // every time this gets to 10 we send an rf packet
-int datalogCountInMainsCycles;
-const int maxDatalogCountInMainsCycles = DATALOG_PERIOD_IN_SECONDS * CYCLES_PER_SECOND;
-float normalisation_CT1;
-float normalisation_CT2;
-float normalisation_CT3;
-float normalisation_CT4;
-
-boolean LED_pulseInProgress = false;
-unsigned long LED_onAt;
-
-
 
 void setup()
 {  
   rf12_initialize(nodeID, RF_freq, networkGroup);             // initialize RF
-//  rf12_sleep(RF12_SLEEP); <- now active continuously 
+  rf12_sleep(RF12_SLEEP);
   
   Serial.begin(9600);                                      // initialize Serial interface
   Serial.println();
   Serial.println();
   Serial.println();
   Serial.println("----------------------------------");
-  Serial.println("Sketch ID:      emonTxV3_4chan.ino");
+  Serial.println("Sketch ID:      emonTxV5_4chan.ino");
        
   pinMode(LedPin, OUTPUT);                                              // Setup indicator LED
        
@@ -204,11 +181,6 @@ void setup()
   DCoffset_V_long = 512L * 256; // nominal mid-point value of ADC @ x256 scale  
   DCoffset_V_min = (long)(512L - 100) * 256; // mid-point of ADC minus a working margin
   DCoffset_V_max = (long)(512L + 100) * 256; // mid-point of ADC plus a working margin
-
-  normalisation_CT1 = powerCal_CT1 / maxDatalogCountInMainsCycles;
-  normalisation_CT2 = powerCal_CT2 / maxDatalogCountInMainsCycles;
-  normalisation_CT3 = powerCal_CT3 / maxDatalogCountInMainsCycles;
-  normalisation_CT4 = powerCal_CT4 / maxDatalogCountInMainsCycles;
 
   Serial.println ("ADC mode:       free-running");
   
@@ -408,8 +380,8 @@ void allGeneralProcessing()
   static enum polarities polarityOfLastSampleV;  // for zero-crossing detection
   static long cumVdeltasThisCycle_long;    // for the LPF which determines DC offset (voltage)
   static long lastSampleVminusDC_long;     //    for the phaseCal algorithm
-  static byte whenToSendRFmessageCount = 0;
-  
+  static int msgNumber = 0;
+
   // remove DC offset from the raw voltage sample by subtracting the accurate value 
   // as determined by a LP filter.
   long sampleVminusDC_long = ((long)sampleV<<8) - DCoffset_V_long; 
@@ -470,67 +442,37 @@ void allGeneralProcessing()
         energyInBucket_long_CT3 += realEnergy_long_CT3;    
         energyInBucket_long_CT4 += realEnergy_long_CT4;    
         
-        datalogCountInMainsCycles++;
-        
-        if (datalogCountInMainsCycles >= maxDatalogCountInMainsCycles)
+        if ((cycleCount % 50) == 0)
         {         
-          tx_data.power_CT1 = energyInBucket_long_CT1 * normalisation_CT1;
-          tx_data.power_CT2 = energyInBucket_long_CT2 * normalisation_CT2;
-          tx_data.power_CT3 = energyInBucket_long_CT3 * normalisation_CT3;
-          tx_data.power_CT4 = energyInBucket_long_CT4 * normalisation_CT4;          
-          boolean OKtoSend;
+          tx_data.power_CT1 = energyInBucket_long_CT1 * (powerCal_CT1/50);
+          tx_data.power_CT2 = energyInBucket_long_CT2 * (powerCal_CT2/50);
+          tx_data.power_CT3 = energyInBucket_long_CT3 * (powerCal_CT3/50);
+          tx_data.power_CT4 = energyInBucket_long_CT4 * (powerCal_CT4/50);
+
+          rfsendtimer++;
           
-          // for investigating the effect of RF transmissions on the sampling process
-          if (RF_SPARSITY == 1)
-          {
-            OKtoSend = true; 
-          }
-          else
-          {
-            whenToSendRFmessageCount++;
-            if (whenToSendRFmessageCount >= RF_SPARSITY)
-            {
-              whenToSendRFmessageCount = 0;
-              OKtoSend = true; 
-            }
-            else
-            {
-              OKtoSend = false;
-            } 
-          }
-          
+          if (rfsendtimer>=10) {
+            tx_data.msgNumber = msgNumber++; // increment
+            send_rf_data();  
+            rfsendtimer = 0;
+          }         
          
-          if (OKtoSend)
-          {
-            send_rf_data(); 
-            digitalWrite(LedPin, LED_ON); 
-            LED_pulseInProgress = true;        
-          }
-          
-          // Serial activity has to follow RF
           Serial.print(tx_data.power_CT1);
+          energyInBucket_long_CT1 = 0;         
           Serial.print(", ");
           Serial.print(tx_data.power_CT2);
+          energyInBucket_long_CT2 = 0;
           Serial.print(", ");
           Serial.print(tx_data.power_CT3);
+          energyInBucket_long_CT3 = 0;
           Serial.print(", ");
           Serial.print(tx_data.power_CT4);
+          energyInBucket_long_CT4 = 0;
           
-          if (OKtoSend)
-          {
-            Serial.println();
-          }
-          else
-          {
-            Serial.println(" << RF not sent!");
-          }  
-
-          
-          datalogCountInMainsCycles = 0;
-          energyInBucket_long_CT1 = 0;         
-          energyInBucket_long_CT2 = 0;         
-          energyInBucket_long_CT3 = 0;         
-          energyInBucket_long_CT4 = 0;            
+          Serial.print(", ");
+          Serial.println(samplesDuringThisCycle);
+   
+          digitalWrite(LedPin, tx_data.msgNumber & 0x01);    
         }
 
         // clear the per-cycle accumulators for use in this new mains cycle.  
@@ -579,8 +521,6 @@ void allGeneralProcessing()
       else  
       if (DCoffset_V_long > DCoffset_V_max) {
         DCoffset_V_long = DCoffset_V_max; }
-        
-      check_LED_status();
         
     } // end of processing that is specific to the first Vsample in each -ve half cycle
   } // end of processing that is specific to samples where the voltage is positive
@@ -642,41 +582,26 @@ void allGeneralProcessing()
 // end of loop()
 
 
-void check_LED_status()
-{
-  if (LED_pulseInProgress == true)
-  {
-    if (cycleCount > (LED_onAt + 2)) // pulse duration = 40 ms
-    {
-      digitalWrite(LedPin, LED_OFF); 
-      LED_pulseInProgress = false; 
-    }
-  }
-}  
-
-
 void send_rf_data()
 {
-//  rf12_sleep(RF12_WAKEUP);
-  // if ready to send + exit route if it gets stuck   
+  rf12_sleep(RF12_WAKEUP);
+  // if ready to send + exit route if it gets stuck 
   int i = 0; 
   while (!rf12_canSend() && i<10)
   { 
     rf12_recvDone(); 
     i++;
-  }  
-//  rf12_sendStart(0, &tx_data, sizeof tx_data);
-  rf12_sendNow(0, &tx_data, sizeof tx_data);
-
-//  rf12_sendWait(2);  <- removed because this is a 'blocking' function
-//  rf12_sleep(RF12_SLEEP); <- the RF chip is now always in its active state
+  }
+  rf12_sendStart(0, &tx_data, sizeof tx_data);
+  rf12_sendWait(2);
+  rf12_sleep(RF12_SLEEP);
 }
-
 
 int freeRam () {
   extern int __heap_start, *__brkval; 
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 

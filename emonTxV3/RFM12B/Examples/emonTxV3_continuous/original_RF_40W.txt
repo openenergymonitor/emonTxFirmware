@@ -1,0 +1,75 @@
+This version has the original RF code.  For any channel with
+no signal present, the 'zero' value of power is affected
+whenever an RF transmit event occurs.  This is seen in the
+datalogging period which follows immediately after the RF event. 
+
+----------------------------------
+Sketch ID:      emonTxV5_4chan.ino
+ADC mode:       free-running
+Extra Features: none
+powerCal_CT1 =      0.2619
+phaseCal_CT1 =      0.22
+powerCal_CT2 =      0.2619
+phaseCal_CT2 =      0.41
+powerCal_CT3 =      0.2619
+phaseCal_CT3 =      0.60
+powerCal_CT4 =      0.0478
+phaseCal_CT4 =      1.25
+----
+Go!
+RF not sent
+-40, 0, 0, 0  <- 40W bulb at CT1
+RF not sent
+-40, 0, 0, 0
+>> RF sent
+-40, 0, 0, 0
+RF not sent
+-40, 4, 5, 1  <- disturbance :(
+RF not sent
+21, -31, 0, 0  <- bulb moved to CT2
+>> RF sent
+0, -43, 0, 0
+RF not sent
+4, -42, 5, 1  <- disturbance :(
+RF not sent
+0, -39, 0, 0
+>> RF sent
+0, -39, 0, 0
+RF not sent
+4, -39, 5, 1  <- disturbance :(
+RF not sent
+0, 1, -16, 0  <- bulb moved to CT3
+>> RF sent
+0, 0, -49, 0
+RF not sent
+4, 4, -43, 1  <- disturbance :(
+RF not sent
+0, 0, -43, 0
+>> RF sent
+0, 0, -41, 0
+RF not sent
+4, 4, -40, 1  <- disturbance :(
+RF not sent
+0, 0, 6, -8  <- bulb moved to CT4
+>> RF sent
+-2, -1, -1, -41
+RF not sent
+4, 4, 4, -40  <- disturbance :(
+RF not sent
+0, 0, 0, -40
+>> RF sent
+0, 0, 0, -40
+RF not sent
+4, 4, 5, -40  <- disturbance :(
+RF not sent
+0, 0, 0, -40
+>> RF sent
+0, 0, 0, -9  <- bulb switched off
+RF not sent
+4, 4, 5, 0  <- disturbance :(
+RF not sent
+0, 0, 0, 0
+>> RF sent
+-1, 0, 0, 0
+RF not sent
+4, 4, 4, 0  <- disturbance :(

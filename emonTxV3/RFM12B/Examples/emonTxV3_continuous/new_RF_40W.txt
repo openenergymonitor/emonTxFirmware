@@ -1,0 +1,79 @@
+In this this version of the sketch, the RF code has been modified.
+No disturbance is seen after a RF transmit event has occurred.  
+
+
+Go!
+RF not sent
+-15, 0, 1, 2
+RF not sent
+-1, 0, 0, 0
+>> RF sent
+0, 0, 0, 0  
+RF not sent
+0, 0, 0, 0  <- no disturbance :)
+RF not sent
+0, 0, 0, 0
+>> RF sent
+0, 0, 0, 0
+RF not sent
+0, 0, 0, 0<- no disturbance :)
+RF not sent
+-27, 0, 0, 0   <- 40W bulb at CT1
+>> RF sent
+-41, 0, 0, 0
+RF not sent
+-41, 0, 0, 0<- no disturbance :)
+RF not sent
+-41, 0, 0, 0
+>> RF sent
+-41, 0, 0, 0
+RF not sent
+-41, 0, 0, 0<- no disturbance :)
+RF not sent
+-3, -10, 0, 0  <- bulb moved to CT2
+>> RF sent
+0, -49, 0, 0
+RF not sent
+0, -41, 0, 0<- no disturbance :)
+RF not sent
+0, -39, 0, 0
+>> RF sent
+0, -39, 0, 0
+RF not sent
+0, -40, 0, 0<- no disturbance :)
+RF not sent
+0, 6, -34, 0  <- bulb moved to CT3
+>> RF sent
+0, 0, -44, 0
+RF not sent
+0, 0, -43, 0<- no disturbance :)
+RF not sent
+0, 0, -41, 0
+>> RF sent
+0, 0, -40, 0
+RF not sent
+0, 0, -39, 0<- no disturbance :)
+RF not sent
+-1, 0, -17, -11  <- bulb moved to CT4
+>> RF sent
+-1, -1, -1, -41
+RF not sent
+0, 0, 0, -40<- no disturbance :)
+RF not sent
+0, 0, 0, -40
+>> RF sent
+0, 0, 0, -40
+RF not sent
+0, 0, 0, -40<- no disturbance :)
+RF not sent
+0, 0, 0, -14  <- bulb switched off
+>> RF sent
+0, 0, 0, 0
+RF not sent
+0, 0, 0, 0<- no disturbance :)
+RF not sent
+0, 0, 0, 0
+>> RF sent
+0, 0, 0, 0
+RF not sent
+0, 0, 0, 0

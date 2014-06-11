@@ -37,15 +37,11 @@ Open-hardware schematic and board files: http://solderpad.com/openenergymon/emon
 
 * **emonTxV3_continuous** - PLL continuous sampling example contributed by MartinR, as used in PV controller MK2
 
-* **emonTxV3_continuous_kwhtotals** - same as emonTxV3_continuous but also keeps track of current Kwh totals
-
-* **emonTxV3_continuous_kwhtotals_eeprom** same as emonTxV3_continuous but also keeps track of current Kwh totals and saves to ATmega328 EEPROM
-
-* **emonTxV3_continuous_kwhtotals_noeeprom**
+* **emonTxV3_continuous_kwhtotals_noeeprom** - same as emonTxV3_continuous but also keeps track of current Kwh totals
 
 * **emonTxV3_continuous_reciever** Receiver example for Continuous Sampling
 
-* **EmonTxV3HeatpumpMonitor** - Example for monitoring a heatpump with 4 x DS18B20 temperature sensors and 3 x CT current sensors and AC adapter
+* **EmonTxV3HeatpumpMonitor** - Example for monitoring a heatpump with 4 x DS18B20 temperature sensors and 3 x CT current sensors and AC adapter. Power values are in J instead of W
 
 * **emonTxV3_Pulse** - pulse counting example for interfacing with utility meter see [technical wiki documentation](http://wiki.openenergymonitor.org/index.php?title=EmonTx_V3#Utility_Meter_Interface)
 
