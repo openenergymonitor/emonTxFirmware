@@ -16,9 +16,13 @@
 EnergyMonitor ct1, ct2, ct3, ct4;
 
 unsigned long lastpost = 0;
+const byte LEDpin=                          6;                               // emonTx V3 LED
 
 void setup()
 {    
+  pinMode(LEDpin, OUTPUT); 
+  digitalWrite(LEDpin,HIGH); 
+  
   Serial.begin(9600);
   Serial.println("emonTx V3 Direct serial Example");
   
@@ -39,10 +43,14 @@ void setup()
   ct4.current(4, 16.6);
   
   lastpost = 0;
+  
+  delay(2000);
+  digitalWrite(LEDpin,LOW); 
 }
 
 void loop()
 { 
+  
   // A simple timer to fix the post rate to once every 10 seconds
   // Please dont post faster than once every 5 seconds to emoncms.org
   // Host your own local installation of emoncms for higher resolutions
@@ -57,11 +65,16 @@ void loop()
     ct4.calcVI(20,2000); 
     
     // Print to serial
+    
     Serial.print(ct1.realPower); Serial.print(' '); 
     Serial.print(ct2.realPower); Serial.print(' '); 
     Serial.print(ct3.realPower); Serial.print(' '); 
     Serial.print(ct4.realPower); Serial.print(' '); 
     Serial.println(ct1.Vrms);
+    
+    digitalWrite(LEDpin,HIGH); 
+    delay(200);
+    digitalWrite(LEDpin,LOW); 
     
     // Note: the following measurements are also available:
     // - ct1.apparentPower
