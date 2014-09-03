@@ -1,9 +1,10 @@
-// This sketch provides continuous monitoring of real power on four channels, 
-// which are split across two phases.  The interrupt-based kernel was kindly 
-// provided by Jorg Becker.
+// This sketch provides continuous single phase monitoring of real power on three CT channels.
+// The interrupt-based kernel was kindly provided by Jorg Becker.
+// NOTE: This sketch is specifically for a 50 Hz system.
 //
-//      Robin Emley (calypso_rae on Open Energy Monitor Forum)
-//      October 2013
+// Original Author: Robin Emley (calypso_rae on Open Energy Monitor Forum)
+// Addition of Wh totals by: Trystan Lea
+
 
 #include <Arduino.h> // may not be needed, but it's probably a good idea to include this
 #include <JeeLib.h>     // RFu_JeeLib is available at from: http://github.com/openenergymonitor/RFu_jeelib
@@ -500,7 +501,7 @@ void allGeneralProcessing()
             Serial.print(':');
             Serial.print(tx_data.wh_CT3);           
            break;
-          case 80: 
+          case 100: 
             tx_data.msgNumber = msgNumber++;
   
             sequenceCount = 0;
@@ -508,7 +509,7 @@ void allGeneralProcessing()
                      
             break;
           default: 
-            if (sequenceCount > 80) {
+            if (sequenceCount > 100) {
               // should never get here
               sequenceCount = 0; }         
         }
