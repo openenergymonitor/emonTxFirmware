@@ -1,11 +1,11 @@
-// This sketch provides continuous monitoring of real power on four channels, 
-// which are split across two phases.  The interrupt-based kernel was kindly 
-// provided by Jorg Becker.
+// This sketch provides continuous single phase monitoring of real power on four CT channels.
+// The interrupt-based kernel was kindly provided by Jorg Becker.
+// NOTE: This sketch is specifically for a 50 Hz system.
 //
-//      Robin Emley (calypso_rae on Open Energy Monitor Forum)
-//      October 2013
+// Original Author: Robin Emley (calypso_rae on Open Energy Monitor Forum)
+// Addition of Wh totals by: Trystan Lea
 
-#include <Arduino.h> // may not be needed, but it's probably a good idea to include this
+#include <Arduino.h>        // may not be needed, but it's probably a good idea to include this
 #include <RFu_JeeLib.h>     // RFu_JeeLib is available at from: http://github.com/openenergymonitor/RFu_jeelib
 
 #include <avr/eeprom.h>
@@ -186,7 +186,7 @@ void setup()
   Serial.println();
   Serial.println();
   Serial.println("----------------------------------");
-  Serial.println("Sketch ID:  TwoPhaseFourChannel_RPmonitor_1.ino");
+  Serial.println("Sketch ID:  emonTxV3_continuous_kwhtotals_noeeprom.ino");
   
   pinMode(LEDpin, OUTPUT); 
   digitalWrite(LEDpin, LED_OFF); 
