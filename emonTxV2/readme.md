@@ -32,9 +32,12 @@ The EmonTx code guide goes through main components required to put a full emontx
 
 * **emonTx_CT123_Voltage_Temp** - Voltage and current based electricity measurement and 4 × temperature sensors ideal for heatpump monitoring or solar hot water system monitoring. See also: Application note: [Heatpump](http://openenergymonitor.org/emon/applications/heatpump), Building blocks: [DS18B20 temperature sensing](http://openenergymonitor.org/emon/buildingblocks/DS18B20-temperature-sensing), [EmonTx Temperature sensor connection reference](http://openenergymonitor.org/emon/emontx/reference%20)
 
-* **emonTx_Pulse** - Use for counting pulses from pulse output utility meter (flashing LED). Optical sensor can be used to detect pulses. 
+* **emonTx_Pulse** - Use for counting pulses from pulse output utility meters (flashing LED). An optical sensor can be used to detect pulses. See also: [EmonTx Pulse input connection reference](http://openenergymonitor.org/emon/emontx/reference%20), Building blocks: [Introduction to pulse counting](http://openenergymonitor.org/emon/buildingblocks/introduction-to-pulse-counting), [Gas metering](http://openenergymonitor.org/emon/buildingblocks/gas-meter-monitoring)
 
 * **emonTx_Temperature** - For using multiple DS18B20 temperature sensors on a one-wire bus with emonTx. Uses direct addressing method, run the 'temperature search' sketch to find the addresses of the DS18B20 sensors and insert into main example. http://openenergymonitor.org/emon/buildingblocks/DS18B20-temperature-sensing
+
+* **Elster meter interface only** - Note: RF trasmittion needs to be added to this firmware. Application note: [Elster meter reader](http://openenergymonitor.blogspot.co.uk/2012/08/reading-watt-hour-data-from-elster.html)
+
 
 **Note:** CT must be clipped round either the Live or Neutral wire, not both! 
 
