@@ -25,9 +25,10 @@ The EmonTx code guide goes through main components required to put a full emontx
 * [08 - Watchdog](https://github.com/openenergymonitor/emonTxFirmware/tree/master/emonTxV2/Guide/h_watchdog/h_watchdog.ino)
 
 ## Full emonTx V2 Firmware's
-* **emonTx_CT123** - Apparent Power Example - Use this example if only using CT sensors. Monitors AC current using one CT sensor and transmit data via wireless using RFM12B to emonBase. 
 
-* **emonTx_CT123_Voltage** - Real Power - Use this example if using an AC-AC adapter with as well as CT sensors. AC-AC plug-in adapter to monitors AC RMS voltage and give real power and current direction readings. 
+* **emonTx_CT123** - Apparent Power Example - Use this example if only using CT sensors. Monitors AC current using one CT sensor and transmit data via wireless using RFM12B to emonBase. See also: [Apparent power](http://openenergymonitor.org/emon/buildingblocks/ac-power-introduction), [Electricity monitoring](http://openenergymonitor.org/emon/applications/homeenergy)
+
+* **emonTx_CT123_Voltage** - Real Power - Use this example if using an AC-AC adapter with as well as CT sensors. AC-AC plug-in adapter to monitors AC RMS voltage and give real power and current direction readings. See also: [Apparent power](http://openenergymonitor.org/emon/buildingblocks/ac-power-introduction), [Electricity monitoring](http://openenergymonitor.org/emon/applications/homeenergy), [SolarPV](http://openenergymonitor.org/emon/applications/solarpv)
 
 * **emonTx_CT123_Voltage_Temp** - Real Power & temperature- Use this example if using an AC-AC adapter with as well as CT sensors. It also detects the DS18B20 's connected and report the temperature of them.
 
