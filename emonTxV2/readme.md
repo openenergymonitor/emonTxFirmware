@@ -41,7 +41,16 @@ The EmonTx code guide goes through main components required to put a full emontx
 
 **Note:** CT must be clipped round either the Live or Neutral wire, not both! 
 
-When the example has been successfully uploaded the green LED should blink quickly once every 10's
+### RF Network Settings
+At the top of each firmware example you will see the following three lines:
+
+    #define freq RF12_433MHZ
+    const int nodeID = 10;
+    const int networkGroup = 210;
+
+These set the RF network configuration. The frequency set in the firmware needs to be set to the frequency of the hardware modules. If you have 868MHz hardware modules change the first line to: #define freq RF12_868MHZ. The nodeID needs to be unique for each node on the network and the network group needs to be the same for each node on the network.
+
+Read more about the RFM12B the wireless transceiver module used here: [Sending data between modules with the RFM12B](http://openenergymonitor.org/emon/buildingblocks/rfm12b2)
 
 
 # License
