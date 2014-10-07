@@ -25,19 +25,32 @@ The EmonTx code guide goes through main components required to put a full emontx
 * [08 - Watchdog](https://github.com/openenergymonitor/emonTxFirmware/tree/master/emonTxV2/Guide/h_watchdog/h_watchdog.ino)
 
 ## Full emonTx V2 Firmware's
-* **emonTx_CT123** - Apparent Power Example - Use this example if only using CT sensors. Monitors AC current using one CT sensor and transmit data via wireless using RFM12B to emonBase. 
 
-* **emonTx_CT123_Voltage** - Real Power - Use this example if using an AC-AC adapter with as well as CT sensors. AC-AC plug-in adapter to monitors AC RMS voltage and give real power and current direction readings. 
+* **emonTx_CT123** - Apparent Power Example - Use this example if only using CT sensors. Monitors AC current using one CT sensor and transmit data via wireless using RFM12B to emonBase. See also: [Apparent power](http://openenergymonitor.org/emon/buildingblocks/ac-power-introduction), [Electricity monitoring](http://openenergymonitor.org/emon/applications/homeenergy)
 
-* **emonTx_CT123_Voltage_Temp** - Real Power & temperature- Use this example if using an AC-AC adapter with as well as CT sensors. It also detects the DS18B20 's connected and report the temperature of them.
+* **emonTx_CT123_Voltage** - Real Power - Use this example if using an AC-AC adapter with as well as CT sensors. AC-AC plug-in adapter to monitors AC RMS voltage and give real power and current direction readings. See also: [Apparent power](http://openenergymonitor.org/emon/buildingblocks/ac-power-introduction), [Electricity monitoring](http://openenergymonitor.org/emon/applications/homeenergy), [SolarPV](http://openenergymonitor.org/emon/applications/solarpv)
 
-* **emonTx_Pulse** - Use for counting pulses from pulse output utility meter (flashing LED). Optical sensor can be used to detect pulses. 
+* **emonTx_CT123_Voltage_Temp** - Voltage and current based electricity measurement and 4 × temperature sensors ideal for heatpump monitoring or solar hot water system monitoring. See also: Application note: [Heatpump](http://openenergymonitor.org/emon/applications/heatpump), Building blocks: [DS18B20 temperature sensing](http://openenergymonitor.org/emon/buildingblocks/DS18B20-temperature-sensing), [EmonTx Temperature sensor connection reference](http://openenergymonitor.org/emon/emontx/reference%20)
+
+* **emonTx_Pulse** - Use for counting pulses from pulse output utility meters (flashing LED). An optical sensor can be used to detect pulses. See also: [EmonTx Pulse input connection reference](http://openenergymonitor.org/emon/emontx/reference%20), Building blocks: [Introduction to pulse counting](http://openenergymonitor.org/emon/buildingblocks/introduction-to-pulse-counting), [Gas metering](http://openenergymonitor.org/emon/buildingblocks/gas-meter-monitoring)
 
 * **emonTx_Temperature** - For using multiple DS18B20 temperature sensors on a one-wire bus with emonTx. Uses direct addressing method, run the 'temperature search' sketch to find the addresses of the DS18B20 sensors and insert into main example. http://openenergymonitor.org/emon/buildingblocks/DS18B20-temperature-sensing
 
+* **Elster meter interface only** - Note: RF trasmittion needs to be added to this firmware. Application note: [Elster meter reader](http://openenergymonitor.blogspot.co.uk/2012/08/reading-watt-hour-data-from-elster.html)
+
+
 **Note:** CT must be clipped round either the Live or Neutral wire, not both! 
 
-When the example has been successfully uploaded the green LED should blink quickly once every 10's
+### RF Network Settings
+At the top of each firmware example you will see the following three lines:
+
+    #define freq RF12_433MHZ
+    const int nodeID = 10;
+    const int networkGroup = 210;
+
+These set the RF network configuration. The frequency set in the firmware needs to be set to the frequency of the hardware modules. If you have 868MHz hardware modules change the first line to: #define freq RF12_868MHZ. The nodeID needs to be unique for each node on the network and the network group needs to be the same for each node on the network.
+
+Read more about the RFM12B the wireless transceiver module used here: [Sending data between modules with the RFM12B](http://openenergymonitor.org/emon/buildingblocks/rfm12b2)
 
 
 # License
