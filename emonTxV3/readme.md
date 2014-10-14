@@ -35,7 +35,7 @@ Open-hardware schematic and board files: http://solderpad.com/openenergymon/emon
 
 * **emonTxV3_RealPower_Voltage** -Real Power - Use this example if using an AC-AC adapter with as well as CT sensors. AC-AC plug-in adapter to monitors AC RMS voltage and give real power and current direction readings.
 
-* **emonTxV3_continuous** - PLL continuous sampling example contributed by MartinR, as used in PV controller MK2
+* **emonTxV3_continuous** - continuous sampling example contributed by Robin Emley as used in his Mk2 PV Router design
 
 * **emonTxV3_continuous_kwhtotals_noeeprom** - same as emonTxV3_continuous but also keeps track of current Kwh totals
 
