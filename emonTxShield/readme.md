@@ -23,7 +23,10 @@ http://shop.openenergymonitor.com/emontx-shield/
 
 * **Shield_CT1234_Voltage_NanodeRF** - NO RF - Real Power - Use this example if using an AC-AC adapter with as well as CT sensors. AC-AC plug-in adapter to monitors AC RMS voltage and give real power and current direction readings. Designed for use with the emonTx Shield mounted on a nanode RF. No RF module is required on either shield or Nanode, the power readings are posted stright to emoncms.org via Etherent on the Nanode
 
-* **Shield_CT1234_SerialOnly** - NO RF - Real Power - Use this example if using an AC-AC adapter with as well as CT sensors. AC-AC plug-in adapter to monitors AC RMS voltage and give real power. Prints out power readings via Arduino Serial port. No RF required. 
+* **Shield_CT1234_SerialOnly** - NO RF - Real Power - Use this example if using an AC-AC adapter with as well as CT sensors. AC-AC plug-in adapter to monitors AC RMS voltage and give real power. Prints out power readings via Arduino Serial port. No RF required.
+
+* **Continuous monitoring sketch with MQTT publishing (over ethernet)** by Ben Jones (sumnerboy). Based on the continuous monitoring sketch, originally written by Robin (calypso_rae). It will make real power measurements on all 4 CT sensors and publish results to various MQTT topics every 5 seconds. See forum post for source code and discussion: [http://openenergymonitor.org/emon/node/5922](http://openenergymonitor.org/emon/node/5922) 
+
 
 
 
