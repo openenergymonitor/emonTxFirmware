@@ -1,11 +1,11 @@
 /*
   
-  emonTxV3 Discrete Sampling
+  emonTxV3.4 Discrete Sampling
   
   If AC-AC adapter is detected assume emonTx is also powered from adapter (jumper shorted) and take Real Power Readings and disable sleep mode to keep load on power supply constant
   If AC-AC addapter is not detected assume powering from battereis / USB 5V AC sample is not present so take Apparent Power Readings and enable sleep mode
   
-  Transmitt values via RFM12B radio
+  Transmitt values via RFM69CW radio
   
    -----------------------------------------
   Part of the openenergymonitor.org project
@@ -31,7 +31,7 @@
 
 
 Change Log:
-V1.4 - Support for RFM69CW on emonTx V3.4
+V1.4 - Support for RFM69CW and DIP switches on emonTx V3.4
 V1.3 - fix filter settle time to eliminate large inital reading
 V1.2 - fix bug which caused Vrms to be returned as zero if CT1 was not connected 
 V1.1 - fix bug in startup Vrms calculation, startup Vrms startup calculation is now more accuratre
