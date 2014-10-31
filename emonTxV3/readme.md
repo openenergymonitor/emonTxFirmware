@@ -17,6 +17,19 @@ Open-hardware schematic and board files: http://solderpad.com/openenergymon/emon
 
 **Note:** CT must be clipped round either the Live or Neutral wire, not both! 
 
+## RFM69CW Firmware
+
+### MAIN EMONTX V3.4 FIRMWARE 
+**TESTED AND CALIBRATED - all pre-assembled emonTx V3.4 are shipped with this firmware, available on github as .ino and pre-complied .hex**
+
+* Detection of AC-AC adapter sets Apparent Power / Real Power Sampling accordingly
+* Detection of battery / USB 5V or AC > DC power method and sets sleep mode accordingly
+* Detection of CT connections and samples only from the channels needed
+* Detection of remote DS18B20 temperature sensor connection
+* DIP switch 1 (closes to RF module) to select node ID. (Switch off node ID =10, switch on node ID = 9)
+* DIP switch 2 to select UK/EU or USA AC-AC adapter calibration (Switch off = UK/EU, Switch on = USA)
+
+
 ## RFM12B Firmware
 
 ### MAIN EMONTX V3 FIRMWARE [*emonTxV3_RFM12B_Discrete Sampling* -](https://github.com/openenergymonitor/emonTxFirmware/tree/master/emonTxV3/RFM12B/emonTxV3_RFM12B_DiscreteSampling)
