@@ -10,7 +10,8 @@ Technical emonTx V3 wiki ocumentation: http://wiki.openenergymonitor.org/index.p
 Open-hardware schematic and board files: http://solderpad.com/openenergymon/emontxv3/
 
 ## Libraries Needed
-* RFu_JeeLib: https://github.com/openenergymonitor/RFu_jeelib
+* emonTx V3.4 - JeeLib:  https://github.com/jeelib/jcw
+* emonTx V3.2 - RFu_JeeLib: https://github.com/openenergymonitor/RFu_jeelib
 * Mains Voltage and current: https://github.com/openenergymonitor/EmonLib
 * Temperature control library: http://download.milesburton.com/Arduino/MaximTemperature/ (version 372 works with Arduino 1.0) and OneWire library: http://www.pjrc.com/teensy/td_libs_OneWire.html
 * ElsterMeterReader: https://github.com/openenergymonitor/ElsterMeterReader
@@ -22,6 +23,7 @@ Open-hardware schematic and board files: http://solderpad.com/openenergymon/emon
 ### MAIN EMONTX V3.4 FIRMWARE 
 **TESTED AND CALIBRATED - all pre-assembled emonTx V3.4 are shipped with this firmware, available on github as .ino and pre-complied .hex**
 
+Need to use standard JeeLib library
 * Detection of AC-AC adapter sets Apparent Power / Real Power Sampling accordingly
 * Detection of battery / USB 5V or AC > DC power method and sets sleep mode accordingly
 * Detection of CT connections and samples only from the channels needed
