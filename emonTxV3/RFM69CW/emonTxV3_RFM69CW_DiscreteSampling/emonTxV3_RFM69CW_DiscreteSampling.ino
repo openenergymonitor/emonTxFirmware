@@ -39,7 +39,7 @@ V1.1 - fix bug in startup Vrms calculation, startup Vrms startup calculation is 
 
 #define emonTxV3                                                                          // Tell emonLib this is the emonTx V3 - don't read Vcc assume Vcc = 3.3V as is always the case on emonTx V3 eliminates bandgap error and need for calibration http://harizanov.com/2013/09/thoughts-on-avr-adc-accuracy/
 #define RF69_COMPAT 1                                                              // Set to 1 if using RFM69CW or 0 is using RFM12B
-#include <JeeLib.h>                                                                      //https://github.com/jcw/jeelib
+#include <JeeLib.h>                                                                      //https://github.com/jcw/jeelib - Tested with JeeLib 3/11/14
 ISR(WDT_vect) { Sleepy::watchdogEvent(); }                            // Attached JeeLib sleep function to Atmega328 watchdog -enables MCU to be put into sleep mode inbetween readings to reduce power consumption 
 
 #include "EmonLib.h"                                                                    // Include EmonLib energy monitoring library https://github.com/openenergymonitor/EmonLib
@@ -63,6 +63,7 @@ const float Ical3=                90.9;                                 // (2000
 const float Ical4=                16.67;                               // (2000 turns / 120 Ohm burden) = 16.67
 
 float Vcal=                 268.97;                             // (230V x 13) / (9V x 1.2) = 276.9 Calibration for UK AC-AC adapter 77DB-06-09 
+//float Vcal=276.9;
 //const float Vcal=                 260;                             //  Calibration for EU AC-AC adapter 77DE-06-09 
 const float Vcal_USA=        130.0;                             //Calibration for US AC-AC adapter 77DA-10-09
 boolean USA=FALSE; 
@@ -144,7 +145,7 @@ void setup()
    }
   rf12_sendWait(2);
   emontx.power1=0;
-  rf12_sleep(RF12_SLEEP);   
+ 
  
    
 
@@ -384,13 +385,13 @@ void loop()
   //{ 
     send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
     
-    if (ACAC)
+    if (ACAC)                                                               //If powered by AC-AC adaper (mains power) then delay instead of sleep
     {
      delay(TIME_BETWEEN_READINGS*1000);
      digitalWrite(LEDpin, HIGH); delay(200); digitalWrite(LEDpin, LOW);    // flash LED - turn off to save power
     }
     
-    else
+    else                                                                  //if powered by battery then sleep rather than dealy and disable LED to lower energy consumption  
       emontx_sleep(TIME_BETWEEN_READINGS);                                  // sleep or delay in seconds 
 //  }  
  
@@ -401,7 +402,7 @@ void send_rf_data()
   rf12_sleep(RF12_WAKEUP);                                   
   rf12_sendNow(0, &emontx, sizeof emontx);                           //send temperature data via RFM12B using new rf12_sendNow wrapper
   rf12_sendWait(2);
-  rf12_sleep(RF12_SLEEP);
+  if (ACAC==FALSE) rf12_sleep(RF12_SLEEP);                             //if powred by battery then put the RF module into sleep inbetween readings 
 }
 
 void emontx_sleep(int seconds) {
