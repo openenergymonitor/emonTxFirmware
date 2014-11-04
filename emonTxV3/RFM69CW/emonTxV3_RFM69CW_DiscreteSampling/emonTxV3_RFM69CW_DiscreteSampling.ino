@@ -31,7 +31,7 @@
 
 
 Change Log:
-V1.4 - Support for RFM69CW and DIP switches on emonTx V3.4
+V1.4 - Support for RFM69CW, DIP switches and battery voltage reading on emonTx V3.4
 V1.3 - fix filter settle time to eliminate large inital reading
 V1.2 - fix bug which caused Vrms to be returned as zero if CT1 was not connected 
 V1.1 - fix bug in startup Vrms calculation, startup Vrms startup calculation is now more accuratre
