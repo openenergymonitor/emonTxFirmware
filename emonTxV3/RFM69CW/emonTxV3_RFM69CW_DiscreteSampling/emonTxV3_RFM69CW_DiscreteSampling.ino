@@ -62,16 +62,16 @@ const float Ical2=                90.9;                                 // (2000
 const float Ical3=                90.9;                                 // (2000 turns / 22 Ohm burden) = 90.9
 const float Ical4=                16.67;                               // (2000 turns / 120 Ohm burden) = 16.67
 
-float Vcal=                 268.97;                             // (230V x 13) / (9V x 1.2) = 276.9 Calibration for UK AC-AC adapter 77DB-06-09 
+float Vcal=                            268.97;                             // (230V x 13) / (9V x 1.2) = 276.9 Calibration for UK AC-AC adapter 77DB-06-09 
 //float Vcal=276.9;
-//const float Vcal=                 260;                             //  Calibration for EU AC-AC adapter 77DE-06-09 
+//const float Vcal=               260;                             //  Calibration for EU AC-AC adapter 77DE-06-09 
 const float Vcal_USA=        130.0;                             //Calibration for US AC-AC adapter 77DA-10-09
 boolean USA=FALSE; 
 
-const float phase_shift=          1.7;
-const int no_of_samples=          1480; 
+const float phase_shift=     1.7;
+const int no_of_samples=  1480; 
 const int no_of_half_wavelengths= 20;
-const int timeout=                2000;                               //emonLib timeout 
+const int timeout=               2000;                               //emonLib timeout 
 const int ACAC_DETECTION_LEVEL=   3000;
 const int TEMPERATURE_PRECISION=  11;                 //9 (93.8ms),10 (187.5ms) ,11 (375ms) or 12 (750ms) bits equal to resplution of 0.5C, 0.25C, 0.125C and 0.0625C
 //#define FILTERSETTLETIME          25000                     // Time (ms) to allow the filters to settle before sending data
@@ -85,6 +85,7 @@ const byte LEDpin=                     6;                              // emonTx
 const byte DS18B20_PWR=     19;                              // DS18B20 Power
 const byte DIP_switch1=            8;                             // Voltage selection 230 / 110 V AC (default switch off 230V)  - switch off D8 is HIGH from internal pullup
 const byte DIP_switch2=            9;                             // RF node ID (default no chance in node ID, switch on for nodeID -1) switch off D9 is HIGH from internal pullup
+const byte battery_voltage_pin=7; 
 #define ONE_WIRE_BUS              5                              // DS18B20 Data                     
 //-------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -294,7 +295,7 @@ void loop()
   
   if (ACAC) {
     delay(200);                                //if powering from AC-AC allow time for power supply to settle    
-    emontx.Vrms=0;                                    //Set Vrms to zero, this will be overwirtten by wither CT 1-4
+    emontx.Vrms=0;                      //Set Vrms to zero, this will be overwirtten by wither CT 1-4
   }
   
   if (CT1) 
@@ -375,7 +376,12 @@ void loop()
   }
   
   
-  
+  if (ACAC==false){                                                                                         //read battery voltage if powered by DC
+    int battery_voltage=digitalRead(battery_voltage_pin) * 0.6445313;     //6.6V battery = 3.3V input = 1024 ADC
+    emontx.Vrms= battery_voltage; 
+    Serial.print(emontx.Vrms); delay(5);
+  }
+    
   
   
   
