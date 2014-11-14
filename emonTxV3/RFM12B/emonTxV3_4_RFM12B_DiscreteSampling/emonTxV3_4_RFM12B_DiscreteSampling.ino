@@ -5,7 +5,7 @@
   If AC-AC adapter is detected assume emonTx is also powered from adapter (jumper shorted) and take Real Power Readings and disable sleep mode to keep load on power supply constant
   If AC-AC addapter is not detected assume powering from battereis / USB 5V AC sample is not present so take Apparent Power Readings and enable sleep mode
   
-  Transmitt values via RFM69CW radio
+  Transmitt values via RFM12B radio
   
    -----------------------------------------
   Part of the openenergymonitor.org project
@@ -38,7 +38,7 @@ V1.1 - fix bug in startup Vrms calculation, startup Vrms startup calculation is 
 */
 
 #define emonTxV3                                                                          // Tell emonLib this is the emonTx V3 - don't read Vcc assume Vcc = 3.3V as is always the case on emonTx V3 eliminates bandgap error and need for calibration http://harizanov.com/2013/09/thoughts-on-avr-adc-accuracy/
-#define RF69_COMPAT 1                                                              // Set to 1 if using RFM69CW or 0 is using RFM12B
+#define RF69_COMPAT 0                                                              // Set to 1 if using RFM69CW or 0 is using RFM12B
 #include <JeeLib.h>                                                                      //https://github.com/jcw/jeelib - Tested with JeeLib 3/11/14
 ISR(WDT_vect) { Sleepy::watchdogEvent(); }                            // Attached JeeLib sleep function to Atmega328 watchdog -enables MCU to be put into sleep mode inbetween readings to reduce power consumption 
 
@@ -96,7 +96,7 @@ DallasTemperature sensors(&oneWire);
 //-------------------------------------------------------------------------------------------------------------------------------------------
 
 //-----------------------RFM12B / RFM69CW SETTINGS----------------------------------------------------------------------------------------------------
-#define RF_freq RF12_433MHZ                                              // Frequency of RF69CW module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
+#define RF_freq RF12_433MHZ                                              // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 byte nodeID = 10;                                                // emonTx RFM12B node ID
 const int networkGroup = 210;  
 typedef struct { int power1, power2, power3, power4, Vrms, temp; } PayloadTX;     // create structure - a neat way of packaging data for RF comms
@@ -375,13 +375,11 @@ void loop()
      if (debug==1) {Serial.print("temperature: "); Serial.println(emontx.temp*0.1); delay(20);}
   }
   
- 
   
-  if (!ACAC){                                                                                         //read battery voltage if powered by DC
+  if (ACAC==false){                                                                                         //read battery voltage if powered by DC
     int battery_voltage=analogRead(battery_voltage_pin) * 0.681322727;     //6.6V battery = 3.3V input = 1024 ADC
-    emontx.Vrms= battery_voltage;
+    emontx.Vrms= battery_voltage; 
     Serial.println(emontx.Vrms); delay(5);
-    
   }
     
   
@@ -410,7 +408,7 @@ void send_rf_data()
   rf12_sleep(RF12_WAKEUP);                                   
   rf12_sendNow(0, &emontx, sizeof emontx);                           //send temperature data via RFM12B using new rf12_sendNow wrapper
   rf12_sendWait(2);
-  if (!ACAC) rf12_sleep(RF12_SLEEP);                             //if powred by battery then put the RF module into sleep inbetween readings 
+  if (ACAC==FALSE) rf12_sleep(RF12_SLEEP);                             //if powred by battery then put the RF module into sleep inbetween readings 
 }
 
 void emontx_sleep(int seconds) {
