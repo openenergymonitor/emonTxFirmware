@@ -381,7 +381,6 @@ void loop()
     int battery_voltage=analogRead(battery_voltage_pin) * 0.681322727;     //6.6V battery = 3.3V input = 1024 ADC
     emontx.Vrms= battery_voltage;
     Serial.println(emontx.Vrms); delay(5);
-    
   }
     
   
