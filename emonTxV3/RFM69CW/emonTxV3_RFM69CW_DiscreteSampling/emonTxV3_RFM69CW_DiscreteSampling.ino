@@ -120,10 +120,9 @@ void setup()
   digitalWrite(LEDpin,HIGH); 
 
   Serial.begin(9600);
-  Serial.println("emonTx V3 Discrete Sampling V1.4");
+  Serial.println("emonTx V3 Discrete Sampling V1.4 RFM69CW");
   Serial.println("OpenEnergyMonitor.org");
-  Serial.println("Performing power-on tests.....please wait 10s");
-  
+  Serial.println("POST.....wait 10s");
   
   //READ DIP SWITCH POSITIONS 
   pinMode(DIP_switch1, INPUT_PULLUP);
@@ -239,9 +238,9 @@ void setup()
     if (DS18B20_STATUS==1) {Serial.print("Detected "); Serial.print(numSensors); Serial.println(" DS18B20..using this for temperature reading");}
       else Serial.println("Unable to detect DS18B20 temperature sensor");
    
-    #if defined(RF69_COMPAT)
+    #if (RF69_COMPAT)
        Serial.println("RFM69CW Initiated: ");
-    #elif
+    #else
       Serial.println("RFM12B Initiated: ");
     #endif
     

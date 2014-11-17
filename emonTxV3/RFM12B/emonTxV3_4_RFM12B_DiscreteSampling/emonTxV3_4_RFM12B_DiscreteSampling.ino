@@ -120,9 +120,9 @@ void setup()
   digitalWrite(LEDpin,HIGH); 
 
   Serial.begin(9600);
-  Serial.println("emonTx V3 Discrete Sampling V1.4");
+  Serial.println("emonTx V3 DS V1.4 RFM12B");
   Serial.println("OpenEnergyMonitor.org");
-  Serial.println("Performing power-on tests.....please wait 10s");
+  Serial.println("POST.....wait 10s");
   
   
   //READ DIP SWITCH POSITIONS 
@@ -239,9 +239,9 @@ void setup()
     if (DS18B20_STATUS==1) {Serial.print("Detected "); Serial.print(numSensors); Serial.println(" DS18B20..using this for temperature reading");}
       else Serial.println("Unable to detect DS18B20 temperature sensor");
    
-    #if defined(RF69_COMPAT)
+    #if (RF69_COMPAT)
        Serial.println("RFM69CW Initiated: ");
-    #elif
+    #else
       Serial.println("RFM12B Initiated: ");
     #endif
     
@@ -376,9 +376,9 @@ void loop()
   }
   
   
-  if (ACAC==false){                                                                                         //read battery voltage if powered by DC
+ if (!ACAC){                                                                                         //read battery voltage if powered by DC
     int battery_voltage=analogRead(battery_voltage_pin) * 0.681322727;     //6.6V battery = 3.3V input = 1024 ADC
-    emontx.Vrms= battery_voltage; 
+    emontx.Vrms= battery_voltage;
     Serial.println(emontx.Vrms); delay(5);
   }
     
