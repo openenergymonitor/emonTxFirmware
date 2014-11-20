@@ -328,7 +328,7 @@ void loop()
     if ((debug==1) && (!CT_count==0))  Serial.print(emontx.Vrms);
   }
   
-  if ((debug==1) && (!CT_count==0)) {Serial.println(); delay(20);}
+  if ((debug==1) && (!CT_count==0)) {Serial.println(); delay(50);}
   
   // because millis() returns to zero after 50 days ! 
   //if (!settled && millis() > FILTERSETTLETIME) settled = true; - replaced by filter settle routine at end of setup
