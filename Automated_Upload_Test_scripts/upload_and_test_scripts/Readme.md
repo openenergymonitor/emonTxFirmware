@@ -2,5 +2,12 @@
 
 To make script run at startup add the following to /etc/rc.local 
 
-(sleep 10;python /home/pi/test.py)
+printf "Attempting to pull latest firmware from GitHub/n"
+sleep 5
+cd /home/pi/emonTxFirmware
+git pull
+sleep 1
+cd /home/pi
+
+python /home/pi/scriptname.py)
 
