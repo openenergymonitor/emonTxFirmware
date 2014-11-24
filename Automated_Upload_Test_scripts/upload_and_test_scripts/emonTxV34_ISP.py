@@ -41,7 +41,7 @@ while(1):
 			print 'error..Rx Module is not responding'
 		ser.close()
 		print 'Attempting RFM12B 433Mhz emonTx firmware upload via ISP....'
-		cmd = 'sudo avrdude -V -u -p atmega328p -c avrispmkII -P usb -e -Ulock:w:0x3F:m -Uefuse:w:0x05:m -Uhfuse:w:0xDE:m -Ulfuse:w:0xFF:m -U flash:w:/home/pi/emonTxFirmware/emonTxV3/RFM12B/emonTxV3_4_RFM12B_DiscreteSampling/emonTxV3_4_RFM12B_DiscreteSampling_433.cpp.hex:i  -Ulock:w:0x0F:m'
+		cmd = 'sudo avrdude -V -u -p atmega328p -c avrispmkII -P usb -e -Ulock:w:0x3F:m -Uefuse:w:0x05:m -Uhfuse:w:0xDE:m -Ulfuse:w:0xFF:m -U flash:w:/home/pi/emonTxFirmware/emonTxV3/RFM12B/emonTxV3_4_RFM12B_DiscreteSampling_433_bootloader.cpp.hex:i  -Ulock:w:0x0F:m'
 		subprocess.call(cmd, shell=True)
                 #time.sleep(2)
 		ser = serial.Serial('/dev/ttyAMA0', 9600, timeout=1)
