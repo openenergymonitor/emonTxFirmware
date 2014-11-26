@@ -20,12 +20,12 @@ fi
 printf "OpenEnergyMonitor / Megni emonTx V3.4 upload and test setup\n"
 printf "glyn.hudson@megni.co.uk\n\n"
 printf "Attempting to pull latest firmware from GitHub....please wait \n\n"
-sleep 20
 
 printf "Checking interent connectivity...wait 10s"
+sleep 30
 WGET="/usr/bin/wget"
 $WGET -q --tries=20 --timeout=10 http://www.google.com -O /home/pi/google.idx &> /dev/null
-if [ ! -s /tmp/google.idx ]
+if [ ! -s /home/pi/google.idx ]
 then
   echo "Not Connected..!"
 else
