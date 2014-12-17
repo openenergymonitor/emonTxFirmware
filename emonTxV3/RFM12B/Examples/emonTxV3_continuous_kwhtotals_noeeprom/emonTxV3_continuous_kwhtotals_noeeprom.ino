@@ -178,6 +178,7 @@ unsigned long lastsendtime = 0;
 
 void setup()
 {  
+  delay(20);
   rf12_initialize(nodeID, freq, networkGroup);             // initialize RF
   rf12_sleep(RF12_SLEEP);
   
