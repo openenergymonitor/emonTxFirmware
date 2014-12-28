@@ -111,7 +111,7 @@ void loop()
   Serial.print(emontx.power4); Serial.print(" ");   
 }
   
-  emontx.Vrms = ct1.Vrms*100;         //AC RMS voltage - convert to integer ready for RF transmission (divide by 0.01 using emoncms input process to convert back to two decimal places)
+  emontx.Vrms = ct1.Vrms*100;         //AC RMS voltage - convert to integer ready for RF transmission (multiply by 0.01 using emoncms input process to convert back to two decimal places)
   
 
   
