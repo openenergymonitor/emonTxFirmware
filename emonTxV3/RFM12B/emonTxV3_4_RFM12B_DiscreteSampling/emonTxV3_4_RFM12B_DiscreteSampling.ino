@@ -31,6 +31,7 @@
 
 
 Change Log:
+V1.4.1 - Remove filter settle routine as latest emonLib 19/01/15 does not require 
 V1.4 - Support for RFM69CW, DIP switches and battery voltage reading on emonTx V3.4
 V1.3 - fix filter settle time to eliminate large inital reading
 V1.2 - fix bug which caused Vrms to be returned as zero if CT1 was not connected 
@@ -120,7 +121,7 @@ void setup()
   digitalWrite(LEDpin,HIGH); 
 
   Serial.begin(9600);
-  Serial.println("emonTx V3 DS V1.4 RFM12B");
+  Serial.println("emonTx V3 DS V1.4.1 RFM12B");
   Serial.println("OpenEnergyMonitor.org");
   Serial.println("POST.....wait 10s");
   
@@ -273,22 +274,8 @@ void setup()
     if (CT4) ct4.voltage(0, Vcal, phase_shift);          // ADC pin, Calibration, phase_shift
   }
  
-  // Do some measurements to allow the software filter to settle - don't use the result
-  if (ACAC)
-  {
-    if (CT1) for (int j=0; j<5; j++) ct1.calcVI(no_of_half_wavelengths,timeout);
-    if (CT2) for (int j=0; j<5; j++) ct2.calcVI(no_of_half_wavelengths,timeout);
-    if (CT3) for (int j=0; j<5; j++) ct3.calcVI(no_of_half_wavelengths,timeout);
-    if (CT4) for (int j=0; j<5; j++) ct4.calcVI(no_of_half_wavelengths,timeout);
-   }
-   else
-  {
-    if (CT1) for (int j=0; j<5; j++) ct1.calcIrms(no_of_samples);
-    if (CT2) for (int j=0; j<5; j++) ct2.calcIrms(no_of_samples);
-    if (CT3) for (int j=0; j<5; j++) ct3.calcIrms(no_of_samples);
-    if (CT4) for (int j=0; j<5; j++) ct4.calcIrms(no_of_samples);
-   }
-}
+
+} // end debug HTTPS://WWW.RO
 
 void loop()
 {

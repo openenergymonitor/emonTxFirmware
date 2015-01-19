@@ -31,6 +31,7 @@
 
 
 Change Log:
+V1.3.1 - Remove filter settle routine as latest emonLib 19/01/15 does not require 
 V1.3 - fix filter settle time to eliminate large inital reading
 V1.2 - fix bug which caused Vrms to be returned as zero if CT1 was not connected 
 V1.1 - fix bug in startup Vrms calculation, startup Vrms startup calculation is now more accuratre
@@ -111,7 +112,7 @@ void setup()
   digitalWrite(LEDpin,HIGH); 
 
   Serial.begin(9600);
-  Serial.println("emonTx V3 Discrete Sampling V1.3");
+  Serial.println("emonTx V3 Discrete Sampling V1.3.1");
   Serial.println("OpenEnergyMonitor.org");
   Serial.println("Performing power-on tests.....please wait 10s");
   
@@ -244,22 +245,7 @@ void setup()
     if (CT4) ct4.voltage(0, Vcal, phase_shift);          // ADC pin, Calibration, phase_shift
   }
  
-  // Do some measurements to allow the software filter to settle - don't use the result
-  if (ACAC)
-  {
-    if (CT1) for (int j=0; j<5; j++) ct1.calcVI(no_of_half_wavelengths,timeout);
-    if (CT2) for (int j=0; j<5; j++) ct2.calcVI(no_of_half_wavelengths,timeout);
-    if (CT3) for (int j=0; j<5; j++) ct3.calcVI(no_of_half_wavelengths,timeout);
-    if (CT4) for (int j=0; j<5; j++) ct4.calcVI(no_of_half_wavelengths,timeout);
-   }
-   else
-  {
-    if (CT1) for (int j=0; j<5; j++) ct1.calcIrms(no_of_samples);
-    if (CT2) for (int j=0; j<5; j++) ct2.calcIrms(no_of_samples);
-    if (CT3) for (int j=0; j<5; j++) ct3.calcIrms(no_of_samples);
-    if (CT4) for (int j=0; j<5; j++) ct4.calcIrms(no_of_samples);
-   }
-}
+} //end debug
 
 void loop()
 {
