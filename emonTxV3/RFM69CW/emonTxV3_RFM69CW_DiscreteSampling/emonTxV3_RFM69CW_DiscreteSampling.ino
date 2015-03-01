@@ -367,26 +367,19 @@ void loop()
     emontx.Vrms= battery_voltage;
     Serial.println(emontx.Vrms); delay(5);
   }
-    
   
+  if (ACAC) {digitalWrite(LEDpin, HIGH); delay(200); digitalWrite(LEDpin, LOW);}    // flash LED if powered by AC
   
-  
-  
-  
- // if (settled)                                                            // send data only after filters have settled
-  //{ 
-    send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
+  send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
     
     if (ACAC)                                                               //If powered by AC-AC adaper (mains power) then delay instead of sleep
     {
      delay(TIME_BETWEEN_READINGS*1000);
-     digitalWrite(LEDpin, HIGH); delay(200); digitalWrite(LEDpin, LOW);    // flash LED - turn off to save power
     }
     
     else                                                                  //if powered by battery then sleep rather than dealy and disable LED to lower energy consumption  
       emontx_sleep(TIME_BETWEEN_READINGS);                                  // sleep or delay in seconds 
-//  }  
- 
+
 }
 
 void send_rf_data()

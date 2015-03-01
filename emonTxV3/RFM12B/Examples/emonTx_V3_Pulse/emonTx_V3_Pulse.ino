@@ -24,11 +24,17 @@
  
  If your using an optical counter (e.g TSL256) you should connecting the power pin direct to the 3.3V or 5V (if running off 5V USB)
  
- emonTx V3 Terminal block: 
+ emonTx V3.2 Terminal block: 
  port 1: 5V
  port 2: 3.3V
  port 3: GND
  port 4: IRQ 0 / Dig2
+
+ emonTx V3.4 Terminal block: 
+ port 1: 5V
+ port 2: 3.3V
+ port 3: GND
+ port 4: IRQ 1 / Dig3
  
  We recomend powering the emonTx V3 from 5V USB when using for pulse counting opperation. 
  
@@ -79,6 +85,9 @@ typedef struct { int power, pulse;} PayloadTX;
 PayloadTX emontx;                                                        // neat way of packaging data for RF comms
 
 const int LEDpin = 6;                                                   //emonTx V3 LED pin
+const int INT_PIN = 0; 				 		        // emonTx V3.2
+// const int INT_PIN = 1; 				 		// emonTx V3.4
+
 
 // Pulse counting settings 
 long pulseCount = 0;                                                    // Number of pulses, used to measure energy.
@@ -99,7 +108,7 @@ void setup()
   pinMode(LEDpin, OUTPUT);                                              // Setup indicator LED
   digitalWrite(LEDpin, HIGH);
   
-  attachInterrupt(0, onPulse, FALLING);                                 // KWH interrupt attached to IRQ 0  = Digita 2 - hardwired to emonTx V3 terminal block 
+  attachInterrupt(INT_PIN, onPulse, FALLING);                                 // KWH interrupt attached to IRQ 0  = Digita 2 - hardwired to emonTx V3 terminal block 
   
   if (UNO) wdt_enable(WDTO_8S);  
 }
