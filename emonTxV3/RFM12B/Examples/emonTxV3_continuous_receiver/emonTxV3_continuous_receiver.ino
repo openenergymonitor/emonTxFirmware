@@ -8,6 +8,7 @@
 //                  Sept 2013
 //
 
+#define RF69_COMPAT 0                                                              // Set to 1 if using RFM69CW or 0 is using RFM12B
 #include <JeeLib.h>      // Download JeeLib: http://github.com/jcw/jeelib
 #define RF_freq RF12_868MHZ // Use the RF_freq to match the module you have.
 
