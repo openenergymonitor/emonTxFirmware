@@ -102,7 +102,10 @@ DallasTemperature sensors(&oneWire);
 #define RF_freq RF12_433MHZ                                              // Frequency of RF69CW module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 byte nodeID = 10;                                                // emonTx RFM12B node ID
 const int networkGroup = 210;  
-typedef struct { int power1, power2, power3, power4, Vrms, temp, pulseCount; } PayloadTX;     // create structure - a neat way of packaging data for RF comms
+typedef struct { 
+int power1, power2, power3, power4, Vrms, temp;
+unsigned long pulseCount; 
+} PayloadTX;     // create structure - a neat way of packaging data for RF comms
   PayloadTX emontx; 
 //-------------------------------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------------------------------
