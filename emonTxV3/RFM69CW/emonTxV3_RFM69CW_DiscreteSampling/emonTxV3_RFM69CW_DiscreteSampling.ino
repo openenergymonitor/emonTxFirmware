@@ -31,6 +31,7 @@
 
 
 Change Log:
+V1.5 - Add interrupt pulse counting
 V1.4.1 - Remove filter settle routine as latest emonLib 19/01/15 does not require 
 V1.4 - Support for RFM69CW, DIP switches and battery voltage reading on emonTx V3.4
 V1.3 - fix filter settle time to eliminate large inital reading
@@ -39,7 +40,7 @@ V1.1 - fix bug in startup Vrms calculation, startup Vrms startup calculation is 
 */
 
 #define emonTxV3                                                                          // Tell emonLib this is the emonTx V3 - don't read Vcc assume Vcc = 3.3V as is always the case on emonTx V3 eliminates bandgap error and need for calibration http://harizanov.com/2013/09/thoughts-on-avr-adc-accuracy/
-#define RF69_COMPAT 1                                                              // Set to 1 if using RFM69CW or 0 is using RFM12B
+#define RF69_COMPAT 0                                                              // Set to 1 if using RFM69CW or 0 is using RFM12B
 #include <JeeLib.h>                                                                      //https://github.com/jcw/jeelib - Tested with JeeLib 3/11/14
 ISR(WDT_vect) { Sleepy::watchdogEvent(); }                            // Attached JeeLib sleep function to Atmega328 watchdog -enables MCU to be put into sleep mode inbetween readings to reduce power consumption 
 
@@ -87,7 +88,7 @@ const byte DS18B20_PWR=            19;                             // DS18B20 Po
 const byte DIP_switch1=            8;                              // Voltage selection 230 / 110 V AC (default switch off 230V)  - switch off D8 is HIGH from internal pullup
 const byte DIP_switch2=            9;                              // RF node ID (default no chance in node ID, switch on for nodeID -1) switch off D9 is HIGH from internal pullup
 const byte battery_voltage_pin=    7;                              // Battery Voltage sample from 3 x AA
-const byte pulse_countINT=         1;                              // INT 1 / Dig 3 Terminal Block / RJ45 Pulse counting pin(emonTx V3.4)
+const byte pulse_countINT=         3;                              // INT 1 / Dig 3 Terminal Block / RJ45 Pulse counting pin(emonTx V3.4)
 #define ONE_WIRE_BUS               5                               // DS18B20 Data                     
 //-------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -101,7 +102,7 @@ DallasTemperature sensors(&oneWire);
 #define RF_freq RF12_433MHZ                                              // Frequency of RF69CW module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 byte nodeID = 10;                                                // emonTx RFM12B node ID
 const int networkGroup = 210;  
-typedef struct { int power1, power2, power3, power4, Vrms, temp, pulse_elapsedkWh; } PayloadTX;     // create structure - a neat way of packaging data for RF comms
+typedef struct { int power1, power2, power3, power4, Vrms, temp, pulseCount; } PayloadTX;     // create structure - a neat way of packaging data for RF comms
   PayloadTX emontx; 
 //-------------------------------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------------------------------
@@ -115,19 +116,19 @@ int numSensors;
 //addresses of sensors, MAX 4!!  
 byte allAddress [4][8];  // 8 bytes per address
 
-// Pulse Counting                          
-long pulseCount = 0;                                             // Number of pulses, used to measure energy.
-unsigned long pulseTime,lastPulseTime;                           // Record time between pulses 
-double pulse_elapsedkWh;                                         // Elapsed Kwh from pulse couting
 
 void setup()
 { 
   pinMode(LEDpin, OUTPUT); 
-  pinMode(DS18B20_PWR, OUTPUT);  
+  pinMode(DS18B20_PWR, OUTPUT); 
+
+  pinMode(pulse_countINT, INPUT);                             // Set emonTx V3.4 interrupt pulse counting pin as input (Dig 3 / INT1)
+  emontx.pulseCount=0;                                        // Make sure pulse count starts at zero
+
   digitalWrite(LEDpin,HIGH); 
 
   Serial.begin(9600);
-  Serial.println("emonTx V3 Discrete Sampling V1.4.1 RFM69CW");
+  Serial.println("emonTx V3 Discrete Sampling V1.5 RFM69CW");
   Serial.println("OpenEnergyMonitor.org");
   Serial.println("POST.....wait 10s");
   
@@ -279,7 +280,7 @@ void setup()
     if (CT4) ct4.voltage(0, Vcal, phase_shift);          // ADC pin, Calibration, phase_shift
   }
 
-  attachInterrupt(pulse_countINT, onPulse, FALLING);     // Attach pulse counting interrupt on RJ45
+  attachInterrupt(1, onPulse, FALLING);     // Attach pulse counting interrupt INT 1 Dig 3
  
 } //end SETUP
 
@@ -287,8 +288,8 @@ void loop()
 {
   
   if (ACAC) {
-    delay(200);                                //if powering from AC-AC allow time for power supply to settle    
-    emontx.Vrms=0;                      //Set Vrms to zero, this will be overwirtten by wither CT 1-4
+    delay(200);                         //if powering from AC-AC allow time for power supply to settle    
+    emontx.Vrms=0;                      //Set Vrms to zero, this will be overwirtten by CT 1-4
   }
   
   if (CT1) 
@@ -299,8 +300,7 @@ void loop()
      emontx.Vrms=ct1.Vrms*100;
    }
    else
-     emontx.power1 = ct1.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
-   if (debug==1) {Serial.print(emontx.power1); Serial.print(" ");delay(5);} 
+     emontx.power1 = ct1.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of sample
 
   }
   
@@ -313,7 +313,6 @@ void loop()
    }
    else
      emontx.power2 = ct2.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
-   if (debug==1) {Serial.print(emontx.power2); Serial.print(" ");delay(5);}  
 
   }
 
@@ -326,7 +325,6 @@ void loop()
    }
    else
      emontx.power3 = ct3.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
-   if (debug==1) {Serial.print(emontx.power3); Serial.print(" ");delay(5);} 
 
   }
   
@@ -340,20 +338,14 @@ void loop()
    }
    else
      emontx.power4 = ct4.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
-   if (debug==1) {Serial.print(emontx.power4); Serial.print(" ");delay(5);} 
 
   }
   
-  
-  if (ACAC) 
-  { 
-    if ((debug==1) && (!CT_count==0)) { Serial.print(emontx.Vrms); delay(5);}
+
+  if (!ACAC){                                                                                         //read battery voltage if powered by DC
+    int battery_voltage=analogRead(battery_voltage_pin) * 0.681322727;     //6.6V battery = 3.3V input = 1024 ADC
+    emontx.Vrms= battery_voltage;
   }
-  
-  if ((debug==1) && (!CT_count==0)) {Serial.println(); delay(20);}
-  
-  // because millis() returns to zero after 50 days ! 
-  //if (!settled && millis() > FILTERSETTLETIME) settled = true; - replaced by filter settle routine at end of setup
 
   
     if (DS18B20_STATUS==1)
@@ -365,17 +357,22 @@ void loop()
      float temp=(sensors.getTempC(allAddress[0]));
      digitalWrite(DS18B20_PWR, LOW);
      if ((temp<125.0) && (temp>-40.0)) emontx.temp=(temp*10);            //if reading is within range for the sensor convert float to int ready to send via RF
-     if (debug==1) {Serial.print("temperature: "); Serial.println(emontx.temp*0.1); delay(20);}
   }
   
  
+  if (debug==1) {
+    Serial.print(emontx.power1); Serial.print(" ");
+    Serial.print(emontx.power2); Serial.print(" ");
+    Serial.print(emontx.power3); Serial.print(" ");
+    Serial.print(emontx.power4); Serial.print(" ");
+    Serial.print(emontx.Vrms); Serial.print(" ");
+    Serial.print(emontx.pulseCount); Serial.print(" ");
+    Serial.println(emontx.temp);
+    delay(20);
+  } 
   
-  if (!ACAC){                                                                                         //read battery voltage if powered by DC
-    int battery_voltage=analogRead(battery_voltage_pin) * 0.681322727;     //6.6V battery = 3.3V input = 1024 ADC
-    emontx.Vrms= battery_voltage;
-    Serial.println(emontx.Vrms); delay(5);
-  }
   
+
   if (ACAC) {digitalWrite(LEDpin, HIGH); delay(200); digitalWrite(LEDpin, LOW);}    // flash LED if powered by AC
   
   send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
@@ -417,9 +414,5 @@ double calc_rms(int pin, int samples)
 // The interrupt routine - runs each time a falling edge of a pulse is detected
 void onPulse()                  
 {
-  pulseTime = lastPulseTime;              //used to measure time between pulses.
-  pulseTime = micros();
-  pulseCount++;                                                      //pulseCounter               
-  //power = int((3600000000.0 / (pulseTime - lastTime))/ppwh);  //Estimated power calculation 
-  emontx.pulse_elapsedkWh = (1.0*pulseCount/(ppwh*1000));   //multiply by 1000 to pulses per wh to kwh convert wh to kwh
+  emontx.pulseCount++;
 }
