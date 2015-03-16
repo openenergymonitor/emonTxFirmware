@@ -63,31 +63,32 @@ const float Ical2=                90.9;                                 // (2000
 const float Ical3=                90.9;                                 // (2000 turns / 22 Ohm burden) = 90.9
 const float Ical4=                16.67;                               // (2000 turns / 120 Ohm burden) = 16.67
 
-float Vcal=                            268.97;                             // (230V x 13) / (9V x 1.2) = 276.9 Calibration for UK AC-AC adapter 77DB-06-09 
+float Vcal=                       268.97;                             // (230V x 13) / (9V x 1.2) = 276.9 Calibration for UK AC-AC adapter 77DB-06-09 
 //float Vcal=276.9;
 //const float Vcal=               260;                             //  Calibration for EU AC-AC adapter 77DE-06-09 
-const float Vcal_USA=        130.0;                             //Calibration for US AC-AC adapter 77DA-10-09
+const float Vcal_USA=             130.0;                             //Calibration for US AC-AC adapter 77DA-10-09
 boolean USA=FALSE; 
+const int ppwh=                   1;                                  // Number of Wh elapsed per pulse (*1000 per Kwh)
 
-const float phase_shift=     1.7;
-const int no_of_samples=  1480; 
+const float phase_shift=          1.7;
+const int no_of_samples=          1480; 
 const int no_of_half_wavelengths= 20;
-const int timeout=               2000;                               //emonLib timeout 
+const int timeout=                2000;                               //emonLib timeout 
 const int ACAC_DETECTION_LEVEL=   3000;
 const int TEMPERATURE_PRECISION=  11;                 //9 (93.8ms),10 (187.5ms) ,11 (375ms) or 12 (750ms) bits equal to resplution of 0.5C, 0.25C, 0.125C and 0.0625C
-//#define FILTERSETTLETIME          25000                     // Time (ms) to allow the filters to settle before sending data
 #define ASYNC_DELAY 375                                          // DS18B20 conversion delay - 9bit requres 95ms, 10bit 187ms, 11bit 375ms and 12bit resolution takes 750ms
 //-------------------------------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------------------------------
 
 
 //----------------------------emonTx V3 hard-wired connections--------------------------------------------------------------------------------------------------------------- 
-const byte LEDpin=                     6;                              // emonTx V3 LED
-const byte DS18B20_PWR=     19;                              // DS18B20 Power
-const byte DIP_switch1=            8;                             // Voltage selection 230 / 110 V AC (default switch off 230V)  - switch off D8 is HIGH from internal pullup
-const byte DIP_switch2=            9;                             // RF node ID (default no chance in node ID, switch on for nodeID -1) switch off D9 is HIGH from internal pullup
-const byte battery_voltage_pin=7; 
-#define ONE_WIRE_BUS              5                              // DS18B20 Data                     
+const byte LEDpin=                 6;                              // emonTx V3 LED
+const byte DS18B20_PWR=            19;                             // DS18B20 Power
+const byte DIP_switch1=            8;                              // Voltage selection 230 / 110 V AC (default switch off 230V)  - switch off D8 is HIGH from internal pullup
+const byte DIP_switch2=            9;                              // RF node ID (default no chance in node ID, switch on for nodeID -1) switch off D9 is HIGH from internal pullup
+const byte battery_voltage_pin=    7;                              // Battery Voltage sample from 3 x AA
+const byte pulse_countINT=         1;                              // INT 1 / Dig 3 Terminal Block / RJ45 Pulse counting pin(emonTx V3.4)
+#define ONE_WIRE_BUS               5                               // DS18B20 Data                     
 //-------------------------------------------------------------------------------------------------------------------------------------------
 
 //Setup DS128B20
@@ -100,7 +101,7 @@ DallasTemperature sensors(&oneWire);
 #define RF_freq RF12_433MHZ                                              // Frequency of RF69CW module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 byte nodeID = 10;                                                // emonTx RFM12B node ID
 const int networkGroup = 210;  
-typedef struct { int power1, power2, power3, power4, Vrms, temp; } PayloadTX;     // create structure - a neat way of packaging data for RF comms
+typedef struct { int power1, power2, power3, power4, Vrms, temp, pulse_elapsedkWh; } PayloadTX;     // create structure - a neat way of packaging data for RF comms
   PayloadTX emontx; 
 //-------------------------------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------------------------------
@@ -113,6 +114,11 @@ byte CT_count=0;
 int numSensors;
 //addresses of sensors, MAX 4!!  
 byte allAddress [4][8];  // 8 bytes per address
+
+// Pulse Counting                          
+long pulseCount = 0;                                             // Number of pulses, used to measure energy.
+unsigned long pulseTime,lastPulseTime;                           // Record time between pulses 
+double pulse_elapsedkWh;                                         // Elapsed Kwh from pulse couting
 
 void setup()
 { 
@@ -148,7 +154,7 @@ void setup()
   emontx.power1=0;
  
  
-   
+  
 
   if (analogRead(1) > 0) {CT1 = 1; CT_count++;} else CT1=0;              // check to see if CT is connected to CT1 input, if so enable that channel
   if (analogRead(2) > 0) {CT2 = 1; CT_count++;} else CT2=0;              // check to see if CT is connected to CT2 input, if so enable that channel
@@ -199,7 +205,7 @@ void setup()
     else DS18B20_STATUS=1;
 
   
-//################################################################################################################################
+  //################################################################################################################################
 
   if (Serial) debug = 1; else debug=0;          //if serial UART to USB is connected show debug O/P. If not then disable serial
   if (debug==1)
@@ -272,8 +278,10 @@ void setup()
     if (CT3) ct3.voltage(0, Vcal, phase_shift);          // ADC pin, Calibration, phase_shift
     if (CT4) ct4.voltage(0, Vcal, phase_shift);          // ADC pin, Calibration, phase_shift
   }
+
+  attachInterrupt(pulse_countINT, onPulse, FALLING);     // Attach pulse counting interrupt on RJ45
  
-} //end debug
+} //end SETUP
 
 void loop()
 {
@@ -404,4 +412,14 @@ double calc_rms(int pin, int samples)
   }
   double rms = sqrt((double)sum / samples);
   return rms;
+}
+
+// The interrupt routine - runs each time a falling edge of a pulse is detected
+void onPulse()                  
+{
+  pulseTime = lastPulseTime;              //used to measure time between pulses.
+  pulseTime = micros();
+  pulseCount++;                                                      //pulseCounter               
+  //power = int((3600000000.0 / (pulseTime - lastTime))/ppwh);  //Estimated power calculation 
+  emontx.pulse_elapsedkWh = (1.0*pulseCount/(ppwh*1000));   //multiply by 1000 to pulses per wh to kwh convert wh to kwh
 }
