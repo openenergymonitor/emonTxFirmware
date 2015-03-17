@@ -104,7 +104,7 @@ byte numSensors;
 byte nodeID = 10;                                                // emonTx RFM12B node ID
 const int networkGroup = 210;  
 typedef struct { 
-int power1, power2, power3, power4, Vrms, temp[MaxOnewire]; ;
+int power1, power2, power3, power4, Vrms, temp[MaxOnewire-1]; 
 unsigned long pulseCount; 
 } PayloadTX;     // create structure - a neat way of packaging data for RF comms
   PayloadTX emontx; 
