@@ -40,7 +40,7 @@ V1.1 - fix bug in startup Vrms calculation, startup Vrms startup calculation is 
 */
 
 #define emonTxV3                                                                          // Tell emonLib this is the emonTx V3 - don't read Vcc assume Vcc = 3.3V as is always the case on emonTx V3 eliminates bandgap error and need for calibration http://harizanov.com/2013/09/thoughts-on-avr-adc-accuracy/
-#define RF69_COMPAT 1                                                              // Set to 1 if using RFM69CW or 0 is using RFM12B
+#define RF69_COMPAT 0                                                              // Set to 1 if using RFM69CW or 0 is using RFM12B
 #include <JeeLib.h>                                                                      //https://github.com/jcw/jeelib - Tested with JeeLib 3/11/14
 ISR(WDT_vect) { Sleepy::watchdogEvent(); }                            // Attached JeeLib sleep function to Atmega328 watchdog -enables MCU to be put into sleep mode inbetween readings to reduce power consumption 
 
@@ -69,7 +69,6 @@ float Vcal=                       268.97;                             // (230V x
 //const float Vcal=               260;                             //  Calibration for EU AC-AC adapter 77DE-06-09 
 const float Vcal_USA=             130.0;                             //Calibration for US AC-AC adapter 77DA-10-09
 boolean USA=FALSE; 
-const int ppwh=                   1;                                  // Number of Wh elapsed per pulse (*1000 per Kwh)
 
 const float phase_shift=          1.7;
 const int no_of_samples=          1480; 
@@ -377,7 +376,7 @@ void loop()
       Serial.print(" ");
     } 
     Serial.println(" ");
-    delay(20);
+    delay(50);
   } 
   
   
@@ -429,6 +428,6 @@ void onPulse()
 int get_temperature(byte sensor)                
 {
   float temp=(sensors.getTempC(allAddress[sensor]));
-  if ((temp<125.0) && (temp>-40.0)) return(temp*10);            //if reading is within range for the sensor convert float to int ready to send via RF
+  if ((temp<125.0) && (temp>-55.0)) return(temp*10);            //if reading is within range for the sensor convert float to int ready to send via RF
 }
 
