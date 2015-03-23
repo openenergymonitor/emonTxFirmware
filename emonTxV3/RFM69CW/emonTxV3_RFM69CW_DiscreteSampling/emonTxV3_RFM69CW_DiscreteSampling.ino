@@ -41,7 +41,7 @@ V1.1 - fix bug in startup Vrms calculation, startup Vrms startup calculation is 
 */
 
 #define emonTxV3                                                                          // Tell emonLib this is the emonTx V3 - don't read Vcc assume Vcc = 3.3V as is always the case on emonTx V3 eliminates bandgap error and need for calibration http://harizanov.com/2013/09/thoughts-on-avr-adc-accuracy/
-#define RF69_COMPAT 1                                                              // Set to 1 if using RFM69CW or 0 is using RFM12B
+#define RF69_COMPAT 0                                                              // Set to 1 if using RFM69CW or 0 is using RFM12B
 #include <JeeLib.h>                                                                      //https://github.com/jcw/jeelib - Tested with JeeLib 3/11/14
 ISR(WDT_vect) { Sleepy::watchdogEvent(); }                            // Attached JeeLib sleep function to Atmega328 watchdog -enables MCU to be put into sleep mode inbetween readings to reduce power consumption 
 
@@ -89,7 +89,8 @@ const byte DS18B20_PWR=            19;                             // DS18B20 Po
 const byte DIP_switch1=            8;                              // Voltage selection 230 / 110 V AC (default switch off 230V)  - switch off D8 is HIGH from internal pullup
 const byte DIP_switch2=            9;                              // RF node ID (default no chance in node ID, switch on for nodeID -1) switch off D9 is HIGH from internal pullup
 const byte battery_voltage_pin=    7;                              // Battery Voltage sample from 3 x AA
-const byte pulse_countINT=         3;                              // INT 1 / Dig 3 Terminal Block / RJ45 Pulse counting pin(emonTx V3.4)
+const byte pulse_countINT=         1;                              // INT 1 / Dig 3 Terminal Block / RJ45 Pulse counting pin(emonTx V3.4) - (INT0 / Dig2 emonTx V3.2)
+const byte pulse_count_pin=        3;                              // INT 1 / Dig 3 Terminal Block / RJ45 Pulse counting pin(emonTx V3.4) - (INT0 / Dig2 emonTx V3.2)
 #define ONE_WIRE_BUS               5                               // DS18B20 Data                     
 //-------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -117,7 +118,7 @@ int pulseCount;
 //boolean settled = false;
 boolean CT1, CT2, CT3, CT4, ACAC, debug, DS18B20_STATUS; 
 byte CT_count=0;
-
+volatile byte pulseCount = 0;
 
 
 
@@ -126,7 +127,7 @@ void setup()
   pinMode(LEDpin, OUTPUT); 
   pinMode(DS18B20_PWR, OUTPUT); 
 
-  pinMode(pulse_countINT, INPUT);                             // Set emonTx V3.4 interrupt pulse counting pin as input (Dig 3 / INT1)
+  pinMode(pulse_count_pin, INPUT);                             // Set emonTx V3.4 interrupt pulse counting pin as input (Dig 3 / INT1)
   emontx.pulseCount=0;                                        // Make sure pulse count starts at zero
 
   digitalWrite(LEDpin,HIGH); 
@@ -292,7 +293,7 @@ void setup()
     if (CT4) ct4.voltage(0, Vcal, phase_shift);          // ADC pin, Calibration, phase_shift
   }
 
-if (DS18B20_STATUS==0) attachInterrupt(1, onPulse, FALLING);     // Attach pulse counting interrupt pulse counting only when no Temperature sensor is connected as they both use the same port
+if (DS18B20_STATUS==0) attachInterrupt(pulse_countINT, onPulse, FALLING);     // Attach pulse counting interrupt pulse counting only when no Temperature sensor is connected as they both use the same port
  
 } //end SETUP
 
@@ -369,6 +370,11 @@ void loop()
       digitalWrite(DS18B20_PWR, LOW);
     } 
   
+  if (pulseCount)                                                       // if the ISR has counted some pulses, update the total count
+  {
+    emontx.pulseCount += pulseCount;
+    pulseCount = 0;
+  }
  
   if (debug==1) {
     Serial.print(emontx.power1); Serial.print(" ");
@@ -427,7 +433,7 @@ double calc_rms(int pin, int samples)
 // The interrupt routine - runs each time a falling edge of a pulse is detected
 void onPulse()                  
 {
-  emontx.pulseCount++;
+   pulseCount++;
 }
 
 int get_temperature(byte sensor)                
