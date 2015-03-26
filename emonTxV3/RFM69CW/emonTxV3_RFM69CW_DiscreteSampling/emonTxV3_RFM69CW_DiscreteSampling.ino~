@@ -89,8 +89,7 @@ const byte DS18B20_PWR=            19;                             // DS18B20 Po
 const byte DIP_switch1=            8;                              // Voltage selection 230 / 110 V AC (default switch off 230V)  - switch off D8 is HIGH from internal pullup
 const byte DIP_switch2=            9;                              // RF node ID (default no chance in node ID, switch on for nodeID -1) switch off D9 is HIGH from internal pullup
 const byte battery_voltage_pin=    7;                              // Battery Voltage sample from 3 x AA
-const byte pulse_countINT=         1;                              // INT 1 / Dig 3 Terminal Block / RJ45 Pulse counting pin(emonTx V3.4) - (INT0 / Dig2 emonTx V3.2)
-const byte pulse_count_pin=        3;                              // INT 1 / Dig 3 Terminal Block / RJ45 Pulse counting pin(emonTx V3.4) - (INT0 / Dig2 emonTx V3.2)
+const byte pulse_countINT=         3;                              // INT 1 / Dig 3 Terminal Block / RJ45 Pulse counting pin(emonTx V3.4)
 #define ONE_WIRE_BUS               5                               // DS18B20 Data                     
 //-------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -106,7 +105,7 @@ byte numSensors;
 byte nodeID = 10;                                                // emonTx RFM12B node ID
 const int networkGroup = 210;  
 typedef struct { 
-int power1, power2, power3, power4, Vrms, temp[MaxOnewire]; 
+int power1, power2, power3, power4, Vrms, temp[MaxOnewire-1]; 
 int pulseCount; 
 } PayloadTX;     // create structure - a neat way of packaging data for RF comms
   PayloadTX emontx; 
@@ -118,7 +117,7 @@ int pulseCount;
 //boolean settled = false;
 boolean CT1, CT2, CT3, CT4, ACAC, debug, DS18B20_STATUS; 
 byte CT_count=0;
-volatile byte pulseCount = 0;
+
 
 
 
@@ -127,7 +126,7 @@ void setup()
   pinMode(LEDpin, OUTPUT); 
   pinMode(DS18B20_PWR, OUTPUT); 
 
-  pinMode(pulse_count_pin, INPUT);                             // Set emonTx V3.4 interrupt pulse counting pin as input (Dig 3 / INT1)
+  pinMode(pulse_countINT, INPUT);                             // Set emonTx V3.4 interrupt pulse counting pin as input (Dig 3 / INT1)
   emontx.pulseCount=0;                                        // Make sure pulse count starts at zero
 
   digitalWrite(LEDpin,HIGH); 
@@ -293,7 +292,7 @@ void setup()
     if (CT4) ct4.voltage(0, Vcal, phase_shift);          // ADC pin, Calibration, phase_shift
   }
 
-if (DS18B20_STATUS==0) attachInterrupt(pulse_countINT, onPulse, FALLING);     // Attach pulse counting interrupt pulse counting only when no Temperature sensor is connected as they both use the same port
+if (DS18B20_STATUS==0) attachInterrupt(1, onPulse, FALLING);     // Attach pulse counting interrupt pulse counting only when no Temperature sensor is connected as they both use the same port
  
 } //end SETUP
 
@@ -364,18 +363,12 @@ void loop()
   if (DS18B20_STATUS==1) 
     {
       digitalWrite(DS18B20_PWR, HIGH); Sleepy::loseSomeTime(50); 
-      for(int j=0;j<numSensors;j++) sensors.setResolution(allAddress[j], TEMPERATURE_PRECISION);      // and set the a to d conversion resolution of each.
       sensors.requestTemperatures();
       Sleepy::loseSomeTime(ASYNC_DELAY); //Must wait for conversion, since we use ASYNC mode 
       for(byte j=0;j<numSensors;j++) emontx.temp[j]=get_temperature(j); 
       digitalWrite(DS18B20_PWR, LOW);
     } 
   
-  if (pulseCount)                                                       // if the ISR has counted some pulses, update the total count
-  {
-    emontx.pulseCount += pulseCount;
-    pulseCount = 0;
-  }
  
   if (debug==1) {
     Serial.print(emontx.power1); Serial.print(" ");
@@ -434,7 +427,7 @@ double calc_rms(int pin, int samples)
 // The interrupt routine - runs each time a falling edge of a pulse is detected
 void onPulse()                  
 {
-   pulseCount++;
+  emontx.pulseCount++;
 }
 
 int get_temperature(byte sensor)                
