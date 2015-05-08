@@ -616,7 +616,7 @@ void rfm_init(void)
 	#else // default to 433 MHz
 		writeReg(0x07, 0x6C); // RegFrfMsb: Frf = Rf Freq / 61.03515625 Hz = 0x6C8000
 		writeReg(0x08, 0x40); // RegFrfMid
-		writeReg(0x09, 0x00); // RegFrfLsb
+		writeReg(0x08, 0x80); // RegFrfLsb
 	#endif
 //	writeReg(0x0B, 0x20); // RegAfcCtrl:
 	writeReg(0x11, 0x9F); // RegPaLevel = PA0 on, +13 dBm  -- RFM12B equivalent: 0x99
