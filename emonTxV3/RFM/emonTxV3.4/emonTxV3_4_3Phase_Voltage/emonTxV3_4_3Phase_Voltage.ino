@@ -606,18 +606,19 @@ void rfm_init(void)
 	writeReg(0x05, 0x05); // RegFdevMsb: ~90 kHz 
 	writeReg(0x06, 0xC3); // RegFdevLsb
 	#ifdef RF12_868MHZ
-		writeReg(0x07, 0xD9); // RegFrfMsb: Frf = Rf Freq / 61.03515625 Hz = 0xD90000
-		writeReg(0x08, 0x00); // RegFrfMid
-		writeReg(0x09, 0x00); // RegFrfLsb
-	#elif defined RF12_915MHZ	
-		writeReg(0x07, 0xE4); // RegFrfMsb: Frf = Rf Freq / 61.03515625 Hz = 0xE4C000
-		writeReg(0x08, 0xC0); // RegFrfMid
-		writeReg(0x09, 0x00); // RegFrfLsb
-	#else // default to 433 MHz
-		writeReg(0x07, 0x6C); // RegFrfMsb: Frf = Rf Freq / 61.03515625 Hz = 0x6C8000
-		writeReg(0x08, 0x40); // RegFrfMid
-		writeReg(0x08, 0x80); // RegFrfLsb
-	#endif
+          writeReg(0x07, 0xD9); // RegFrfMsb: Frf = Rf Freq / 61.03515625 Hz = 0xD90000 = 868.00 MHz as used JeeLib  
+          writeReg(0x08, 0x00); // RegFrfMid
+          writeReg(0x09, 0x00); // RegFrfLsb
+    	#elif defined RF12_915MHZ // JeeLib uses 912.00 MHz    
+	  writeReg(0x07, 0xE4); // RegFrfMsb: Frf = Rf Freq / 61.03515625 Hz = 0xE40000 = 912.00 MHz as used JeeLib 
+          writeReg(0x08, 0x00); // RegFrfMid
+          writeReg(0x09, 0x00); // RegFrfLsb
+	#else // default to 433 MHz band
+          writeReg(0x07, 0x6C); // RegFrfMsb: Frf = Rf Freq / 61.03515625 Hz = 0x6C8000 = 434.00 MHz as used JeeLib 
+          writeReg(0x08, 0x80); // RegFrfMid
+          writeReg(0x09, 0x00); // RegFrfLsb
+    	#endif
+    	
 //	writeReg(0x0B, 0x20); // RegAfcCtrl:
 	writeReg(0x11, 0x9F); // RegPaLevel = PA0 on, +13 dBm  -- RFM12B equivalent: 0x99
 	writeReg(0x1E, 0x2C); //
@@ -731,16 +732,16 @@ void rfm_init(void)
 	// initialise RFM12
 	delay(200); // wait for RFM12 POR
 	rfm_write(0x0000); // clear SPI
-	#ifdef RF12_868MHZ
-	  rfm_write(0x80E7); // EL (ena dreg), EF (ena RX FIFO), 868 MHz, 12.0pF 
-	  rfm_write(0xA640); // 868 MHz exactly
-	#elif defined RF12_915MHZ
-	  rfm_write(0x80F7); // EL (ena dreg), EF (ena RX FIFO), 915 MHz, 12.0pF 
-	  rfm_write(0xA7D0); // 915 MHz exactly	
-	#else // default to 433 MHz
-	  rfm_write(0x80D7); // EL (ena dreg), EF (ena RX FIFO), 433 MHz, 12.0pF 
-	  rfm_write(0xA640); // 433 MHz exactly
-	#endif  
+        #ifdef RF12_868MHZ
+      	  rfm_write(0x80E7); // EL (ena dreg), EF (ena RX FIFO), 868 MHz, 12.0pF 
+          rfm_write(0xA640); // 868.00 MHz as used JeeLib 
+        #elif defined RF12_915MHZ
+          rfm_write(0x80F7); // EL (ena dreg), EF (ena RX FIFO), 915 MHz, 12.0pF 
+          rfm_write(0xA640); // 912.00 MHz as used JeeLib     
+        #else // default to 433 MHz band
+          rfm_write(0x80D7); // EL (ena dreg), EF (ena RX FIFO), 433 MHz, 12.0pF 
+          rfm_write(0xA640); // 434.00 MHz as used JeeLib 
+        #endif  
 	rfm_write(0x8208); // Turn on crystal,!PA
 	rfm_write(0xA640); // 433 or 868 MHz exactly
 	rfm_write(0xC606); // approx 49.2 Kbps, as used by emonTx
