@@ -10,7 +10,7 @@ Technical emonTx V3 wiki ocumentation: http://wiki.openenergymonitor.org/index.p
 Open-hardware schematic and board files: http://solderpad.com/openenergymon/emontxv3/
 
 ## Libraries Needed
-* emonTx V3.4 - JeeLib:  https://github.com/jeelib/jcw
+* emonTx V3.4 - JeeLib:  https://github.com/jcw/jeelib
 * emonTx V3.2 - RFu_JeeLib: https://github.com/openenergymonitor/RFu_jeelib
 * Mains Voltage and current: https://github.com/openenergymonitor/EmonLib
 * Temperature control library: http://download.milesburton.com/Arduino/MaximTemperature/ (version 372 works with Arduino 1.0) and OneWire library: http://www.pjrc.com/teensy/td_libs_OneWire.html
