@@ -31,6 +31,7 @@
 
 
 Change Log:
+V1.7 - (12/06/15) Fix pulse count debounce issue & enable pulse count pulse temperature
 V1.6 - Add support for multiple DS18B20 temperature sensors 
 V1.5 - Add interrupt pulse counting - simplify serial print debug 
 V1.4.1 - Remove filter settle routine as latest emonLib 19/01/15 does not require 
@@ -52,7 +53,7 @@ EnergyMonitor ct1, ct2, ct3, ct4;
 #include <DallasTemperature.h>                                        //http://download.milesburton.com/Arduino/MaximTemperature/DallasTemperature_LATEST.zip
 
 
-const byte version = 16;                   // firmware version divided by 10 e,g 16 = V1.6
+const byte version = 17;                   // firmware version divided by 10 e,g 16 = V1.6
 
 //----------------------------emonTx V3 Settings---------------------------------------------------------------------------------------------------------------
 const byte Vrms=                  230;                               // Vrms for apparent power readings (when no AC-AC voltage sample is present)
@@ -76,6 +77,7 @@ const int no_of_samples=          1480;
 const int no_of_half_wavelengths= 20;
 const int timeout=                2000;                               //emonLib timeout 
 const int ACAC_DETECTION_LEVEL=   3000;
+const byte min_pulsewidth= 52;                                // minimum width of interrupt pulse (default pulse output meters = 50ms)
 const int TEMPERATURE_PRECISION=  11;                 //9 (93.8ms),10 (187.5ms) ,11 (375ms) or 12 (750ms) bits equal to resplution of 0.5C, 0.25C, 0.125C and 0.0625C
 const byte MaxOnewire=             6;                            // +1 since arrya starts at 0. maximum number of DS18B20 one wire sensors
 #define ASYNC_DELAY 375                                          // DS18B20 conversion delay - 9bit requres 95ms, 10bit 187ms, 11bit 375ms and 12bit resolution takes 750ms
@@ -102,7 +104,7 @@ byte numSensors;
 //-------------------------------------------------------------------------------------------------------------------------------------------
 
 //-----------------------RFM12B / RFM69CW SETTINGS----------------------------------------------------------------------------------------------------
-#define RF_freq RF12_433MHZ                                              // Frequency of RF69CW module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
+#define RF_freq RF12_868MHZ                                              // Frequency of RF69CW module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 byte nodeID = 10;                                                // emonTx RFM12B node ID
 const int networkGroup = 210;  
 typedef struct { 
@@ -119,6 +121,7 @@ int pulseCount;
 boolean CT1, CT2, CT3, CT4, ACAC, debug, DS18B20_STATUS; 
 byte CT_count=0;
 volatile byte pulseCount = 0;
+unsigned long pulsetime=0;                                      // Record time of interrupt pulse        
 
 
 
@@ -225,28 +228,28 @@ void setup()
   if (Serial) debug = 1; else debug=0;          //if serial UART to USB is connected show debug O/P. If not then disable serial
   if (debug==1)
   {
-    Serial.print("CT 1 Calibration: "); Serial.println(Ical1);
-    Serial.print("CT 2 Calibration: "); Serial.println(Ical2);
-    Serial.print("CT 3 Calibration: "); Serial.println(Ical3);
-    Serial.print("CT 4 Calibration: "); Serial.println(Ical4);
+    Serial.print("CT 1 Cal "); Serial.println(Ical1);
+    Serial.print("CT 2 Cal "); Serial.println(Ical2);
+    Serial.print("CT 3 Cal "); Serial.println(Ical3);
+    Serial.print("CT 4 Cal "); Serial.println(Ical4);
     delay(1000);
 
-    Serial.print("RMS Voltage on AC-AC Adapter input is: ~");
+    Serial.print("RMS Voltage on AC-AC  is: ~");
     Serial.print(vrms,0); Serial.println("V");
       
     if (ACAC) 
     {
-      Serial.println("AC-AC adapter detected - Real Power measurements enabled");
-      Serial.println("assuming powering from AC-AC adapter (jumper closed)");
-      if (USA==TRUE) Serial.println("USA mode activated"); 
+      Serial.println("AC-AC detected - Real Power measurements enabled");
+      Serial.println("assuming power from AC-AC (jumper closed)");
+      if (USA==TRUE) Serial.println("USA mode active"); 
       Serial.print("Vcal: "); Serial.println(Vcal);
       Serial.print("Phase Shift: "); Serial.println(phase_shift);
     }
      else 
      {
-       Serial.println("AC-AC adapter NOT detected - Apparent Power measurements enabled");
+       Serial.println("AC-AC NOT detected - Apparent Power measurements enabled");
        Serial.print("Assuming VRMS to be "); Serial.print(Vrms); Serial.println("V");
-       Serial.println("Assuming powering from batteries / 5V USB - power saving mode enabled");
+       Serial.println("Assuming power from batt / 5V USB - power saving enabled");
      }  
 
     if (CT_count==0) Serial.println("NO CT's detected, sampling from CT1 by default");
@@ -257,13 +260,13 @@ void setup()
       if (CT3) Serial.println("CT 3 detected");
       if (CT4) Serial.println("CT 4 detected");
     }
-    if (DS18B20_STATUS==1) {Serial.print("Detected "); Serial.print(numSensors); Serial.println(" DS18B20..using this for temperature reading");}
-      else Serial.println("Unable to detect DS18B20 temperature sensor");
+    if (DS18B20_STATUS==1) {Serial.print("Detected Temp Sensors:  "); Serial.println(numSensors);}
+      else Serial.println("No temperature sensor");
    
     #if (RF69_COMPAT)
-       Serial.println("RFM69CW Initiated: ");
+       Serial.println("RFM69CW");
     #else
-      Serial.println("RFM12B Initiated: ");
+      Serial.println("RFM12B");
     #endif
     
     
@@ -299,7 +302,7 @@ void setup()
     if (CT4) ct4.voltage(0, Vcal, phase_shift);          // ADC pin, Calibration, phase_shift
   }
 
-if (DS18B20_STATUS==0) attachInterrupt(pulse_countINT, onPulse, FALLING);     // Attach pulse counting interrupt pulse counting only when no Temperature sensor is connected as they both use the same port
+attachInterrupt(pulse_countINT, onPulse, FALLING);     // Attach pulse counting interrupt pulse counting 
  
 } //end SETUP
 
@@ -441,8 +444,11 @@ double calc_rms(int pin, int samples)
 
 // The interrupt routine - runs each time a falling edge of a pulse is detected
 void onPulse()                  
-{
-   pulseCount++;
+{  
+  if ( (millis() - pulsetime) > min_pulsewidth) {
+    pulseCount++;					//calculate wh elapsed from time between pulses
+    pulsetime=millis(); 
+  }	
 }
 
 int get_temperature(byte sensor)                
