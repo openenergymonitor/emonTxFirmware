@@ -1,5 +1,7 @@
 /*
 emonTx V3 CT1234 + 3-phase Voltage example
+FOR RFM69CW Radio Module O N L Y 
+(not RFu328 and not RFM12B)
 
 An example sketch for the emontx module for
 3-phase electricity monitoring, with 4 current transformers 
@@ -33,11 +35,9 @@ Does NOT require EmonLib
 Extended to allow the voltage measurement of a single phase to be used to generate approximate indications of
 power (real and apparent) and phase angle for the other two phases of a 3-phase installation.
 
-NOTE: This sketch is for a 4-wire connection at 50 Hz, measuring voltage Line-Neutral, and assuming CT1 - 3 current
+NOTE: This sketch is for  4-wire connection at 50 Hz, measuring voltage Line-Neutral, and assuming CT1 - 3 current
 measurements are on the incoming lines, and CT4 is on a load/infeed connected line-neutral.
-A single AC-AC adapter is required and must be connected between L1 and N. 
-CT1 must be on L1, CT2 must be on L2 and CT3 must be on L3. 
-The phase rotation must be L1 - L2 - L3, though which physical phase is "L1" is arbitrary.
+A single AC-AC adapter is required and must be connected between L1 and N.
 
 The measured voltage of phase one is used immediately for the calculations for its own phase, and recorded in an 
 array and retrieved later to be in the calculations for the remaining phases.
@@ -62,7 +62,7 @@ Adjust Vcal = 234.26 so that the correct voltage for L1 is displayed.
 Adjust Ical1 = 119.0 so that the correct current for L1 is displayed.
 Do the same for Ical2 & Ical3.
 Connect a pure resistive load (e.g. a heater) to L1 and adjust Phasecal1 to display a power factor of 1.00.
-Do the same for L2 and L3. If it not possible to keep Phasecal within the range 0 - 2, it will be necessary to
+Do the same for L2 and L3. If it not possible to keep Phasecal within the range 0 - 2, it is permissible to
 change "#define PHASE2 8" and/or "#define PHASE3 17". If either of these are changed, both Phasecal2 
 & Phasecal3 will need adjusting.
 
@@ -94,17 +94,16 @@ adjust Phasecal4 likewise.
 #include "WProgram.h"
 #endif
 
-#define RFM69CW                                  // The type of Radio Module, can be RFM69CW or RFM12B
-                                                 // The sketch will hang if this is wrong.
+#include <MemoryFree.h>
 
 #define RF12_433MHZ                              // Frequency of RFM69CW module can be 
                                                  //    RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. 
                                                  //  You should use the one matching the module you have.
 												 //  (Note: this is different to the normal OEM definition.)
 
-const int nodeID = 10;                           //  node ID for this emonTx
-const int networkGroup = 210;                    //  wireless network group
-                                                 //  - needs to be same as emonBase and emonGLCD
+const int nodeID = 10;                           //  emonTx RFM12B / RFM69CW node ID
+const int networkGroup = 210;                    //  emonTx RFM12B / RFM69CW wireless network group
+                                                 //  - needs to be same as emonBase
 
 const int UNO = 1;                               // Set to 0 if you are not using the UNO bootloader 
                                                  // (i.e using Duemilanove) - All Atmega's shipped from
@@ -147,6 +146,17 @@ double Phasecal4 = 1.10;                         // Calibration constant for pha
 #include <SPI.h>								 // SPI bus for the RFM module
 #include <util/crc16.h>                          // Checksum 
 
+// RFM68 interface
+#include <avr/sleep.h>	
+#define REG_FIFO            0x00	
+#define REG_OPMODE          0x01
+#define MODE_TRANSMITTER    0x0C
+#define REG_DIOMAPPING1     0x25	
+#define REG_IRQFLAGS2       0x28
+#define IRQ2_FIFOFULL       0x80
+#define IRQ2_FIFONOTEMPTY   0x40
+#define IRQ2_PACKETSENT     0x08
+#define IRQ2_FIFOOVERRUN    0x10
 
 #define RFMSELPIN 10                             // Pins for the RFM Radio module
 #define RFMIRQPIN 2
@@ -205,14 +215,7 @@ void setup()
 {
 	Serial.begin(9600);
 
-	Serial.println(F("emonTx V3.4 CT1234 Voltage 3 Phase example"));
-#ifdef RFM69CW
-	Serial.println(F("Using RFM69CW Radio"));
-#endif
-#ifdef RFM12B
-	Serial.println(F("Using RFM12B Radio"));
-#endif
-
+	Serial.println(F("emonTx V3.4 CT1234 Voltage 3 Phase example - RFM69CW"));
 	Serial.println(F("OpenEnergyMonitor.org"));
 	Serial.print(F("Node: ")); 
 	Serial.print(nodeID); 
@@ -229,7 +232,53 @@ void setup()
 	Serial.print(F(" Network: ")); 
 	Serial.println(networkGroup);
 
-	rfm_init();
+
+	// Set up to drive the Radio Module
+	digitalWrite(RFMSELPIN, HIGH);
+	pinMode(RFMSELPIN, OUTPUT);
+	SPI.begin();
+	SPI.setBitOrder(MSBFIRST);
+	SPI.setDataMode(0);
+	SPI.setClockDivider(SPI_CLOCK_DIV8);
+	// Initialise RFM69CW
+	do 
+		writeReg(0x2F, 0xAA); // RegSyncValue1
+	while (readReg(0x2F) != 0xAA) ;
+	do
+	  writeReg(0x2F, 0x55); 
+	while (readReg(0x2F) != 0x55);
+	
+	writeReg(0x01, 0x04); // RegOpMode: RF_OPMODE_SEQUENCER_ON | RF_OPMODE_LISTEN_OFF | RF_OPMODE_STANDBY
+	writeReg(0x02, 0x00); // RegDataModul: RF_DATAMODUL_DATAMODE_PACKET | RF_DATAMODUL_MODULATIONTYPE_FSK | RF_DATAMODUL_MODULATIONSHAPING_00 = no shaping
+	writeReg(0x03, 0x02); // RegBitrateMsb  ~49.23k BPS
+	writeReg(0x04, 0x8A); // RegBitrateLsb
+	writeReg(0x05, 0x05); // RegFdevMsb: ~90 kHz 
+	writeReg(0x06, 0xC3); // RegFdevLsb
+	#ifdef RF12_868MHZ
+		writeReg(0x07, 0xD9); // RegFrfMsb: Frf = Rf Freq / 61.03515625 Hz = 0xD90000
+		writeReg(0x08, 0x00); // RegFrfMid
+		writeReg(0x09, 0x00); // RegFrfLsb
+	#elif defined RF12_915MHZ	
+		writeReg(0x07, 0xE4); // RegFrfMsb: Frf = Rf Freq / 61.03515625 Hz = 0xE4C000
+		writeReg(0x08, 0xC0); // RegFrfMid
+		writeReg(0x09, 0x00); // RegFrfLsb
+	#else // default to 433 MHz
+		writeReg(0x07, 0x6C); // RegFrfMsb: Frf = Rf Freq / 61.03515625 Hz = 0x6C8000
+		writeReg(0x08, 0x40); // RegFrfMid
+		writeReg(0x09, 0x00); // RegFrfLsb
+	#endif
+//	writeReg(0x0B, 0x20); // RegAfcCtrl:
+	writeReg(0x11, 0x9F); // RegPaLevel = PA0 on, +13 dBm  -- RFM12B equivalent: 0x99
+	writeReg(0x1E, 0x2C); //
+	writeReg(0x25, 0x80); // RegDioMapping1: DIO0 is used as IRQ 
+	writeReg(0x26, 0x03); // RegDioMapping2: ClkOut off
+	writeReg(0x28, 0x00); // RegIrqFlags2: FifoOverrun
+
+	// RegPreamble (0x2c, 0x2d): default 0x0003
+	writeReg(0x2E, 0x88); // RegSyncConfig: SyncOn |	FifoFillCondition | SyncSize = 2 bytes | SyncTol = 0
+	writeReg(0x2F, 0x2D); // RegSyncValue1: Same as JeeLib
+	writeReg(0x30, networkGroup); // RegSyncValue2
+	writeReg(0x37, 0x00); // RegPacketConfig1: PacketFormat=fixed | !DcFree | !CrcOn | !CrcAutoClearOff | !AddressFiltering >> 0x00
 
 	pinMode(LEDpin, OUTPUT);                         // Setup indicator LED
 	digitalWrite(LEDpin, HIGH);
@@ -564,77 +613,7 @@ void calcVI3Ph(int cycles, int timeout)
 }
 
 
-/*
-Interface for the RFM69CW Radio Module
-*/
-#ifdef RFM69CW
-
-#include <avr/sleep.h>	
-#define REG_FIFO            0x00	
-#define REG_OPMODE          0x01
-#define MODE_TRANSMITTER    0x0C
-#define REG_DIOMAPPING1     0x25	
-#define REG_IRQFLAGS2       0x28
-#define IRQ2_FIFOFULL       0x80
-#define IRQ2_FIFONOTEMPTY   0x40
-#define IRQ2_PACKETSENT     0x08
-#define IRQ2_FIFOOVERRUN    0x10
-
-
-void rfm_init(void)
-{	
-	// Set up to drive the Radio Module
-	digitalWrite(RFMSELPIN, HIGH);
-	pinMode(RFMSELPIN, OUTPUT);
-	SPI.begin();
-	SPI.setBitOrder(MSBFIRST);
-	SPI.setDataMode(0);
-	SPI.setClockDivider(SPI_CLOCK_DIV8);
-	
-	// Initialise RFM69CW
-	do 
-		writeReg(0x2F, 0xAA); // RegSyncValue1
-	while (readReg(0x2F) != 0xAA) ;
-	do
-	  writeReg(0x2F, 0x55); 
-	while (readReg(0x2F) != 0x55);
-	
-	writeReg(0x01, 0x04); // RegOpMode: RF_OPMODE_SEQUENCER_ON | RF_OPMODE_LISTEN_OFF | RF_OPMODE_STANDBY
-	writeReg(0x02, 0x00); // RegDataModul: RF_DATAMODUL_DATAMODE_PACKET | RF_DATAMODUL_MODULATIONTYPE_FSK | RF_DATAMODUL_MODULATIONSHAPING_00 = no shaping
-	writeReg(0x03, 0x02); // RegBitrateMsb  ~49.23k BPS
-	writeReg(0x04, 0x8A); // RegBitrateLsb
-	writeReg(0x05, 0x05); // RegFdevMsb: ~90 kHz 
-	writeReg(0x06, 0xC3); // RegFdevLsb
-	#ifdef RF12_868MHZ
-          writeReg(0x07, 0xD9); // RegFrfMsb: Frf = Rf Freq / 61.03515625 Hz = 0xD90000 = 868.00 MHz as used JeeLib  
-          writeReg(0x08, 0x00); // RegFrfMid
-          writeReg(0x09, 0x00); // RegFrfLsb
-    	#elif defined RF12_915MHZ // JeeLib uses 912.00 MHz    
-	  writeReg(0x07, 0xE4); // RegFrfMsb: Frf = Rf Freq / 61.03515625 Hz = 0xE40000 = 912.00 MHz as used JeeLib 
-          writeReg(0x08, 0x00); // RegFrfMid
-          writeReg(0x09, 0x00); // RegFrfLsb
-	#else // default to 433 MHz band
-          writeReg(0x07, 0x6C); // RegFrfMsb: Frf = Rf Freq / 61.03515625 Hz = 0x6C8000 = 434.00 MHz as used JeeLib 
-          writeReg(0x08, 0x80); // RegFrfMid
-          writeReg(0x09, 0x00); // RegFrfLsb
-    	#endif
-    	
-//	writeReg(0x0B, 0x20); // RegAfcCtrl:
-	writeReg(0x11, 0x9F); // RegPaLevel = PA0 on, +13 dBm  -- RFM12B equivalent: 0x99
-	writeReg(0x1E, 0x2C); //
-	writeReg(0x25, 0x80); // RegDioMapping1: DIO0 is used as IRQ 
-	writeReg(0x26, 0x03); // RegDioMapping2: ClkOut off
-	writeReg(0x28, 0x00); // RegIrqFlags2: FifoOverrun
-
-	// RegPreamble (0x2c, 0x2d): default 0x0003
-	writeReg(0x2E, 0x88); // RegSyncConfig: SyncOn |	FifoFillCondition | SyncSize = 2 bytes | SyncTol = 0
-	writeReg(0x2F, 0x2D); // RegSyncValue1: Same as JeeLib
-	writeReg(0x30, networkGroup); // RegSyncValue2
-	writeReg(0x37, 0x00); // RegPacketConfig1: PacketFormat=fixed | !DcFree | !CrcOn | !CrcAutoClearOff | !AddressFiltering >> 0x00
-}
-
-// transmit data via the RFM69CW
-void rfm_send(const byte *data, const byte size, const byte group, const byte node)      // *SEND RF DATA*
+void rfm_send(const byte *data, const byte size, const byte group, const byte node)
 {
 	while (readReg(REG_IRQFLAGS2) & (IRQ2_FIFONOTEMPTY | IRQ2_FIFOOVERRUN))		// Flush FIFO
         readReg(REG_FIFO);
@@ -679,136 +658,32 @@ void rfm_send(const byte *data, const byte size, const byte group, const byte no
 
 void writeReg(uint8_t addr, uint8_t value)
 {
-	select();
-	SPI.transfer(addr | 0x80);
-	SPI.transfer(value);
-	unselect();
+  select();
+  SPI.transfer(addr | 0x80);
+  SPI.transfer(value);
+  unselect();
 }
 
 uint8_t readReg(uint8_t addr)
 {
-	select();
-	SPI.transfer(addr & 0x7F);
-	uint8_t regval = SPI.transfer(0);
-	unselect();
-	return regval;
+  select();
+  SPI.transfer(addr & 0x7F);
+  uint8_t regval = SPI.transfer(0);
+  unselect();
+  return regval;
 }
 
 // select the transceiver
 void select() {
-	noInterrupts();
-	SPI.setDataMode(SPI_MODE0);
-	SPI.setBitOrder(MSBFIRST);
-	SPI.setClockDivider(SPI_CLOCK_DIV4); // decided to slow down from DIV2 after SPI stalling in some instances, especially visible on mega1284p when RFM69 and FLASH chip both present
-	digitalWrite(RFMSELPIN, LOW);
+  noInterrupts();
+  SPI.setDataMode(SPI_MODE0);
+  SPI.setBitOrder(MSBFIRST);
+  SPI.setClockDivider(SPI_CLOCK_DIV4); // decided to slow down from DIV2 after SPI stalling in some instances, especially visible on mega1284p when RFM69 and FLASH chip both present
+  digitalWrite(RFMSELPIN, LOW);
 }
 
 // UNselect the transceiver chip
 void unselect() {
-	digitalWrite(RFMSELPIN, HIGH);
-	interrupts();
+  digitalWrite(RFMSELPIN, HIGH);
+  interrupts();
 }
-#endif
-
-
-/*
-Interface for the RFM12B Radio Module
-*/
-
-#ifdef RFM12B
-
-#define SDOPIN 12
-
-void rfm_init(void)
-{	
-	// Set up to drive the Radio Module
-	pinMode (RFMSELPIN, OUTPUT);
-	digitalWrite(RFMSELPIN,HIGH);
-	// start the SPI library:
-	SPI.begin();
-	SPI.setBitOrder(MSBFIRST);
-	SPI.setDataMode(0);
-	SPI.setClockDivider(SPI_CLOCK_DIV8);
-	// initialise RFM12
-	delay(200); // wait for RFM12 POR
-	rfm_write(0x0000); // clear SPI
-        #ifdef RF12_868MHZ
-      	  rfm_write(0x80E7); // EL (ena dreg), EF (ena RX FIFO), 868 MHz, 12.0pF 
-          rfm_write(0xA640); // 868.00 MHz as used JeeLib 
-        #elif defined RF12_915MHZ
-          rfm_write(0x80F7); // EL (ena dreg), EF (ena RX FIFO), 915 MHz, 12.0pF 
-          rfm_write(0xA640); // 912.00 MHz as used JeeLib     
-        #else // default to 433 MHz band
-          rfm_write(0x80D7); // EL (ena dreg), EF (ena RX FIFO), 433 MHz, 12.0pF 
-          rfm_write(0xA640); // 434.00 MHz as used JeeLib 
-        #endif  
-	rfm_write(0x8208); // Turn on crystal,!PA
-	rfm_write(0xA640); // 433 or 868 MHz exactly
-	rfm_write(0xC606); // approx 49.2 Kbps, as used by emonTx
-	//rfm_write(0xC657); // approx 3.918 Kbps, better for long range
-	rfm_write(0xCC77); // PLL 
-	rfm_write(0x94A0); // VDI,FAST,134kHz,0dBm,-103dBm 
-	rfm_write(0xC2AC); // AL,!ml,DIG,DQD4 
-	rfm_write(0xCA83); // FIFO8,2-SYNC,!ff,DR 
-	rfm_write(0xCEd2); // SYNC=2DD2
-	rfm_write(0xC483); // @PWR,NO RSTRIC,!st,!fi,OE,EN 
-	rfm_write(0x9850); // !mp,90kHz,MAX OUT 
-	rfm_write(0xE000); // wake up timer - not used 
-	rfm_write(0xC800); // low duty cycle - not used 
-	rfm_write(0xC000); // 1.0MHz,2.2V 
-}
-
-
-// transmit data via the RFM12
-void rfm_send(const byte *data, const byte size, const byte group, const byte node)
-{
-	byte i=0,next,txstate=0;
-	word crc=~0;
-  
-	rfm_write(0x8228); // OPEN PA
-	rfm_write(0x8238);
-
-	digitalWrite(RFMSELPIN,LOW);
-	SPI.transfer(0xb8); // tx register write command
-  
-	while(txstate<13)
-	{
-		while(digitalRead(SDOPIN)==0); // wait for SDO to go high
-		switch(txstate)
-		{
-			case 0:
-			case 1:
-			case 2: next=0xaa; txstate++; break;
-			case 3: next=0x2d; txstate++; break;
-			case 4: next=group; txstate++; break;
-			case 5: next=node; txstate++; break; // node ID
-			case 6: next=size; txstate++; break;
-			case 7: next=data[i++]; if(i==size) txstate++; break;
-			case 8: next=(byte)crc; txstate++; break;
-			case 9: next=(byte)(crc>>8); txstate++; break;
-			case 10:
-			case 11:
-			case 12: next=0xaa; txstate++; break; // dummy bytes (if <3 CRC gets corrupted sometimes)
-		}
-		if((txstate>4)&&(txstate<9)) crc = _crc16_update(crc, next);
-		SPI.transfer(next);
-	}
-	digitalWrite(RFMSELPIN,HIGH);
-
-	rfm_write( 0x8208 ); // CLOSE PA
-	rfm_write( 0x8200 ); // enter sleep
-}
-
-
-// write a command to the RFM12
-word rfm_write(word cmd)
-{
-	word result;
-  
-	digitalWrite(RFMSELPIN,LOW);
-	result=(SPI.transfer(cmd>>8)<<8) | SPI.transfer(cmd & 0xff);
-	digitalWrite(RFMSELPIN,HIGH);
-	return result;
-}
-
-#endif
