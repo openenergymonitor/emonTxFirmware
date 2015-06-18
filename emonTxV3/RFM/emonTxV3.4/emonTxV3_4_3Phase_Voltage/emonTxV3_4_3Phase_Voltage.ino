@@ -1,7 +1,5 @@
 /*
 emonTx V3 CT1234 + 3-phase Voltage example
-FOR RFM69CW Radio Module O N L Y 
-(not RFu328 and not RFM12B)
 
 An example sketch for the emontx module for
 3-phase electricity monitoring, with 4 current transformers 
@@ -18,6 +16,8 @@ Extended for 3-phase operation: Robert Wall
 V.1  7/11/2013    Derived from emonTx_CT123_3Phase_Voltage.ino 
 V.2  28/1/2015	  Altered to use low-pass filter and subtract the offset, to remove filter settling time.
 V.3  1/5/2015     Dependency on JeeLib removed, replaced by in-line code.
+V.4  16/6/2015    Array addressing bug solved.
+
 
 emonTx V3 Shield documentation:http://openenergymonitor.org/emon/modules/emonTxV3
 emonTx firmware code explanation: http://openenergymonitor.org/emon/modules/emontx/firmware
@@ -35,9 +35,11 @@ Does NOT require EmonLib
 Extended to allow the voltage measurement of a single phase to be used to generate approximate indications of
 power (real and apparent) and phase angle for the other two phases of a 3-phase installation.
 
-NOTE: This sketch is for  4-wire connection at 50 Hz, measuring voltage Line-Neutral, and assuming CT1 - 3 current
+NOTE: This sketch is for a 4-wire connection at 50 Hz, measuring voltage Line-Neutral, and assuming CT1 - 3 current
 measurements are on the incoming lines, and CT4 is on a load/infeed connected line-neutral.
-A single AC-AC adapter is required and must be connected between L1 and N.
+A single AC-AC adapter is required and must be connected between L1 and N. 
+CT1 must be on L1, CT2 must be on L2 and CT3 must be on L3. 
+The phase rotation must be L1 - L2 - L3, though which physical phase is "L1" is arbitrary.
 
 The measured voltage of phase one is used immediately for the calculations for its own phase, and recorded in an 
 array and retrieved later to be in the calculations for the remaining phases.
@@ -55,20 +57,33 @@ the inaccuracies that result from these approximations will be greater also.
 If the mains frequency changes, this will appear as a change in real power and power factor for L2 and more so for L3. 
 
 CALIBRATION
-Include the line " #define CT4LINE " if the fourth C.T. is to be used. Adding or removing CT4 drastically changes the 
-phase calibration for L2 and L3.
+The fourth channel may be used, for example, for a PV input. Include the line " #define CT4LINE " if the fourth C.T.
+is to be used. Adding or removing CT4 drastically changes the phase calibration for L2 and L3.
 
 Adjust Vcal = 234.26 so that the correct voltage for L1 is displayed.
 Adjust Ical1 = 119.0 so that the correct current for L1 is displayed.
 Do the same for Ical2 & Ical3.
-Connect a pure resistive load (e.g. a heater) to L1 and adjust Phasecal1 to display a power factor of 1.00.
-Do the same for L2 and L3. If it not possible to keep Phasecal within the range 0 - 2, it is permissible to
-change "#define PHASE2 8" and/or "#define PHASE3 17". If either of these are changed, both Phasecal2 
+Connect a pure resistive load (e.g. a heater) to L1 and adjust Phasecal1 to display a power factor of 1.00. Phasecal1 
+should be within the range 0 - 2.
+Do the same for L2 and L3. If it not possible to keep Phasecal2 and Phasecal3 within the range 0 - 1 , it will be 
+necessary to change "#define PHASE2 8" and/or "#define PHASE3 17". If either of these are changed, both Phasecal2 
 & Phasecal3 will need adjusting.
 
-The fourth channel may be used, for example, for a PV input. In that case, define which line CT4 is connected to and
-adjust Phasecal4 likewise.
+If CT 4 is in use, adjust Phasecal4 likewise. As CT4 has a different burden, it is to be expected that it will not 
+have the same Phasecal as the other CT on that phase.
 
+
+RF OUTPUT POWER (RFM69CW Only):
+
+At line 634, the output power is set. When powered via the AC adapter only, the output power is limited and depends 
+on the minimum supply voltage. The following is a rough guide. If correct operation is impossible (i.e. the emonTx 
+continually resets) then an external 5 V supply must be used.
+
+Min supply voltage  maximum power
+  235 V              -4 dBm (0x8E)
+  230 V             -10 dBm (0x88)
+  
+Reducing the output power below -10 dBm has very little effect on the minimum supply voltage.
 */
 
 // #define DEBUGGING                             // enable this line to include debugging print statements
@@ -94,31 +109,36 @@ adjust Phasecal4 likewise.
 #include "WProgram.h"
 #endif
 
-#include <MemoryFree.h>                          // https://github.com/McNeight/MemoryFree.git
+#define RFM69CW                                  // The type of Radio Module, can be RFM69CW or RFM12B, 
+                                                 //   or don't define anything if no radio is required.
+                                                 // The sketch will hang if this is wrong.
+#undef RF12_433MHZ
+#undef RF12_868MHZ
+#undef RF12_915MHZ                               // Should not be present, but can cause problems if they are.
 
 #define RF12_433MHZ                              // Frequency of RFM69CW module can be 
                                                  //    RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. 
                                                  //  You should use the one matching the module you have.
 												 //  (Note: this is different to the normal OEM definition.)
 
-const int nodeID = 10;                           //  emonTx RFM12B / RFM69CW node ID
-const int networkGroup = 210;                    //  emonTx RFM12B / RFM69CW wireless network group
-                                                 //  - needs to be same as emonBase
+const int nodeID = 10;                           //  node ID for this emonTx. This sketch does NOT interrogate the DIP switch.
+const int networkGroup = 210;                    //  wireless network group
+                                                 //  - needs to be same as emonBase and emonGLCD. OEM default is 210
 
 const int UNO = 1;                               // Set to 0 if you are not using the UNO bootloader 
                                                  // (i.e using Duemilanove) - All Atmega's shipped from
                                                  // OpenEnergyMonitor come with Arduino Uno bootloader
 const byte TIME_BETWEEN_READINGS = 2;            // Time between readings   
 
-//#define CT4LINE 1                                // Set this to 1, 2, or 3 depending on the Line to which the CT4 load is connected.
+#define CT4LINE 1                                // Set this to 1, 2, or 3 depending on the Line to which the CT4 load is connected.
 											     //  The default is 1
 												 // DO NOT DEFINE CT4LINE if the 4th CT is not to be used.
 												 // The timing values "PHASE2", "PHASE3", "Phasecal2" & "Phasecal3" will be different 
                                                  // depending on whether CT 4 is used or not.
 												 
-#define PHASE2 7                                 //  Number of samples delay for L2
+#define PHASE2 6                                 //  Number of samples delay for L2
 
-#define PHASE3 17                                //  Number  of samples delay for L3, also size of array
+#define PHASE3 14                                //  Number  of samples delay for L3
                                                  //  These can be adjusted if the phase correction is not adequate
                                                  //  Suggested starting values for 3 ct's  [4 ct's]:
                                                  //    PHASE2                         7    [   6  ]
@@ -136,9 +156,9 @@ double Ical2 = 90.9;                             // Calibration constant for cur
 double Ical3 = 90.9;                             // Calibration constant for current transformer 3
 double Ical4 = 16.6;                             // Calibration constant for current transformer 4
 
-double Phasecal1 = 1.00;                         // Calibration constant for phase shift L1
-double Phasecal2 = 0.22;                         // Calibration constant for phase shift L2
-double Phasecal3 = 0.40;                         // Calibration constant for phase shift L3
+double Phasecal1 = 1.00;                         // Calibration constant for phase shift L1 - 1.00
+double Phasecal2 = 0.60;                         // Calibration constant for phase shift L2
+double Phasecal3 = 0.08;                         // Calibration constant for phase shift L3 
 double Phasecal4 = 1.10;                         // Calibration constant for phase shift CT 4
 
 
@@ -146,21 +166,11 @@ double Phasecal4 = 1.10;                         // Calibration constant for pha
 #include <SPI.h>								 // SPI bus for the RFM module
 #include <util/crc16.h>                          // Checksum 
 
-// RFM68 interface
-#include <avr/sleep.h>	
-#define REG_FIFO            0x00	
-#define REG_OPMODE          0x01
-#define MODE_TRANSMITTER    0x0C
-#define REG_DIOMAPPING1     0x25	
-#define REG_IRQFLAGS2       0x28
-#define IRQ2_FIFOFULL       0x80
-#define IRQ2_FIFONOTEMPTY   0x40
-#define IRQ2_PACKETSENT     0x08
-#define IRQ2_FIFOOVERRUN    0x10
 
 #define RFMSELPIN 10                             // Pins for the RFM Radio module
 #define RFMIRQPIN 2
 
+#define BUFFERSIZE (PHASE3+2)                    // Store a little more than 240 degrees of voltage samples
 
 // ISR(WDT_vect) { Sleepy::watchdogEvent(); }
 
@@ -203,9 +213,9 @@ Vrms;
 
     
 typedef struct { int power1, power2, power3, power4, Vrms; } PayloadTX;        // neat way of packaging data for RF comms
-                                                 // (Include all the variables that are desired,
+                                                 // Include all the variables that are desired,
                                                  // ensure the same struct is used to receive.
-												 // The maximum size is 60 Bytes)
+												 // The maximum size is 60 Bytes
 
 PayloadTX emontx;                                // create an instance
 
@@ -215,7 +225,14 @@ void setup()
 {
 	Serial.begin(9600);
 
-	Serial.println(F("emonTx V3.4 CT1234 Voltage 3 Phase example - RFM69CW"));
+	Serial.println(F("emonTx V3.4 CT1234 Voltage 3 Phase example"));
+#ifdef RFM69CW
+	Serial.println(F("Using RFM69CW Radio"));
+#endif
+#ifdef RFM12B
+	Serial.println(F("Using RFM12B Radio"));
+#endif
+
 	Serial.println(F("OpenEnergyMonitor.org"));
 	Serial.print(F("Node: ")); 
 	Serial.print(nodeID); 
@@ -232,53 +249,9 @@ void setup()
 	Serial.print(F(" Network: ")); 
 	Serial.println(networkGroup);
 
-
-	// Set up to drive the Radio Module
-	digitalWrite(RFMSELPIN, HIGH);
-	pinMode(RFMSELPIN, OUTPUT);
-	SPI.begin();
-	SPI.setBitOrder(MSBFIRST);
-	SPI.setDataMode(0);
-	SPI.setClockDivider(SPI_CLOCK_DIV8);
-	// Initialise RFM69CW
-	do 
-		writeReg(0x2F, 0xAA); // RegSyncValue1
-	while (readReg(0x2F) != 0xAA) ;
-	do
-	  writeReg(0x2F, 0x55); 
-	while (readReg(0x2F) != 0x55);
-	
-	writeReg(0x01, 0x04); // RegOpMode: RF_OPMODE_SEQUENCER_ON | RF_OPMODE_LISTEN_OFF | RF_OPMODE_STANDBY
-	writeReg(0x02, 0x00); // RegDataModul: RF_DATAMODUL_DATAMODE_PACKET | RF_DATAMODUL_MODULATIONTYPE_FSK | RF_DATAMODUL_MODULATIONSHAPING_00 = no shaping
-	writeReg(0x03, 0x02); // RegBitrateMsb  ~49.23k BPS
-	writeReg(0x04, 0x8A); // RegBitrateLsb
-	writeReg(0x05, 0x05); // RegFdevMsb: ~90 kHz 
-	writeReg(0x06, 0xC3); // RegFdevLsb
-	#ifdef RF12_868MHZ
-		writeReg(0x07, 0xD9); // RegFrfMsb: Frf = Rf Freq / 61.03515625 Hz = 0xD90000
-		writeReg(0x08, 0x00); // RegFrfMid
-		writeReg(0x09, 0x00); // RegFrfLsb
-	#elif defined RF12_915MHZ	
-		writeReg(0x07, 0xE4); // RegFrfMsb: Frf = Rf Freq / 61.03515625 Hz = 0xE4C000
-		writeReg(0x08, 0xC0); // RegFrfMid
-		writeReg(0x09, 0x00); // RegFrfLsb
-	#else // default to 433 MHz
-		writeReg(0x07, 0x6C); // RegFrfMsb: Frf = Rf Freq / 61.03515625 Hz = 0x6C8000
-		writeReg(0x08, 0x40); // RegFrfMid
-		writeReg(0x09, 0x00); // RegFrfLsb
-	#endif
-//	writeReg(0x0B, 0x20); // RegAfcCtrl:
-	writeReg(0x11, 0x9F); // RegPaLevel = PA0 on, +13 dBm  -- RFM12B equivalent: 0x99
-	writeReg(0x1E, 0x2C); //
-	writeReg(0x25, 0x80); // RegDioMapping1: DIO0 is used as IRQ 
-	writeReg(0x26, 0x03); // RegDioMapping2: ClkOut off
-	writeReg(0x28, 0x00); // RegIrqFlags2: FifoOverrun
-
-	// RegPreamble (0x2c, 0x2d): default 0x0003
-	writeReg(0x2E, 0x88); // RegSyncConfig: SyncOn |	FifoFillCondition | SyncSize = 2 bytes | SyncTol = 0
-	writeReg(0x2F, 0x2D); // RegSyncValue1: Same as JeeLib
-	writeReg(0x30, networkGroup); // RegSyncValue2
-	writeReg(0x37, 0x00); // RegPacketConfig1: PacketFormat=fixed | !DcFree | !CrcOn | !CrcAutoClearOff | !AddressFiltering >> 0x00
+#if defined RFM12B || defined RFM69CW	
+	rfm_init();
+#endif
 
 	pinMode(LEDpin, OUTPUT);                         // Setup indicator LED
 	digitalWrite(LEDpin, HIGH);
@@ -291,6 +264,8 @@ void setup()
 		CT3inUse = true;
 	if (analogRead(inPinI4) != 0)
 		CT4inUse = true;
+	digitalWrite(LEDpin, LOW);
+	delay(20);
 }
 
 //*********************************************************************************************************************
@@ -306,22 +281,22 @@ void loop()
 	Serial.print(F(" Phase 1: ")); Serial.print(Irms1);
 	Serial.print(F(" A, ")); Serial.print(realPower1);
 	Serial.print(F(" W, ")); Serial.print(apparentPower1);
-	Serial.print(F(" VA, PF=")); Serial.println(powerFactor1);
+	Serial.print(F(" VA, PF=")); Serial.println(powerFactor1,3);
 	Serial.print(F(" Phase 2: ")); Serial.print(Irms2);
 	Serial.print(F(" A, ")); Serial.print(realPower2);
 	Serial.print(F(" W, ")); Serial.print(apparentPower2);
-	Serial.print(F(" VA, PF=")); Serial.println(powerFactor2);
+	Serial.print(F(" VA, PF=")); Serial.println(powerFactor2,3);
 
 	Serial.print(F(" Phase 3: ")); Serial.print(Irms3);
 	Serial.print(F(" A, ")); Serial.print(realPower3);
 	Serial.print(F(" W, ")); Serial.print(apparentPower3);
-	Serial.print(F(" VA, PF=")); Serial.println(powerFactor3);
+	Serial.print(F(" VA, PF=")); Serial.println(powerFactor3,3);
 
 	#ifdef CT4LINE
 	Serial.print(F(" Input 4: ")); Serial.print(Irms4);
 	Serial.print(F(" A, ")); Serial.print(realPower4);
 	Serial.print(F(" W, ")); Serial.print(apparentPower4);
-	Serial.print(F(" VA, PF=")); Serial.println(powerFactor4);
+	Serial.print(F(" VA, PF=")); Serial.println(powerFactor4,3);
 	#endif
 
 	Serial.println(); delay(100);
@@ -333,11 +308,12 @@ void loop()
 	emontx.power3 = realPower3;
 	emontx.power4 = realPower4;
 	emontx.Vrms   = Vrms;
-
-	rfm_send((byte *)&emontx, sizeof(emontx), networkGroup, nodeID);      // *SEND RF DATA*
 	digitalWrite(LEDpin, HIGH); delay(2); digitalWrite(LEDpin, LOW);      // flash LED
-	delay(TIME_BETWEEN_READINGS*1000);  
 
+#if defined RFM12B || defined RFM69CW	
+	rfm_send((byte *)&emontx, sizeof(emontx), networkGroup, nodeID);      // *SEND RF DATA*
+#endif
+	delay(TIME_BETWEEN_READINGS*1000);  
 }
 
 //*********************************************************************************************************************
@@ -347,7 +323,6 @@ void calcVI3Ph(int cycles, int timeout)
     //--------------------------------------------------------------------------------------
     // Variable declaration for filters, phase shift, voltages, currents & powers
     //--------------------------------------------------------------------------------------
-
     int lastSampleV,sampleV;              // 'sample' holds the raw analogue read value, 'lastSample' holds the last sample
     int sampleI1;
     int sampleI2;
@@ -382,12 +357,14 @@ void calcVI3Ph(int cycles, int timeout)
 
     int SupplyVoltage = 3300;                    // Hardcode supply voltage for emonTx V3, it should be always 3.3V
     int crossCount = -2;                         // Used to measure number of times threshold is crossed.
-    int numberOfSamples = 0;                     // This is now incremented  
-    int numberOfPowerSamples = 0;                // Needed because 1 cycle of voltages needs to be stored before use
-    boolean lastVCross, checkVCross;             // Used to measure number of times threshold is crossed.
-	double storedV[PHASE3];                      // Array to store >240 degrees of voltage samples
+    int numberOfSamples = BUFFERSIZE;            // Total count - index into by circular array (Start at BUFFERSIZE to prevent
+                                                 //  indexing outside of array on first cycle.	
+    int numberOfPowerSamples = 0;                // For averages - should be ~ 1.66 cycles less than numberOfSamples
+    boolean lastVCross, checkVCross = false;     // Flags to determine which half-cycle we are in.
+	double storedV[BUFFERSIZE];                  // Array to store >240 degrees of voltage samples
 	
-    //-------------------------------------------------------------------------------------------------------------------------
+	
+	//-------------------------------------------------------------------------------------------------------------------------
     // 1) Waits for the waveform to be close to 'zero' (1/2 scale adc) part in sin curve.
     //-------------------------------------------------------------------------------------------------------------------------
     boolean st=false;                            // an indicator to exit the while loop
@@ -405,7 +382,6 @@ void calcVI3Ph(int cycles, int timeout)
     // 2) Main measurement loop
     //------------------------------------------------------------------------------------------------------------------------- 
     start = millis(); 
-
     while ((crossCount < cycles * 2) && ((millis()-start)<timeout)) 
     {
         lastSampleV=sampleV;                     //  Used for digital low pass filter - offset removal
@@ -426,19 +402,15 @@ void calcVI3Ph(int cycles, int timeout)
 		// Apply digital low pass filter to the voltage input, then store it in a circular buffer
         offsetV = offsetV + ((sampleV-offsetV)/1024);
         filteredV = sampleV - offsetV;
-        storedV[numberOfSamples%PHASE3] = filteredV;        // store this voltage sample in circular buffer
+        storedV[numberOfSamples%BUFFERSIZE] = filteredV;        // store this voltage sample in circular buffer
 		
 		// Count the number of zero crossings - the first cycle loads the buffer, otherwise it is not used.
 
         lastVCross = checkVCross;                     
-
         checkVCross = (sampleV > startV) ? true : false;
-        if (numberOfSamples==1)
-            lastVCross = checkVCross;                  
                     
         if (lastVCross != checkVCross)
         {
-            crossCount++;
             if (crossCount == 0)                 // Started recording at -2 crossings so that one complete cycle 
             {                                    //   has been stored before accumulating.
                 sumV  = 0;
@@ -452,6 +424,7 @@ void calcVI3Ph(int cycles, int timeout)
                 sumP4 = 0;
                 numberOfPowerSamples = 0;
             }
+            crossCount++;			
         }
 
 
@@ -496,28 +469,28 @@ void calcVI3Ph(int cycles, int timeout)
         //    and shifts for fine adjustment and to correct transformer errors.
         //-----------------------------------------------------------------------------
         phaseShiftedV1 = lastFilteredV + Phasecal1 * (filteredV - lastFilteredV);
-		
-        phaseShiftedV2 = storedV[(numberOfSamples-PHASE2-1)%PHASE3] 
-            + Phasecal2 * (storedV[(numberOfSamples-PHASE2)%PHASE3] 
-                         - storedV[(numberOfSamples-PHASE2-1)%PHASE3]);
+	
+        phaseShiftedV2 = storedV[(numberOfSamples-PHASE2-1)%BUFFERSIZE] 
+            + Phasecal2 * (storedV[(numberOfSamples-PHASE2)%BUFFERSIZE] 
+                         - storedV[(numberOfSamples-PHASE2-1)%BUFFERSIZE]);
 
-        phaseShiftedV3 = storedV[(numberOfSamples+1)%PHASE3] 
-            + Phasecal3 * (storedV[(numberOfSamples+2)%PHASE3]
-                         - storedV[(numberOfSamples+1)%PHASE3]);
-						 
+        phaseShiftedV3 = storedV[(numberOfSamples-PHASE3-1)%BUFFERSIZE] 
+            + Phasecal3 * (storedV[(numberOfSamples-PHASE3)%BUFFERSIZE]
+                         - storedV[(numberOfSamples-PHASE3-1)%BUFFERSIZE]);		// must always read ahead of the current sample
+				 
 #ifdef CT4LINE
 		if (CT4LINE == 2)
 		{
-			phaseShiftedV4 = storedV[(numberOfSamples-PHASE2-1)%PHASE3] 
-				+ Phasecal4 * (storedV[(numberOfSamples-PHASE2)%PHASE3] 
-                             - storedV[(numberOfSamples-PHASE2-1)%PHASE3]);
+			phaseShiftedV4 = storedV[(numberOfSamples-PHASE2-1)%BUFFERSIZE] 
+				+ Phasecal4 * (storedV[(numberOfSamples-PHASE2)%BUFFERSIZE] 
+                             - storedV[(numberOfSamples-PHASE2-1)%BUFFERSIZE]);
 	
 		}
 		else if (CT4LINE == 3)
 		{
-			phaseShiftedV4 = storedV[(numberOfSamples+1)%PHASE3] 
-				+ Phasecal4 * (storedV[(numberOfSamples+2)%PHASE3]
-                             - storedV[(numberOfSamples+1)%PHASE3]);
+			phaseShiftedV4 = storedV[(numberOfSamples-PHASE3-1)%BUFFERSIZE] 
+				+ Phasecal4 * (storedV[(numberOfSamples-PHASE3)%BUFFERSIZE]
+                             - storedV[(numberOfSamples-PHASE3-1)%BUFFERSIZE]);
 		}
 		else
 			phaseShiftedV4 = lastFilteredV + Phasecal4 * (filteredV - lastFilteredV);
@@ -604,7 +577,7 @@ void calcVI3Ph(int cycles, int timeout)
     Serial.print(F(" Time: ")); Serial.print(millis() - start);
     Serial.print(F(" Crossings: ")); Serial.println(crossCount);
 
-    for (int j=0; j<PHASE3; j++)
+    for (int j=0; j<BUFFERSIZE; j++)
     {
         Serial.print(storedV[j]); Serial.print(F(" "));
         Serial.println();
@@ -613,11 +586,79 @@ void calcVI3Ph(int cycles, int timeout)
 }
 
 
-void rfm_send(const byte *data, const byte size, const byte group, const byte node)
+/*
+Interface for the RFM69CW Radio Module
+*/
+#ifdef RFM69CW
+
+#include <avr/sleep.h>	
+#define REG_FIFO            0x00	
+#define REG_OPMODE          0x01
+#define MODE_TRANSMITTER    0x0C
+#define REG_DIOMAPPING1     0x25	
+#define REG_IRQFLAGS2       0x28
+#define IRQ2_FIFOFULL       0x80
+#define IRQ2_FIFONOTEMPTY   0x40
+#define IRQ2_PACKETSENT     0x08
+#define IRQ2_FIFOOVERRUN    0x10
+
+
+void rfm_init(void)
+{	
+	// Set up to drive the Radio Module
+	digitalWrite(RFMSELPIN, HIGH);
+	pinMode(RFMSELPIN, OUTPUT);
+	SPI.begin();
+	SPI.setBitOrder(MSBFIRST);
+	SPI.setDataMode(0);
+	SPI.setClockDivider(SPI_CLOCK_DIV8);
+	
+	// Initialise RFM69CW
+	do 
+		writeReg(0x2F, 0xAA); // RegSyncValue1
+	while (readReg(0x2F) != 0xAA) ;
+	do
+	  writeReg(0x2F, 0x55); 
+	while (readReg(0x2F) != 0x55);
+	
+	writeReg(0x01, 0x04); // RegOpMode: RF_OPMODE_SEQUENCER_ON | RF_OPMODE_LISTEN_OFF | RF_OPMODE_STANDBY
+	writeReg(0x02, 0x00); // RegDataModul: RF_DATAMODUL_DATAMODE_PACKET | RF_DATAMODUL_MODULATIONTYPE_FSK | RF_DATAMODUL_MODULATIONSHAPING_00 = no shaping
+	writeReg(0x03, 0x02); // RegBitrateMsb  ~49.23k BPS
+	writeReg(0x04, 0x8A); // RegBitrateLsb
+	writeReg(0x05, 0x05); // RegFdevMsb: ~90 kHz 
+	writeReg(0x06, 0xC3); // RegFdevLsb
+	#ifdef RF12_868MHZ
+		writeReg(0x07, 0xD9); // RegFrfMsb: Frf = Rf Freq / 61.03515625 Hz = 0xD90000 = 868.00 MHz as used JeeLib  
+		writeReg(0x08, 0x00); // RegFrfMid
+		writeReg(0x09, 0x00); // RegFrfLsb
+	#elif defined RF12_915MHZ // JeeLib uses 912.00 MHz	
+		writeReg(0x07, 0xE4); // RegFrfMsb: Frf = Rf Freq / 61.03515625 Hz = 0xE40000 = 912.00 MHz as used JeeLib 
+		writeReg(0x08, 0x00); // RegFrfMid
+		writeReg(0x09, 0x00); // RegFrfLsb
+	#else // default to 433 MHz band
+		writeReg(0x07, 0x6C); // RegFrfMsb: Frf = Rf Freq / 61.03515625 Hz = 0x6C8000 = 434.00 MHz as used JeeLib 
+		writeReg(0x08, 0x80); // RegFrfMid
+		writeReg(0x09, 0x00); // RegFrfLsb
+	#endif
+//	writeReg(0x0B, 0x20); // RegAfcCtrl:
+	writeReg(0x11, 0x90); // RegPaLevel = 0x9F = PA0 on, +13 dBm  -- RFM12B equivalent: 0x99 | 0x88 (-10dBm) appears to be the max before the AC power supply fails @ 230 V mains.
+	writeReg(0x1E, 0x2C); //
+	writeReg(0x25, 0x80); // RegDioMapping1: DIO0 is used as IRQ 
+	writeReg(0x26, 0x03); // RegDioMapping2: ClkOut off
+	writeReg(0x28, 0x00); // RegIrqFlags2: FifoOverrun
+
+	// RegPreamble (0x2c, 0x2d): default 0x0003
+	writeReg(0x2E, 0x88); // RegSyncConfig: SyncOn | FifoFillCondition | SyncSize = 2 bytes | SyncTol = 0
+	writeReg(0x2F, 0x2D); // RegSyncValue1: Same as JeeLib
+	writeReg(0x30, networkGroup); // RegSyncValue2
+	writeReg(0x37, 0x00); // RegPacketConfig1: PacketFormat=fixed | !DcFree | !CrcOn | !CrcAutoClearOff | !AddressFiltering >> 0x00
+}
+
+// transmit data via the RFM69CW
+void rfm_send(const byte *data, const byte size, const byte group, const byte node)      // *SEND RF DATA*
 {
 	while (readReg(REG_IRQFLAGS2) & (IRQ2_FIFONOTEMPTY | IRQ2_FIFOOVERRUN))		// Flush FIFO
         readReg(REG_FIFO);
-
 	writeReg(REG_OPMODE, (readReg(REG_OPMODE) & 0xE3) | MODE_TRANSMITTER);		// Transmit mode
     writeReg(REG_DIOMAPPING1, 0x00); 											// PacketSent
 		
@@ -658,32 +699,33 @@ void rfm_send(const byte *data, const byte size, const byte group, const byte no
 
 void writeReg(uint8_t addr, uint8_t value)
 {
-  select();
-  SPI.transfer(addr | 0x80);
-  SPI.transfer(value);
-  unselect();
+	select();
+	SPI.transfer(addr | 0x80);
+	SPI.transfer(value);
+	unselect();
 }
 
 uint8_t readReg(uint8_t addr)
 {
-  select();
-  SPI.transfer(addr & 0x7F);
-  uint8_t regval = SPI.transfer(0);
-  unselect();
-  return regval;
+	select();
+	SPI.transfer(addr & 0x7F);
+	uint8_t regval = SPI.transfer(0);
+	unselect();
+	return regval;
 }
 
 // select the transceiver
 void select() {
-  noInterrupts();
-  SPI.setDataMode(SPI_MODE0);
-  SPI.setBitOrder(MSBFIRST);
-  SPI.setClockDivider(SPI_CLOCK_DIV4); // decided to slow down from DIV2 after SPI stalling in some instances, especially visible on mega1284p when RFM69 and FLASH chip both present
-  digitalWrite(RFMSELPIN, LOW);
+	noInterrupts();
+	SPI.setDataMode(SPI_MODE0);
+	SPI.setBitOrder(MSBFIRST);
+	SPI.setClockDivider(SPI_CLOCK_DIV4); // decided to slow down from DIV2 after SPI stalling in some instances, especially visible on mega1284p when RFM69 and FLASH chip both present
+	digitalWrite(RFMSELPIN, LOW);
 }
 
 // UNselect the transceiver chip
 void unselect() {
-  digitalWrite(RFMSELPIN, HIGH);
-  interrupts();
+	digitalWrite(RFMSELPIN, HIGH);
+	interrupts();
 }
+#endif
