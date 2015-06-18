@@ -7,6 +7,8 @@ https://github.com/openenergymonitor/emonTxFirmware/blob/master/emonTxV3/RFM/emo
 
 Plug USB to UART adatper into Raspberry Pi and emonTx: http://shop.openenergymonitor.com/programmer-usb-to-serial-uart/
 
+![programmer_emontx](http://openenergymonitor.org/emon/sites/default/files/emontxv3_USBtoUART.jpg)
+
 Update script assumes USB to UART programmer is linked to /dev/ttyUSB0, you can check this by running dmesg after plugging in programmer. Adjust script if different tty is used. 
 
 Clone this repo:
@@ -25,7 +27,7 @@ Run script e.g:
 
 	$ ./Update_emonTx_V3_RFM69CW_433.sh
 
-Check update has worked by opening up serial window, with minicom install if required
+Check update has worked by opening up serial window, with minicom. Install if required
 
 	$ sudo apt-get install minicom -y
 
