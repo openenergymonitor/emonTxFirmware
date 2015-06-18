@@ -11,6 +11,8 @@ Plug USB to UART adatper into Raspberry Pi and emonTx: http://shop.openenergymon
 
 Update script assumes USB to UART programmer is linked to /dev/ttyUSB0, you can check this by running dmesg after plugging in programmer. Adjust script if different tty is used. 
 
+	$ dmesg
+
 Clone this repo:
 
 	$ git clone https://github.com/openenergymonitor/emonTxFirmware.git
@@ -23,7 +25,7 @@ or if you have cloned before pull in latest updates
 
 Run the correct update script for your emonTx (RF module and frequeny), see here for help identify RF module: http://openenergymonitor.org/emon/buildingblocks/which-radio-module
 
-Run script e.g:
+Run update script e.g:
 
 	$ ./Update_emonTx_V3_RFM69CW_433.sh
 
