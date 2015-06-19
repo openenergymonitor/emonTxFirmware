@@ -29,7 +29,8 @@ Run update script e.g:
 
 	$ ./Update_emonTx_V3_RFM69CW_433.sh
 
-Check update has worked by opening up serial window, with minicom. Install if required
+Check update has worked by viewing serial output of emonTx at statup:
+Open up serial window, with minicom. Install if required
 
 	$ sudo apt-get install minicom -y
 

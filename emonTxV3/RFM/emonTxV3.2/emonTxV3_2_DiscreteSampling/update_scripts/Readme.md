@@ -1,9 +1,9 @@
-# emonTx V3 Update 
+# emonTx V3.2 Update 
 
-Update your emonTx V3.4 to latest firmware using Raspberry Pi. 
+Update your emonTx V3.2 to latest firmware using Raspberry Pi. 
 
 See change log in emonTx code for version info:
-https://github.com/openenergymonitor/emonTxFirmware/blob/master/emonTxV3/RFM/emonTxV3.4/emonTxV3_4_DiscreteSampling/emonTxV3_4_DiscreteSampling.ino
+https://github.com/openenergymonitor/emonTxFirmware/blob/master/emonTxV3/RFM/emonTxV3.2/emonTxV3_2_DiscreteSampling/emonTxV3_2_DiscreteSampling.ino
 
 Plug USB to UART adatper into Raspberry Pi and emonTx: http://shop.openenergymonitor.com/programmer-usb-to-serial-uart/
 
@@ -21,15 +21,17 @@ or if you have cloned before pull in latest updates
 
 	$ git pull
 
-	$ cd /home/pi/emonTxFirmware/emonTxV3/RFM/emonTxV3.4/emonTxV3_4_DiscreteSampling/update_scripts
+	$ cd /home/pi/emonTxFirmware/emonTxV3/RFM/emonTxV3.2/emonTxV3_2_DiscreteSampling/update_scripts
 
-Run the correct update script for your emonTx (RF module and frequeny), see here for help identify RF module: http://openenergymonitor.org/emon/buildingblocks/which-radio-module
+Run the correct update script for your emonTx RF module frequeny. All emonTx V3.2's will have RFM12B Radio
+See here for help identify RF module frequency: http://openenergymonitor.org/emon/buildingblocks/which-radio-module
 
 Run update script e.g:
 
-	$ ./Update_emonTx_V3_RFM69CW_433.sh
+	$ ./Update_emonTx_V3_2_RFM12B_433.sh
 
-Check update has worked by opening up serial window, with minicom. Install if required
+Check update has worked by viewing serial output of emonTx at statup:
+Open up serial window, with minicom. Install if required
 
 	$ sudo apt-get install minicom -y
 
