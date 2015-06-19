@@ -80,7 +80,7 @@ const int timeout=                2000;                               //emonLib 
 const int ACAC_DETECTION_LEVEL=   3000;
 const byte min_pulsewidth= 110;                                // minimum width of interrupt pulse (default pulse output meters = 100ms)
 const int TEMPERATURE_PRECISION=  11;                          //9 (93.8ms),10 (187.5ms) ,11 (375ms) or 12 (750ms) bits equal to resplution of 0.5C, 0.25C, 0.125C and 0.0625C
-const byte MaxOnewire=             6;                            // +1 since arrya starts at 0. maximum number of DS18B20 one wire sensors
+const byte MaxOnewire=             6;                            
 #define ASYNC_DELAY 375                                          // DS18B20 conversion delay - 9bit requres 95ms, 10bit 187ms, 11bit 375ms and 12bit resolution takes 750ms
 //-------------------------------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------------------------------
@@ -240,20 +240,20 @@ void setup()
       
     if (ACAC) 
     {
-      Serial.println("AC-AC detected - Real Power measurements enabled");
-      Serial.println("assuming power from AC-AC (jumper closed)");
+      Serial.println("AC-AC detected - Real Power measure enabled");
+      Serial.println("assuming pwr from AC-AC (jumper closed)");
       if (USA==TRUE) Serial.println("USA mode active"); 
       Serial.print("Vcal: "); Serial.println(Vcal);
       Serial.print("Phase Shift: "); Serial.println(phase_shift);
     }
      else 
      {
-       Serial.println("AC-AC NOT detected - Apparent Power measurements enabled");
-       Serial.print("Assuming VRMS to be "); Serial.print(Vrms); Serial.println("V");
-       Serial.println("Assuming power from batt / 5V USB - power saving enabled");
+       Serial.println("AC-AC NOT detected - Apparent Pwr measure enabled");
+       Serial.print("Assuming VRMS: "); Serial.print(Vrms); Serial.println("V");
+       Serial.println("Assuming power from batt / 5V USB - power save enabled");
      }  
 
-    if (CT_count==0) Serial.println("NO CT's detected, sampling from CT1 by default");
+    if (CT_count==0) Serial.println("NO CT's detected");
     else   
     {
       if (CT1) Serial.println("CT 1 detected");

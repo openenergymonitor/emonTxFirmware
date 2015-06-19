@@ -31,6 +31,7 @@
 
 
 Change Log:
+V2.0 (19/06/15) : Add support for new interrupt pulse counting sensor, multiple temperature sensors & new V3.4 compatiable packet structure
 V1.3.1 - Remove filter settle routine as latest emonLib 19/01/15 does not require 
 V1.3 - fix filter settle time to eliminate large inital reading
 V1.2 - fix bug which caused Vrms to be returned as zero if CT1 was not connected 
@@ -48,7 +49,7 @@ EnergyMonitor ct1, ct2, ct3, ct4;
 #include <OneWire.h>                                                  //http://www.pjrc.com/teensy/td_libs_OneWire.html
 #include <DallasTemperature.h>                                        //http://download.milesburton.com/Arduino/MaximTemperature/DallasTemperature_LATEST.zip
 
-
+const byte version = 20;                   // firmware version divided by 10 e,g 16 = V1.6
 
 
 //----------------------------emonTx V3 Settings---------------------------------------------------------------------------------------------------------------
@@ -67,7 +68,9 @@ const int no_of_samples=          1480;
 const int no_of_half_wavelengths= 20;
 const int timeout=                2000;                               //emonLib timeout 
 const int ACAC_DETECTION_LEVEL=   3000;
+const byte min_pulsewidth= 110;                                // minimum width of interrupt pulse (default pulse output meters = 100ms)
 const int TEMPERATURE_PRECISION=  11;                 //9 (93.8ms),10 (187.5ms) ,11 (375ms) or 12 (750ms) bits equal to resplution of 0.5C, 0.25C, 0.125C and 0.0625C
+const byte MaxOnewire=             6;                            // +1 since arrya starts at 0. maximum number of DS18B20 one wire sensors
 //#define FILTERSETTLETIME          25000                     // Time (ms) to allow the filters to settle before sending data
 #define ASYNC_DELAY 375                                          // DS18B20 conversion delay - 9bit requres 95ms, 10bit 187ms, 11bit 375ms and 12bit resolution takes 750ms
 //-------------------------------------------------------------------------------------------------------------------------------------------
@@ -77,20 +80,27 @@ const int TEMPERATURE_PRECISION=  11;                 //9 (93.8ms),10 (187.5ms) 
 //----------------------------emonTx V3 hard-wired connections--------------------------------------------------------------------------------------------------------------- 
 const byte LEDpin=                6;                              // emonTx V3 LED
 const byte DS18B20_PWR=           19;                              // DS18B20 Power
+const byte pulse_countINT=         0;                              // Terminal Block Pulse counting pin(emonTx V3.4) - (INT0 / Dig2 emonTx V3.2)
+const byte pulse_count_pin=        2;                              // Terminal Block Pulse counting pin(emonTx V3.4) - (INT0 / Dig2 emonTx V3.2)
 #define ONE_WIRE_BUS              5                              // DS18B20 Data                     
 //-------------------------------------------------------------------------------------------------------------------------------------------
 
 //Setup DS128B20
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
+byte allAddress [MaxOnewire][8];  // 8 bytes per address
+byte numSensors;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------
 
 //-----------------------RFM12B SETTINGS----------------------------------------------------------------------------------------------------
 #define RF_freq RF12_433MHZ                                              // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
-const int nodeID = 10;                                                // emonTx RFM12B node ID
-const int networkGroup = 210;  
-typedef struct { int power1, power2, power3, power4, Vrms, temp; } PayloadTX;     // create structure - a neat way of packaging data for RF comms
+const byte nodeID = 10;                                                // emonTx RFM12B node ID
+const int networkGroup = 210;
+typedef struct { 
+int power1, power2, power3, power4, Vrms, temp[MaxOnewire]; 
+int pulseCount; 
+} PayloadTX;     // create structure - a neat way of packaging data for RF comms
   PayloadTX emontx; 
 //-------------------------------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------------------------------
@@ -100,9 +110,8 @@ typedef struct { int power1, power2, power3, power4, Vrms, temp; } PayloadTX;   
 //boolean settled = false;
 boolean CT1, CT2, CT3, CT4, ACAC, debug, DS18B20_STATUS; 
 byte CT_count=0;
-int numSensors;
-//addresses of sensors, MAX 4!!  
-byte allAddress [4][8];  // 8 bytes per address
+volatile byte pulseCount = 0;
+unsigned long pulsetime=0;                                      // Record time of interrupt pulse        
 
 void setup()
 { 
@@ -110,11 +119,14 @@ void setup()
   pinMode(LEDpin, OUTPUT); 
   pinMode(DS18B20_PWR, OUTPUT);  
   digitalWrite(LEDpin,HIGH); 
+  
+  pinMode(pulse_count_pin, INPUT);                             // Set emonTx V3.4 interrupt pulse counting pin as input (Dig 3 / INT1)
+  emontx.pulseCount=0;                                        // Make sure pulse count starts at zero
 
   Serial.begin(9600);
-  Serial.println("emonTx V3 Discrete Sampling V1.3.1");
+  Serial.println("emonTx V3 Discrete Sampling V"); Serial.print(version*0.1);
   Serial.println("OpenEnergyMonitor.org");
-  Serial.println("Performing power-on tests.....please wait 10s");
+  Serial.println("POST.....wait 10s");
   
   delay(10);
   rf12_initialize(nodeID, RF_freq, networkGroup);                          // initialize RFM12B
@@ -165,7 +177,7 @@ void setup()
  //################################################################################################################################
   //Setup and for presence of DS18B20
   //################################################################################################################################
-  digitalWrite(DS18B20_PWR, HIGH); delay(50); 
+  digitalWrite(DS18B20_PWR, HIGH); delay(100); 
   sensors.begin();
   sensors.setWaitForConversion(false);             //disable automatic temperature conversion to reduce time spent awake, conversion will be implemented manually in sleeping http://harizanov.com/2013/07/optimizing-ds18b20-code-for-low-power-applications/ 
   numSensors=(sensors.getDeviceCount()); 
@@ -173,6 +185,7 @@ void setup()
   byte j=0;                                        // search for one wire devices and
                                                    // copy to device address arrays.
   while ((j < numSensors) && (oneWire.search(allAddress[j])))  j++;
+  delay(500);
   digitalWrite(DS18B20_PWR, LOW);
   
   if (numSensors==0) DS18B20_STATUS=0; 
@@ -202,12 +215,12 @@ void setup()
     }
      else 
      {
-       Serial.println("AC-AC adapter NOT detected - Apparent Power measurements enabled");
-       Serial.print("Assuming VRMS to be "); Serial.print(Vrms); Serial.println("V");
-       Serial.println("Assuming powering from batteries / 5V USB - power saving mode enabled");
+       Serial.println("AC-AC NOT detected - Apparent Pwr measure enabled");
+       Serial.print("Assuming VRMS: "); Serial.print(Vrms); Serial.println("V");
+       Serial.println("Assuming pwr from batt / 5V USB - pwr save enabled");
      }  
 
-    if (CT_count==0) Serial.println("NO CT's detected, sampling from CT1 by default");
+    if (CT_count==0) Serial.println("NO CT's detected");
     else   
     {
       if (CT1) Serial.println("CT 1 detected");
@@ -216,7 +229,7 @@ void setup()
       if (CT4) Serial.println("CT 4 detected");
     }
     if (DS18B20_STATUS==1) {Serial.print("Detected "); Serial.print(numSensors); Serial.println(" DS18B20..using this for temperature reading");}
-      else Serial.println("Unable to detect DS18B20 temperature sensor");
+      else Serial.println("No temperature sensor");
     Serial.println("RFM12B Initiated: ");
     Serial.print("Node: "); Serial.print(nodeID); 
     Serial.print(" Freq: "); 
@@ -245,7 +258,8 @@ void setup()
     if (CT4) ct4.voltage(0, Vcal, phase_shift);          // ADC pin, Calibration, phase_shift
   }
  
-} //end debug
+ attachInterrupt(pulse_countINT, onPulse, FALLING);     // Attach pulse counting interrupt pulse counting  
+} //end setup
 
 void loop()
 {
@@ -322,14 +336,20 @@ void loop()
   
     if (DS18B20_STATUS==1)
   {
-     digitalWrite(DS18B20_PWR, HIGH); Sleepy::loseSomeTime(50); 
-     for(int j=0;j<numSensors;j++) sensors.setResolution(allAddress[j], TEMPERATURE_PRECISION);      // and set the a to d conversion resolution of each.
-     sensors.requestTemperatures();                                        // Send the command to get temperatures
-     Sleepy::loseSomeTime(ASYNC_DELAY); //Must wait for conversion, since we use ASYNC mode
-     float temp=(sensors.getTempC(allAddress[0]));
-     digitalWrite(DS18B20_PWR, LOW);
-     if ((temp<125.0) && (temp>-40.0)) emontx.temp=(temp*10);            //if reading is within range for the sensor convert float to int ready to send via RF
-     if (debug==1) {Serial.print("temperature: "); Serial.println(emontx.temp*0.1); delay(20);}
+      digitalWrite(DS18B20_PWR, HIGH); Sleepy::loseSomeTime(50); 
+      for(int j=0;j<numSensors;j++) sensors.setResolution(allAddress[j], TEMPERATURE_PRECISION);      // and set the a to d conversion resolution of each.
+      sensors.requestTemperatures();
+      Sleepy::loseSomeTime(ASYNC_DELAY); //Must wait for conversion, since we use ASYNC mode 
+      for(byte j=0;j<numSensors;j++) emontx.temp[j]=get_temperature(j); 
+      digitalWrite(DS18B20_PWR, LOW);
+  }
+  
+   if (pulseCount)                                                       // if the ISR has counted some pulses, update the total count
+  {
+    cli();                                                             // Disable interrupt just in case pulse comes in while we are updating the count
+    emontx.pulseCount += pulseCount;
+    pulseCount = 0;
+    sei();                                                            // Re-enable interrupts
   }
   
   
@@ -377,4 +397,19 @@ double calc_rms(int pin, int samples)
   }
   double rms = sqrt((double)sum / samples);
   return rms;
+}
+
+// The interrupt routine - runs each time a falling edge of a pulse is detected
+void onPulse()                  
+{  
+  if ( (millis() - pulsetime) > min_pulsewidth) {
+    pulseCount++;					//calculate wh elapsed from time between pulses
+    pulsetime=millis(); 
+  }	
+}
+
+int get_temperature(byte sensor)                
+{
+  float temp=(sensors.getTempC(allAddress[sensor]));
+  if ((temp<125.0) && (temp>-55.0)) return(temp*10);            //if reading is within range for the sensor convert float to int ready to send via RF
 }
