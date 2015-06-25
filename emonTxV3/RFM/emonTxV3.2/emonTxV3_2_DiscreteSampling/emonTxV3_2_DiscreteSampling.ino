@@ -124,7 +124,8 @@ void setup()
   emontx.pulseCount=0;                                        // Make sure pulse count starts at zero
 
   Serial.begin(9600);
-  Serial.println("emonTx V3 Discrete Sampling V"); Serial.print(version*0.1);
+  Serial.println(" ");
+  Serial.print("emonTx V3.2 Discrete Sampling V"); Serial.println(version*0.1);
   Serial.println("OpenEnergyMonitor.org");
   Serial.println("POST.....wait 10s");
   
@@ -237,10 +238,13 @@ void setup()
     if (RF_freq == RF12_868MHZ) Serial.print("868Mhz");
     if (RF_freq == RF12_915MHZ) Serial.print("915Mhz"); 
     Serial.print(" Network: "); Serial.println(networkGroup);
+    
+     Serial.print("CT1 CT2 CT3 CT4 VRMS/BATT PULSE");
+    if (DS18B20_STATUS==1){Serial.print(" Temperature 1-"); Serial.print(numSensors);}
+    Serial.println(" ");   
    delay(500);  
   }
-  else 
-    Serial.end();
+ 
   
   
     
@@ -278,9 +282,9 @@ void loop()
    }
    else
      emontx.power1 = ct1.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
-   if (debug==1) {Serial.print(emontx.power1); Serial.print(" ");} 
+   } 
 
-  }
+
   
   if (CT2) 
   {
@@ -291,9 +295,9 @@ void loop()
    }
    else
      emontx.power2 = ct2.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
-   if (debug==1) {Serial.print(emontx.power2); Serial.print(" ");}  
+   }  
 
-  }
+ 
 
   if (CT3) 
   {
@@ -304,9 +308,8 @@ void loop()
    }
    else
      emontx.power3 = ct3.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
-   if (debug==1) {Serial.print(emontx.power3); Serial.print(" ");} 
-
   }
+  
   
 
   if (CT4) 
@@ -318,20 +321,27 @@ void loop()
    }
    else
      emontx.power4 = ct4.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
-   if (debug==1) {Serial.print(emontx.power4); Serial.print(" ");} 
 
   }
   
-  
-  if (ACAC) 
-  { 
-    if ((debug==1) && (!CT_count==0))  Serial.print(emontx.Vrms);
-  }
-  
-  if ((debug==1) && (!CT_count==0)) {Serial.println(); delay(50);}
-  
-  // because millis() returns to zero after 50 days ! 
-  //if (!settled && millis() > FILTERSETTLETIME) settled = true; - replaced by filter settle routine at end of setup
+    if (debug==1) {
+    Serial.print(emontx.power1); Serial.print(" ");
+    Serial.print(emontx.power2); Serial.print(" ");
+    Serial.print(emontx.power3); Serial.print(" ");
+    Serial.print(emontx.power4); Serial.print(" ");
+    Serial.print(emontx.Vrms); Serial.print(" ");
+    Serial.print(emontx.pulseCount); Serial.print(" ");
+    if (DS18B20_STATUS==1){
+      for(byte j=0;j<numSensors;j++){
+        Serial.print(emontx.temp[j]);
+       Serial.print(" ");
+      } 
+    }
+    Serial.println(" ");
+    delay(50);
+  } 
+
+ 
 
   
     if (DS18B20_STATUS==1)
@@ -353,14 +363,10 @@ void loop()
   }
   
   
+ 
   
   
-  
-  
-  
-  
- // if (settled)                                                            // send data only after filters have settled
-  //{ 
+
     send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
     
     if (ACAC)
@@ -371,9 +377,8 @@ void loop()
     
     else
       emontx_sleep(TIME_BETWEEN_READINGS);                                  // sleep or delay in seconds 
-//  }  
- 
-}
+    
+} //end loop
 
 void send_rf_data()
 {
