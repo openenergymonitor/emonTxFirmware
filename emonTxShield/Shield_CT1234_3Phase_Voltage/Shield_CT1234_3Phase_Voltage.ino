@@ -83,8 +83,8 @@ Include the line " #define CT4 " if the fourth C.T. is to be used.
                                                  //    Phasecal2 = 0.57
                                                  //    Phasecal3 = 0.97
 
-const int nodeID = 10;                           //  emonTx RFM12B node ID
-const int networkGroup = 210;                    //  emonTx RFM12B wireless network group
+const int nodeID = 6;                           //  emonTx Shield RF node ID
+const int networkGroup = 210;                    //  emonTx Shield RF network group
                                                  //  - needs to be same as emonBase and emonGLCD needs to be same
                                                  //    as emonBase and emonGLCD
 
