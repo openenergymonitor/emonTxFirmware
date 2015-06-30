@@ -47,7 +47,7 @@ const int CT4 = 1;
 
 
 #define RF_freq RF12_433MHZ                                                // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
-const int nodeID = 10;                                                  // emonTx RFM12B node ID
+const int nodeID = 6;                                                  // emonTx RFM12B node ID
 const int networkGroup = 210;                                           // emonTx RFM12B wireless network group - needs to be same as emonBase and emonGLCD                                                 
 
 #define RF69_COMPAT 0 // set to 1 to use RFM69CW 
@@ -55,7 +55,7 @@ const int networkGroup = 210;                                           // emonT
 #include "EmonLib.h"
 EnergyMonitor ct1,ct2,ct3, ct4;                                              // Create  instances for each CT channel
 
-typedef struct { int power1, power2, power3, power4;} PayloadTX;      // create structure - a neat way of packaging data for RF comms
+typedef struct { int power1, power2, power3, power4, nothing;} PayloadTX;      // create structure - a neat way of packaging data for RF comms, nothing is added a a 5th integer to match data structure of voltage version
 PayloadTX emontx;                                                       
 
 const int LEDpin = 9;                                                   // On-board emonTx LED 
