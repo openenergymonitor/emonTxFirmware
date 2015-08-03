@@ -17,9 +17,10 @@ V.1  7/11/2013    Derived from emonTx_CT123_3Phase_Voltage.ino
 V.2  28/1/2015	  Altered to use low-pass filter and subtract the offset, to remove filter settling time.
 V.3  1/5/2015     Dependency on JeeLib removed, replaced by in-line code.
 V.4  16/6/2015    Array addressing bug solved.
+V.5  2/8/2015     Added option to select emonTx V3 / emonTx Shield
 
 
-emonTx V3 Shield documentation:http://openenergymonitor.org/emon/modules/emonTxV3
+emonTx documentation: http://wiki.openenergymonitor.org/index.php/Main_Page#Monitoring_Nodes
 emonTx firmware code explanation: http://openenergymonitor.org/emon/modules/emontx/firmware
 emonTx / emonTx Shield calibration instructions: http://openenergymonitor.org/emon/buildingblocks/calibration
 
@@ -75,7 +76,7 @@ have the same Phasecal as the other CT on that phase.
 
 RF OUTPUT POWER (RFM69CW Only):
 
-At line 634, the output power is set. When powered via the AC adapter only, the output power is limited and depends 
+At line 663, the output power is set. When powered via the AC adapter only, the output power is limited and depends 
 on the minimum supply voltage. The following is a rough guide. If correct operation is impossible (i.e. the emonTx 
 continually resets) then an external 5 V supply must be used.
 
@@ -109,6 +110,9 @@ Reducing the output power below -10 dBm has very little effect on the minimum su
 #include "WProgram.h"
 #endif
 
+#define EMONTX_V3								 // The type of emonTx - can be EMONTX_V3 (for V3.2 & V3.4) or EMONTX_SHIELD (all versions)
+												 //   You must have one or the other.
+
 #define RFM69CW                                  // The type of Radio Module, can be RFM69CW or RFM12B, 
                                                  //   or don't define anything if no radio is required.
                                                  // The sketch will hang if this is wrong.
@@ -119,7 +123,11 @@ Reducing the output power below -10 dBm has very little effect on the minimum su
 #define RF12_433MHZ                              // Frequency of RFM69CW module can be 
                                                  //    RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. 
                                                  //  You should use the one matching the module you have.
-												 //  (Note: this is different to the normal OEM definition.)
+												 //  (Note: this is different from the normal OEM definition.)
+												 
+#define RFMSELPIN 10                             // Pins for the RFM Radio module:  10 for the V3; 5 or 10 for the Shield, depending on jumper setting
+#define RFMIRQPIN 2								 // Pins for the RFM Radio module:   2 for the V3; 2 or  3 for the Shield, depending on jumper setting
+												 
 
 const int nodeID = 10;                           //  node ID for this emonTx. This sketch does NOT interrogate the DIP switch.
 const int networkGroup = 210;                    //  wireless network group
@@ -148,13 +156,27 @@ const byte TIME_BETWEEN_READINGS = 2;            // Time between readings
                                                  //  Suggested starting values for Phasecal4
 												 //  On Line 1:  1.10,  Line 2: 0.09,  Line 3: 0.35
 
-//Calibration coefficients
+#ifdef EMONTX_V3
+
+//Calibration coefficients for emonTx V3
 //These need to be set in order to obtain accurate results
 double Vcal = 276.9;                             // Calibration constant for voltage input
 double Ical1 = 90.9;                             // Calibration constant for current transformer 1
 double Ical2 = 90.9;                             // Calibration constant for current transformer 2
 double Ical3 = 90.9;                             // Calibration constant for current transformer 3
 double Ical4 = 16.6;                             // Calibration constant for current transformer 4
+#endif
+
+#ifdef EMONTX_SHIELD
+
+//Calibration coefficients for emonTx Shield
+//These need to be set in order to obtain accurate results
+double Vcal = 234.2;                             // Calibration constant for voltage input
+double Ical1 = 60.6;                             // Calibration constant for current transformer 1
+double Ical2 = 60.6;                             // Calibration constant for current transformer 2
+double Ical3 = 60.6;                             // Calibration constant for current transformer 3
+double Ical4 = 16.6;                             // Calibration constant for current transformer 4
+#endif
 
 double Phasecal1 = 1.00;                         // Calibration constant for phase shift L1 - 1.00
 double Phasecal2 = 0.60;                         // Calibration constant for phase shift L2
@@ -166,9 +188,6 @@ double Phasecal4 = 1.10;                         // Calibration constant for pha
 #include <SPI.h>								 // SPI bus for the RFM module
 #include <util/crc16.h>                          // Checksum 
 
-
-#define RFMSELPIN 10                             // Pins for the RFM Radio module
-#define RFMIRQPIN 2
 
 #define BUFFERSIZE (PHASE3+2)                    // Store a little more than 240 degrees of voltage samples
 
@@ -219,13 +238,23 @@ typedef struct { int power1, power2, power3, power4, Vrms; } PayloadTX;        /
 
 PayloadTX emontx;                                // create an instance
 
+# ifdef EMONTX_V3
 const int LEDpin = 6;                            // On-board emonTx LED 
+#endif
+# ifdef EMONTX_SHIELD
+const int LEDpin = 9;                            // On-board emonTx LED 
+#endif
 
 void setup() 
 {
 	Serial.begin(9600);
 
-	Serial.println(F("emonTx V3.4 CT1234 Voltage 3 Phase example"));
+#ifdef EMONTX_V3
+	Serial.println(F("emonTx V3.2 & V3.4 CT1234 Voltage 3 Phase example"));
+#endif
+#ifdef EMONTX_SHIELD	
+	Serial.println(F("emonTx Shield CT1234 Voltage 3 Phase example"));
+#endif	
 #ifdef RFM69CW
 	Serial.println(F("Using RFM69CW Radio"));
 #endif
@@ -313,7 +342,9 @@ void loop()
 #if defined RFM12B || defined RFM69CW	
 	rfm_send((byte *)&emontx, sizeof(emontx), networkGroup, nodeID);      // *SEND RF DATA*
 #endif
+
 	delay(TIME_BETWEEN_READINGS*1000);  
+
 }
 
 //*********************************************************************************************************************
