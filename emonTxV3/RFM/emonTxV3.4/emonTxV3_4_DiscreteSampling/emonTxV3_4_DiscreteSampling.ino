@@ -31,8 +31,9 @@
 
 
 Change Log:
+V1.9   25/08/15 Fix spurious pulse readings from RJ45 port when DS18B20 but no pulse counter is connected (enable internal pull-up)
 V1.8 - 18/06/15 Increase max pulse width to 110ms
-V1.7 - (12/06/15) Fix pulse count debounce issue & enable pulse count pulse temperature
+V1.7 - 12/06/15 Fix pulse count debounce issue & enable pulse count pulse temperature
 V1.6 - Add support for multiple DS18B20 temperature sensors 
 V1.5 - Add interrupt pulse counting - simplify serial print debug 
 V1.4.1 - Remove filter settle routine as latest emonLib 19/01/15 does not require 
@@ -54,7 +55,7 @@ EnergyMonitor ct1, ct2, ct3, ct4;
 #include <DallasTemperature.h>                                        //http://download.milesburton.com/Arduino/MaximTemperature/DallasTemperature_LATEST.zip
 
 
-const byte version = 18;                   // firmware version divided by 10 e,g 16 = V1.6
+const byte version = 19;                   // firmware version divided by 10 e,g 16 = V1.6
 
 //----------------------------emonTx V3 Settings---------------------------------------------------------------------------------------------------------------
 const byte Vrms=                  230;                               // Vrms for apparent power readings (when no AC-AC voltage sample is present)
@@ -131,7 +132,7 @@ void setup()
   pinMode(LEDpin, OUTPUT); 
   pinMode(DS18B20_PWR, OUTPUT); 
 
-  pinMode(pulse_count_pin, INPUT);                             // Set emonTx V3.4 interrupt pulse counting pin as input (Dig 3 / INT1)
+  pinMode(pulse_count_pin, INPUT_PULLUP);       // Set emonTx V3.4 interrupt pulse counting pin as input (Dig 3 / INT1)
   emontx.pulseCount=0;                                        // Make sure pulse count starts at zero
 
   digitalWrite(LEDpin,HIGH); 
