@@ -27,6 +27,7 @@
 
 unsigned long sendinterval = 10000; // milliseconds
 
+#define RF69_COMPAT 0 // SET TO 1 IF RFM69
 #define freq RF12_433MHZ // Use the freq to match the module you have.
 
 const int nodeID = 10;  // emonTx RFM12B node ID

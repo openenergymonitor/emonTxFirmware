@@ -22,7 +22,7 @@
 
  
 */
-
+#define RF69_COMPAT 0 // SET TO 1 IF RFM69
 #define RF_freq RF12_433MHZ                                                // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 const int nodeID = 21;                                                  // emonTx RFM12B node ID - should be unique on network, see recomended node ID range below
 const int networkGroup = 210;                                           // emonTx RFM12B wireless network group - needs to be same as emonBase and emonGLCD
