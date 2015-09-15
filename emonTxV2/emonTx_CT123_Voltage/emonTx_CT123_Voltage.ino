@@ -44,15 +44,15 @@
 const int CT2 = 1;                                                      // Set to 1 to enable CT channel 2
 const int CT3 = 1;                                                      // Set to 1 to enable CT channel 3
 
-#define RF69_COMPAT 0 // SET TO 1 IF RFM69
-#define RF_freq RF12_433MHZ                                                // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
+#define RF69_COMPAT 0 							// SET TO 1 IF RFM69
+#define RF_freq RF12_433MHZ                                             // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 const int nodeID = 10;                                                  // emonTx RFM12B node ID
 const int networkGroup = 210;                                           // emonTx RFM12B wireless network group - needs to be same as emonBase and emonGLCD needs to be same as emonBase and emonGLCD
 
 const int UNO = 1;                                                      // Set to 0 if your not using the UNO bootloader (i.e using Duemilanove) - All Atmega's shipped from OpenEnergyMonitor come with Arduino Uno bootloader
 #include <avr/wdt.h>                                                    // the UNO bootloader 
 
-#define RF69_COMPAT 0 // set to 1 to use RFM69CW 
+
 #include <JeeLib.h>   // make sure V12 (latest) is used if using RFM69CW
 ISR(WDT_vect) { Sleepy::watchdogEvent(); }
 
