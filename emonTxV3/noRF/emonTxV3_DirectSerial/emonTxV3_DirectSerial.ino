@@ -17,6 +17,7 @@ EnergyMonitor ct1, ct2, ct3, ct4;
 
 unsigned long lastpost = 0;
 const byte LEDpin=                          6;                               // emonTx V3 LED
+const int nodeID= 10;
 
 void setup()
 {    
@@ -66,6 +67,7 @@ void loop()
     
     // Print to serial
     
+    Serial.print(nodeID); Serial.print(' ');
     Serial.print(ct1.realPower); Serial.print(' '); 
     Serial.print(ct2.realPower); Serial.print(' '); 
     Serial.print(ct3.realPower); Serial.print(' '); 
