@@ -31,6 +31,7 @@
 
 
 Change Log:
+V1.9.1 30/09/15 Update number of samples 1480 > 1662 to improve sampling accurancy: 1662 samples take 300 mS, which equates to 15 cycles @ 50 Hz or 18 cycles @ 60 Hz.
 V1.9   25/08/15 Fix spurious pulse readings from RJ45 port when DS18B20 but no pulse counter is connected (enable internal pull-up)
 V1.8 - 18/06/15 Increase max pulse width to 110ms
 V1.7 - 12/06/15 Fix pulse count debounce issue & enable pulse count pulse temperature
