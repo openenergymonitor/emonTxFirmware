@@ -31,7 +31,7 @@
 
 
 Change Log:
-V1.9.1 30/09/15 Update number of samples 1480 > 1662 to improve sampling accurancy: 1662 samples take 300 mS, which equates to 15 cycles @ 50 Hz or 18 cycles @ 60 Hz.
+V2.0  30/09/15 Update number of samples 1480 > 1662 to improve sampling accurancy: 1662 samples take 300 mS, which equates to 15 cycles @ 50 Hz or 18 cycles @ 60 Hz.
 V1.9   25/08/15 Fix spurious pulse readings from RJ45 port when DS18B20 but no pulse counter is connected (enable internal pull-up)
 V1.8 - 18/06/15 Increase max pulse width to 110ms
 V1.7 - 12/06/15 Fix pulse count debounce issue & enable pulse count pulse temperature
@@ -56,7 +56,7 @@ EnergyMonitor ct1, ct2, ct3, ct4;
 #include <DallasTemperature.h>                                        //http://download.milesburton.com/Arduino/MaximTemperature/DallasTemperature_LATEST.zip
 
 
-const byte version = 19;                   // firmware version divided by 10 e,g 16 = V1.6
+const byte version = 20;         // firmware version divided by 10 e,g 16 = V1.6
 
 //----------------------------emonTx V3 Settings---------------------------------------------------------------------------------------------------------------
 const byte Vrms=                  230;                               // Vrms for apparent power readings (when no AC-AC voltage sample is present)
@@ -76,8 +76,8 @@ const float Vcal_USA=             130.0;                             //Calibrati
 boolean USA=FALSE; 
 
 const float phase_shift=          1.7;
-const int no_of_samples=          1480; 
-const int no_of_half_wavelengths= 20;
+const int no_of_samples=          1662; 
+const int no_of_half_wavelengths= 30;
 const int timeout=                2000;                               //emonLib timeout 
 const int ACAC_DETECTION_LEVEL=   3000;
 const byte min_pulsewidth= 110;                                // minimum width of interrupt pulse (default pulse output meters = 100ms)
