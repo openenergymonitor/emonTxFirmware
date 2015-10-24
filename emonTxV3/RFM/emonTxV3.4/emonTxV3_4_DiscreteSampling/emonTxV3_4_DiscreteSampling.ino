@@ -60,7 +60,7 @@ const byte version = 20;         // firmware version divided by 10 e,g 16 = V1.6
 
 //----------------------------emonTx V3 Settings---------------------------------------------------------------------------------------------------------------
 const byte Vrms=                  230;                               // Vrms for apparent power readings (when no AC-AC voltage sample is present)
-const byte TIME_BETWEEN_READINGS= 10;            //Time between readings   
+const byte TIME_BETWEEN_READINGS = 10;            //Time between readings   
 
 //http://openenergymonitor.org/emon/buildingblocks/calibration
 
@@ -108,39 +108,39 @@ byte numSensors;
 
 //-----------------------RFM12B / RFM69CW SETTINGS----------------------------------------------------------------------------------------------------
 #define RF_freq RF12_433MHZ                                              // Frequency of RF69CW module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
-byte nodeID = 10;                                                // emonTx RFM12B node ID
-const int networkGroup = 210;  
+byte nodeID = 10;                                                        // emonTx RFM12B node ID
+const int networkGroup = 210;
+ 
 typedef struct { 
-int power1, power2, power3, power4, Vrms, temp[MaxOnewire]; 
-int pulseCount; 
+  int power1, power2, power3, power4, Vrms, temp[MaxOnewire]; 
+  int pulseCount;
 } PayloadTX;     // create structure - a neat way of packaging data for RF comms
-  PayloadTX emontx; 
-//-------------------------------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------------------------------
 
+PayloadTX emontx;
+
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------------------------------
 
 //Random Variables 
 //boolean settled = false;
 boolean CT1, CT2, CT3, CT4, ACAC, debug, DS18B20_STATUS; 
 byte CT_count=0;
 volatile byte pulseCount = 0;
-unsigned long pulsetime=0;                                      // Record time of interrupt pulse        
-
-
-
+unsigned long pulsetime=0;                                    // Record time of interrupt pulse        
+unsigned long last = 0;
 void setup()
 { 
   pinMode(LEDpin, OUTPUT); 
   pinMode(DS18B20_PWR, OUTPUT); 
 
-  pinMode(pulse_count_pin, INPUT_PULLUP);       // Set emonTx V3.4 interrupt pulse counting pin as input (Dig 3 / INT1)
+  pinMode(pulse_count_pin, INPUT_PULLUP);                     // Set emonTx V3.4 interrupt pulse counting pin as input (Dig 3 / INT1)
   emontx.pulseCount=0;                                        // Make sure pulse count starts at zero
 
   digitalWrite(LEDpin,HIGH); 
 
   Serial.begin(9600);
  
- Serial.print("emonTx V3.4 Discrete Sampling V"); Serial.print(version*0.1); 
+  Serial.print("emonTx V3.4 Discrete Sampling V"); Serial.print(version*0.1);
   #if (RF69_COMPAT)
     Serial.println(" RFM69CW");
   #else
@@ -152,34 +152,31 @@ void setup()
   //READ DIP SWITCH POSITIONS 
   pinMode(DIP_switch1, INPUT_PULLUP);
   pinMode(DIP_switch2, INPUT_PULLUP);
-  if (digitalRead(DIP_switch1)==LOW) nodeID--;                            //IF DIP switch 1 is switched on then subtract 1 from nodeID
-  if (digitalRead(DIP_switch2)==LOW) USA=TRUE;                       //IF DIP switch 2 is switched on then activate USA mode
+  if (digitalRead(DIP_switch1)==LOW) nodeID--;                            // IF DIP switch 1 is switched on then subtract 1 from nodeID
+  if (digitalRead(DIP_switch2)==LOW) USA=TRUE;                            // IF DIP switch 2 is switched on then activate USA mode
  
 
- if (USA==TRUE){                                                                             //if USA mode is true
-  Vcal=Vcal_USA;                                                                               //Assume USA AC/AC adatper is being used, set calibration accordingly 
- } 
+  if (USA==TRUE){                                                         // if USA mode is true
+    Vcal=Vcal_USA;                                                        // Assume USA AC/AC adatper is being used, set calibration accordingly 
+  } 
   
   delay(10);
-  rf12_initialize(nodeID, RF_freq, networkGroup);                          // initialize RFM12B/rfm69CW
-   for (int i=10; i>=0; i--)                                                                  //Send RF test sequence (for factory testing)
-   {
-     emontx.power1=i; 
-     rf12_sendNow(0, &emontx, sizeof emontx);
-     delay(100);
-   }
+  rf12_initialize(nodeID, RF_freq, networkGroup);                         // initialize RFM12B/rfm69CW
+  for (int i=10; i>=0; i--)                                               // Send RF test sequence (for factory testing)
+  {
+    emontx.power1=i; 
+    rf12_sendNow(0, &emontx, sizeof emontx);
+    delay(100);
+  }
   rf12_sendWait(2);
   emontx.power1=0;
- 
- 
   
-
   if (analogRead(1) > 0) {CT1 = 1; CT_count++;} else CT1=0;              // check to see if CT is connected to CT1 input, if so enable that channel
   if (analogRead(2) > 0) {CT2 = 1; CT_count++;} else CT2=0;              // check to see if CT is connected to CT2 input, if so enable that channel
   if (analogRead(3) > 0) {CT3 = 1; CT_count++;} else CT3=0;              // check to see if CT is connected to CT3 input, if so enable that channel
-  if (analogRead(4) > 0) {CT4 = 1; CT_count++;} else CT4=0;              //  check to see if CT is connected to CT4 input, if so enable that channel
+  if (analogRead(4) > 0) {CT4 = 1; CT_count++;} else CT4=0;              // check to see if CT is connected to CT4 input, if so enable that channel
   
-  if ( CT_count == 0) CT1=1;                                              // If no CT's are connect ed CT1-4 then by default read from CT1
+  if ( CT_count == 0) CT1=1;                                             // If no CT's are connect ed CT1-4 then by default read from CT1
 
   // Quick check to see if there is a voltage waveform present on the ACAC Voltage input
   // Check consists of calculating the RMS from 100 samples of the voltage input.
@@ -206,12 +203,13 @@ void setup()
   }
  
  
- //################################################################################################################################
+  //################################################################################################################################
   //Setup and for presence of DS18B20
   //################################################################################################################################
   digitalWrite(DS18B20_PWR, HIGH); delay(100); 
   sensors.begin();
-  sensors.setWaitForConversion(false);             //disable automatic temperature conversion to reduce time spent awake, conversion will be implemented manually in sleeping http://harizanov.com/2013/07/optimizing-ds18b20-code-for-low-power-applications/ 
+  sensors.setWaitForConversion(false);             // disable automatic temperature conversion to reduce time spent awake, conversion will be implemented manually in sleeping 
+                                                   // http://harizanov.com/2013/07/optimizing-ds18b20-code-for-low-power-applications/ 
   numSensors=(sensors.getDeviceCount());
   if (numSensors > MaxOnewire) numSensors=MaxOnewire;   //Limit number of sensors to max number of sensors 
   
@@ -225,10 +223,9 @@ void setup()
   if (numSensors==0) DS18B20_STATUS=0; 
     else DS18B20_STATUS=1;
 
-  
   //################################################################################################################################
 
-  if (Serial) debug = 1; else debug=0;          //if serial UART to USB is connected show debug O/P. If not then disable serial
+  if (Serial) debug = 1; else debug=0;          // if serial UART to USB is connected show debug O/P. If not then disable serial
   if (debug==1)
   {
     Serial.print("CT 1 Cal "); Serial.println(Ical1);
@@ -240,38 +237,39 @@ void setup()
     Serial.print("RMS Voltage on AC-AC  is: ~");
     Serial.print(vrms,0); Serial.println("V");
       
-    if (ACAC) 
-    {
+    if (ACAC) {
       Serial.println("AC-AC detected - Real Power measure enabled");
       Serial.println("assuming pwr from AC-AC (jumper closed)");
       if (USA==TRUE) Serial.println("USA mode active"); 
       Serial.print("Vcal: "); Serial.println(Vcal);
       Serial.print("Phase Shift: "); Serial.println(phase_shift);
-    }
-     else 
-     {
-       Serial.println("AC-AC NOT detected - Apparent Pwr measure enabled");
-       Serial.print("Assuming VRMS: "); Serial.print(Vrms); Serial.println("V");
-       Serial.println("Assuming power from batt / 5V USB - power save enabled");
-     }  
+    } else {
+      Serial.println("AC-AC NOT detected - Apparent Pwr measure enabled");
+      Serial.print("Assuming VRMS: "); Serial.print(Vrms); Serial.println("V");
+      Serial.println("Assuming power from batt / 5V USB - power save enabled");
+    }  
 
-    if (CT_count==0) Serial.println("NO CT's detected");
-    else   
-    {
+    if (CT_count==0) {
+      Serial.println("NO CT's detected");
+    } else {
       if (CT1) Serial.println("CT 1 detected");
       if (CT2) Serial.println("CT 2 detected");
       if (CT3) Serial.println("CT 3 detected");
       if (CT4) Serial.println("CT 4 detected");
     }
-    if (DS18B20_STATUS==1) {Serial.print("Detected Temp Sensors:  "); Serial.println(numSensors);}
-      else Serial.println("No temperature sensor");
-   
+    
+    if (DS18B20_STATUS==1) {
+      Serial.print("Detected Temp Sensors:  "); 
+      Serial.println(numSensors);
+    } else { 
+      Serial.println("No temperature sensor");
+    }
+    
     #if (RF69_COMPAT)
        Serial.println("RFM69CW");
     #else
       Serial.println("RFM12B");
     #endif
-    
     
     Serial.print("Node: "); Serial.print(nodeID); 
     Serial.print(" Freq: "); 
@@ -283,19 +281,19 @@ void setup()
     Serial.print("CT1 CT2 CT3 CT4 VRMS/BATT PULSE");
     if (DS18B20_STATUS==1){Serial.print(" Temperature 1-"); Serial.print(numSensors);}
     Serial.println(" "); 
-   delay(500);  
+    delay(500);  
 
   }
   else 
+  { 
     Serial.end();
-  
+  }
   
     
   if (CT1) ct1.current(1, Ical1);             // CT ADC channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
   if (CT2) ct2.current(2, Ical2);             // CT ADC channel 2, calibration.
   if (CT3) ct3.current(3, Ical3);             // CT ADC channel 3, calibration. 
-  //CT 3 is high accuracy @ low power -  4.5kW Max @ 240V 
-  if (CT4) ct4.current(4, Ical4);                                      // CT channel ADC 4, calibration.    calibration (2000 turns / 120 Ohm burden resistor = 16.66)
+  if (CT4) ct4.current(4, Ical4);             // CT ADC channel 4, calibration.  calibration (2000 turns / 120 Ohm burden resistor = 16.66) high accuracy @ low power -  4.5kW Max @ 240V 
   
   if (ACAC)
   {
@@ -305,90 +303,87 @@ void setup()
     if (CT4) ct4.voltage(0, Vcal, phase_shift);          // ADC pin, Calibration, phase_shift
   }
 
-attachInterrupt(pulse_countINT, onPulse, FALLING);     // Attach pulse counting interrupt pulse counting 
+  attachInterrupt(pulse_countINT, onPulse, FALLING);     // Attach pulse counting interrupt pulse counting 
  
+  for(byte j=0;j<MaxOnewire;j++) 
+      emontx.temp[j] = 3000;                             // If no temp sensors connected default to status code 3000 
+                                                         // will appear as 300 once multipled by 0.1 in emonhub
 } //end SETUP
 
 void loop()
 {
+  unsigned long start = millis();
   
   if (ACAC) {
     delay(200);                         //if powering from AC-AC allow time for power supply to settle    
     emontx.Vrms=0;                      //Set Vrms to zero, this will be overwirtten by CT 1-4
   }
   
-  if (CT1) 
-  {
-   if (ACAC) 
-   {
-     ct1.calcVI(no_of_half_wavelengths,timeout); emontx.power1=ct1.realPower;
-     emontx.Vrms=ct1.Vrms*100;
-   }
-   else
-     emontx.power1 = ct1.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of sample
-
+  // emontx.power1 = 1;
+  // emontx.power2 = 1;
+  // emontx.power3 = 1;
+  // emontx.power4 = 1;
+  
+  if (CT1) {
+    if (ACAC) {
+      ct1.calcVI(no_of_half_wavelengths,timeout); emontx.power1=ct1.realPower;
+      emontx.Vrms=ct1.Vrms*100;
+    } else {
+      emontx.power1 = ct1.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of sample
+    }
   }
   
-  if (CT2) 
-  {
-   if (ACAC) 
-   {
-     ct2.calcVI(no_of_half_wavelengths,timeout); emontx.power2=ct2.realPower;
-     emontx.Vrms=ct2.Vrms*100;
-   }
-   else
-     emontx.power2 = ct2.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
-
+  if (CT2) {
+    if (ACAC) {
+      ct2.calcVI(no_of_half_wavelengths,timeout); emontx.power2=ct2.realPower;
+      emontx.Vrms=ct2.Vrms*100;
+    } else {
+      emontx.power2 = ct2.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
+    }
   }
 
-  if (CT3) 
-  {
-   if (ACAC) 
-   {
-     ct3.calcVI(no_of_half_wavelengths,timeout); emontx.power3=ct3.realPower;
-     emontx.Vrms=ct3.Vrms*100;
-   }
-   else
-     emontx.power3 = ct3.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
-
+  if (CT3) {
+    if (ACAC) {
+      ct3.calcVI(no_of_half_wavelengths,timeout); emontx.power3=ct3.realPower;
+      emontx.Vrms=ct3.Vrms*100;
+    } else {
+      emontx.power3 = ct3.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
+    }
   }
   
-
-  if (CT4) 
-  {
-   if (ACAC) 
-   {
-     ct4.calcVI(no_of_half_wavelengths,timeout); emontx.power4=ct4.realPower;
-     emontx.Vrms=ct4.Vrms*100;
-   }
-   else
-     emontx.power4 = ct4.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
-
+  if (CT4) {
+    if (ACAC) {
+      ct4.calcVI(no_of_half_wavelengths,timeout); emontx.power4=ct4.realPower;
+      emontx.Vrms=ct4.Vrms*100;
+    } else {
+      emontx.power4 = ct4.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
+    }
   }
   
-
-  if (!ACAC){                                                                                         //read battery voltage if powered by DC
-    int battery_voltage=analogRead(battery_voltage_pin) * 0.681322727;     //6.6V battery = 3.3V input = 1024 ADC
+  if (!ACAC){                                                                         // read battery voltage if powered by DC
+    int battery_voltage=analogRead(battery_voltage_pin) * 0.681322727;                // 6.6V battery = 3.3V input = 1024 ADC
     emontx.Vrms= battery_voltage;
   }
-
   
   if (DS18B20_STATUS==1) 
-    {
-      digitalWrite(DS18B20_PWR, HIGH); Sleepy::loseSomeTime(50); 
-      for(int j=0;j<numSensors;j++) sensors.setResolution(allAddress[j], TEMPERATURE_PRECISION);      // and set the a to d conversion resolution of each.
-      sensors.requestTemperatures();
-      Sleepy::loseSomeTime(ASYNC_DELAY); //Must wait for conversion, since we use ASYNC mode 
-      for(byte j=0;j<numSensors;j++) emontx.temp[j]=get_temperature(j); 
-      digitalWrite(DS18B20_PWR, LOW);
-    } 
-  
-  if (pulseCount)                                                       // if the ISR has counted some pulses, update the total count
   {
-    cli();                                                             // Disable interrupt just in case pulse comes in while we are updating the count
+    digitalWrite(DS18B20_PWR, HIGH); 
+    Sleepy::loseSomeTime(50); 
+    for(int j=0;j<numSensors;j++) 
+      sensors.setResolution(allAddress[j], TEMPERATURE_PRECISION);                    // and set the a to d conversion resolution of each.
+    sensors.requestTemperatures();
+    Sleepy::loseSomeTime(ASYNC_DELAY);                                                // Must wait for conversion, since we use ASYNC mode 
+    for(byte j=0;j<numSensors;j++) 
+      emontx.temp[j]=get_temperature(j); 
+    digitalWrite(DS18B20_PWR, LOW);
+  }
+  
+  if (pulseCount)                                                                     // if the ISR has counted some pulses, update the total count
+  {
+    cli();                                                                            // Disable interrupt just in case pulse comes in while we are updating the count
     emontx.pulseCount += pulseCount;
     pulseCount = 0;
-    sei();                                                            // Re-enable interrupts
+    sei();                                                                            // Re-enable interrupts
   }
  
   if (debug==1) {
@@ -404,24 +399,26 @@ void loop()
        Serial.print(" ");
       } 
     }
+    Serial.print(" ");
+    Serial.print(millis()-last);
+    last = millis();
     Serial.println(" ");
     delay(50);
   } 
   
-  
-
   if (ACAC) {digitalWrite(LEDpin, HIGH); delay(200); digitalWrite(LEDpin, LOW);}    // flash LED if powered by AC
   
-  send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
-    
-    if (ACAC)                                                               //If powered by AC-AC adaper (mains power) then delay instead of sleep
-    {
-     delay(TIME_BETWEEN_READINGS*1000);
-    }
-    
-    else                                                                  //if powered by battery then sleep rather than dealy and disable LED to lower energy consumption  
-      Sleepy::loseSomeTime(TIME_BETWEEN_READINGS*1000);                                  // sleep or delay in seconds 
-
+  send_rf_data();                                                           // *SEND RF DATA* - see emontx_lib
+  
+  unsigned long runtime = millis() - start;
+  unsigned long sleeptime = (TIME_BETWEEN_READINGS*1000) - runtime - 100;
+  
+  if (ACAC) {                                                               // If powered by AC-AC adaper (mains power) then delay instead of sleep
+    delay(sleeptime);
+  } else {                                                                  // if powered by battery then sleep rather than dealy and disable LED to lower energy consumption  
+                                   // lose an additional 500ms here (measured timing)
+    Sleepy::loseSomeTime(sleeptime-500);                                    // sleep or delay in seconds 
+  }
 }
 
 void send_rf_data()
