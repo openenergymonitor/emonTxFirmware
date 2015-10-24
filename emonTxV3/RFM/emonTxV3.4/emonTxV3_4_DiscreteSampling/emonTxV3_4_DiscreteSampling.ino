@@ -31,7 +31,8 @@
 
 
 Change Log:
-V2.0  30/09/15 Update number of samples 1480 > 1662 to improve sampling accurancy: 1662 samples take 300 mS, which equates to 15 cycles @ 50 Hz or 18 cycles @ 60 Hz.
+v2.1   24/10/15 Improved timing so that packets are sent just under 10s, reducing resulting data gaps in feeds + default status code for no temp sensors of 3000 which reduces corrupt packets improving data reliability
+V2.0   30/09/15 Update number of samples 1480 > 1662 to improve sampling accurancy: 1662 samples take 300 mS, which equates to 15 cycles @ 50 Hz or 18 cycles @ 60 Hz.
 V1.9   25/08/15 Fix spurious pulse readings from RJ45 port when DS18B20 but no pulse counter is connected (enable internal pull-up)
 V1.8 - 18/06/15 Increase max pulse width to 110ms
 V1.7 - 12/06/15 Fix pulse count debounce issue & enable pulse count pulse temperature
@@ -56,7 +57,7 @@ EnergyMonitor ct1, ct2, ct3, ct4;
 #include <DallasTemperature.h>                                        //http://download.milesburton.com/Arduino/MaximTemperature/DallasTemperature_LATEST.zip
 
 
-const byte version = 20;         // firmware version divided by 10 e,g 16 = V1.6
+const byte version = 21;         // firmware version divided by 10 e,g 16 = V1.6
 
 //----------------------------emonTx V3 Settings---------------------------------------------------------------------------------------------------------------
 const byte Vrms=                  230;                               // Vrms for apparent power readings (when no AC-AC voltage sample is present)
