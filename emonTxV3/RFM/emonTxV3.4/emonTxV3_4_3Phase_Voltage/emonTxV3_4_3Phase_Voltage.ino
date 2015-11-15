@@ -1,5 +1,5 @@
 /*
-emonTx V3 CT1234 + 3-phase Voltage example
+emonTx V3/Shield CT1234 + 3-phase Voltage example
 
 An example sketch for the emontx module for
 3-phase electricity monitoring, with 4 current transformers 
@@ -61,6 +61,7 @@ CALIBRATION
 The fourth channel may be used, for example, for a PV input. Include the line " #define CT4LINE " if the fourth C.T.
 is to be used. Adding or removing CT4 drastically changes the phase calibration for L2 and L3.
 
+
 Adjust Vcal = 234.26 so that the correct voltage for L1 is displayed.
 Adjust Ical1 = 119.0 so that the correct current for L1 is displayed.
 Do the same for Ical2 & Ical3.
@@ -79,6 +80,8 @@ RF OUTPUT POWER (RFM69CW Only):
 At line 663, the output power is set. When powered via the AC adapter only, the output power is limited and depends 
 on the minimum supply voltage. The following is a rough guide. If correct operation is impossible (i.e. the emonTx 
 continually resets) then an external 5 V supply must be used.
+
+
 
 Min supply voltage  maximum power
   235 V              -4 dBm (0x8E)
@@ -120,7 +123,7 @@ Reducing the output power below -10 dBm has very little effect on the minimum su
 #undef RF12_868MHZ
 #undef RF12_915MHZ                               // Should not be present, but can cause problems if they are.
 
-#define RF12_433MHZ                              // Frequency of RFM69CW module can be 
+#define RF12_868MHZ                              // Frequency of RFM69CW module can be 
                                                  //    RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. 
                                                  //  You should use the one matching the module you have.
 												 //  (Note: this is different from the normal OEM definition.)
@@ -130,13 +133,15 @@ Reducing the output power below -10 dBm has very little effect on the minimum su
 												 
 
 const int nodeID = 10;                           //  node ID for this emonTx. This sketch does NOT interrogate the DIP switch.
+
 const int networkGroup = 210;                    //  wireless network group
                                                  //  - needs to be same as emonBase and emonGLCD. OEM default is 210
+
 
 const int UNO = 1;                               // Set to 0 if you are not using the UNO bootloader 
                                                  // (i.e using Duemilanove) - All Atmega's shipped from
                                                  // OpenEnergyMonitor come with Arduino Uno bootloader
-const byte TIME_BETWEEN_READINGS = 2;            // Time between readings   
+const byte TIME_BETWEEN_READINGS = 10;           // Time between readings   
 
 #define CT4LINE 1                                // Set this to 1, 2, or 3 depending on the Line to which the CT4 load is connected.
 											     //  The default is 1
@@ -354,6 +359,7 @@ void calcVI3Ph(int cycles, int timeout)
     //--------------------------------------------------------------------------------------
     // Variable declaration for filters, phase shift, voltages, currents & powers
     //--------------------------------------------------------------------------------------
+
     int lastSampleV,sampleV;              // 'sample' holds the raw analogue read value, 'lastSample' holds the last sample
     int sampleI1;
     int sampleI2;
@@ -391,6 +397,8 @@ void calcVI3Ph(int cycles, int timeout)
     int numberOfSamples = BUFFERSIZE;            // Total count - index into by circular array (Start at BUFFERSIZE to prevent
                                                  //  indexing outside of array on first cycle.	
     int numberOfPowerSamples = 0;                // For averages - should be ~ 1.66 cycles less than numberOfSamples
+
+
     boolean lastVCross, checkVCross = false;     // Flags to determine which half-cycle we are in.
 	double storedV[BUFFERSIZE];                  // Array to store >240 degrees of voltage samples
 	
@@ -413,6 +421,7 @@ void calcVI3Ph(int cycles, int timeout)
     // 2) Main measurement loop
     //------------------------------------------------------------------------------------------------------------------------- 
     start = millis(); 
+
     while ((crossCount < cycles * 2) && ((millis()-start)<timeout)) 
     {
         lastSampleV=sampleV;                     //  Used for digital low pass filter - offset removal
@@ -438,10 +447,14 @@ void calcVI3Ph(int cycles, int timeout)
 		// Count the number of zero crossings - the first cycle loads the buffer, otherwise it is not used.
 
         lastVCross = checkVCross;                     
+
         checkVCross = (sampleV > startV) ? true : false;
+
+
                     
         if (lastVCross != checkVCross)
         {
+
             if (crossCount == 0)                 // Started recording at -2 crossings so that one complete cycle 
             {                                    //   has been stored before accumulating.
                 sumV  = 0;
@@ -501,6 +514,7 @@ void calcVI3Ph(int cycles, int timeout)
         //-----------------------------------------------------------------------------
         phaseShiftedV1 = lastFilteredV + Phasecal1 * (filteredV - lastFilteredV);
 	
+
         phaseShiftedV2 = storedV[(numberOfSamples-PHASE2-1)%BUFFERSIZE] 
             + Phasecal2 * (storedV[(numberOfSamples-PHASE2)%BUFFERSIZE] 
                          - storedV[(numberOfSamples-PHASE2-1)%BUFFERSIZE]);
@@ -509,6 +523,8 @@ void calcVI3Ph(int cycles, int timeout)
             + Phasecal3 * (storedV[(numberOfSamples-PHASE3)%BUFFERSIZE]
                          - storedV[(numberOfSamples-PHASE3-1)%BUFFERSIZE]);		// must always read ahead of the current sample
 				 
+
+
 #ifdef CT4LINE
 		if (CT4LINE == 2)
 		{
@@ -671,8 +687,9 @@ void rfm_init(void)
 		writeReg(0x08, 0x80); // RegFrfMid
 		writeReg(0x09, 0x00); // RegFrfLsb
 	#endif
+
 //	writeReg(0x0B, 0x20); // RegAfcCtrl:
-	writeReg(0x11, 0x90); // RegPaLevel = 0x9F = PA0 on, +13 dBm  -- RFM12B equivalent: 0x99 | 0x88 (-10dBm) appears to be the max before the AC power supply fails @ 230 V mains.
+	writeReg(0x11, 0x9F); // RegPaLevel = 0x9F = PA0 on, +13 dBm  -- RFM12B equivalent: 0x99 | 0x88 (-10dBm) appears to be the max before the AC power supply fails @ 230 V mains.
 	writeReg(0x1E, 0x2C); //
 	writeReg(0x25, 0x80); // RegDioMapping1: DIO0 is used as IRQ 
 	writeReg(0x26, 0x03); // RegDioMapping2: ClkOut off
@@ -690,6 +707,7 @@ void rfm_send(const byte *data, const byte size, const byte group, const byte no
 {
 	while (readReg(REG_IRQFLAGS2) & (IRQ2_FIFONOTEMPTY | IRQ2_FIFOOVERRUN))		// Flush FIFO
         readReg(REG_FIFO);
+
 	writeReg(REG_OPMODE, (readReg(REG_OPMODE) & 0xE3) | MODE_TRANSMITTER);		// Transmit mode
     writeReg(REG_DIOMAPPING1, 0x00); 											// PacketSent
 		
@@ -759,4 +777,107 @@ void unselect() {
 	digitalWrite(RFMSELPIN, HIGH);
 	interrupts();
 }
+#endif
+
+
+/*
+Interface for the RFM12B Radio Module
+*/
+
+#ifdef RFM12B
+
+#define SDOPIN 12
+
+void rfm_init(void)
+{	
+	// Set up to drive the Radio Module
+	pinMode (RFMSELPIN, OUTPUT);
+	digitalWrite(RFMSELPIN,HIGH);
+	// start the SPI library:
+	SPI.begin();
+	SPI.setBitOrder(MSBFIRST);
+	SPI.setDataMode(0);
+	SPI.setClockDivider(SPI_CLOCK_DIV8);
+	// initialise RFM12
+	delay(200); // wait for RFM12 POR
+	rfm_write(0x0000); // clear SPI
+	#ifdef RF12_868MHZ
+	  rfm_write(0x80E7); // EL (ena dreg), EF (ena RX FIFO), 868 MHz, 12.0pF 
+	  rfm_write(0xA640); // 868.00 MHz as used JeeLib 
+	#elif defined RF12_915MHZ
+	  rfm_write(0x80F7); // EL (ena dreg), EF (ena RX FIFO), 915 MHz, 12.0pF 
+	  rfm_write(0xA640); // 912.00 MHz as used JeeLib 	
+	#else // default to 433 MHz band
+	  rfm_write(0x80D7); // EL (ena dreg), EF (ena RX FIFO), 433 MHz, 12.0pF 
+	  rfm_write(0xA640); // 434.00 MHz as used JeeLib 
+	#endif  
+	rfm_write(0x8208); // Turn on crystal,!PA
+	rfm_write(0xA640); // 433 or 868 MHz exactly
+	rfm_write(0xC606); // approx 49.2 Kbps, as used by emonTx
+	//rfm_write(0xC657); // approx 3.918 Kbps, better for long range
+	rfm_write(0xCC77); // PLL 
+	rfm_write(0x94A0); // VDI,FAST,134kHz,0dBm,-103dBm 
+	rfm_write(0xC2AC); // AL,!ml,DIG,DQD4 
+	rfm_write(0xCA83); // FIFO8,2-SYNC,!ff,DR 
+	rfm_write(0xCEd2); // SYNC=2DD2
+	rfm_write(0xC483); // @PWR,NO RSTRIC,!st,!fi,OE,EN 
+	rfm_write(0x9850); // !mp,90kHz,MAX OUT 
+	rfm_write(0xE000); // wake up timer - not used 
+	rfm_write(0xC800); // low duty cycle - not used 
+	rfm_write(0xC000); // 1.0MHz,2.2V 
+}
+
+
+// transmit data via the RFM12
+void rfm_send(const byte *data, const byte size, const byte group, const byte node)
+{
+	byte i=0,next,txstate=0;
+	word crc=~0;
+  
+	rfm_write(0x8228); // OPEN PA
+	rfm_write(0x8238);
+
+	digitalWrite(RFMSELPIN,LOW);
+	SPI.transfer(0xb8); // tx register write command
+  
+	while(txstate<13)
+	{
+		while(digitalRead(SDOPIN)==0); // wait for SDO to go high
+		switch(txstate)
+		{
+			case 0:
+			case 1:
+			case 2: next=0xaa; txstate++; break;
+			case 3: next=0x2d; txstate++; break;
+			case 4: next=group; txstate++; break;
+			case 5: next=node; txstate++; break; // node ID
+			case 6: next=size; txstate++; break;
+			case 7: next=data[i++]; if(i==size) txstate++; break;
+			case 8: next=(byte)crc; txstate++; break;
+			case 9: next=(byte)(crc>>8); txstate++; break;
+			case 10:
+			case 11:
+			case 12: next=0xaa; txstate++; break; // dummy bytes (if <3 CRC gets corrupted sometimes)
+		}
+		if((txstate>4)&&(txstate<9)) crc = _crc16_update(crc, next);
+		SPI.transfer(next);
+	}
+	digitalWrite(RFMSELPIN,HIGH);
+
+	rfm_write( 0x8208 ); // CLOSE PA
+	rfm_write( 0x8200 ); // enter sleep
+}
+
+
+// write a command to the RFM12
+word rfm_write(word cmd)
+{
+	word result;
+  
+	digitalWrite(RFMSELPIN,LOW);
+	result=(SPI.transfer(cmd>>8)<<8) | SPI.transfer(cmd & 0xff);
+	digitalWrite(RFMSELPIN,HIGH);
+	return result;
+}
+
 #endif
