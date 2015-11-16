@@ -31,6 +31,7 @@
 
 
 Change Log:
+v2.3   16/11/15 Change to unsigned long for pulse count and make default node ID 8 to avoid emonHub node decoder conflict & fix counting pulses faster than 110ms, strobed meter LED http://openenergymonitor.org/emon/node/11490 
 v2.2   12/11/15 Remove debug timming serial print code
 v2.1   24/10/15 Improved timing so that packets are sent just under 10s, reducing resulting data gaps in feeds + default status code for no temp sensors of 3000 which reduces corrupt packets improving data reliability
 V2.0   30/09/15 Update number of samples 1480 > 1662 to improve sampling accurancy: 1662 samples take 300 mS, which equates to 15 cycles @ 50 Hz or 18 cycles @ 60 Hz.
@@ -58,7 +59,7 @@ EnergyMonitor ct1, ct2, ct3, ct4;
 #include <DallasTemperature.h>                                        //http://download.milesburton.com/Arduino/MaximTemperature/DallasTemperature_LATEST.zip
 
 
-const byte version = 22;         // firmware version divided by 10 e,g 16 = V1.6
+const byte version = 23;         // firmware version divided by 10 e,g 16 = V1.6
 
 //----------------------------emonTx V3 Settings---------------------------------------------------------------------------------------------------------------
 const byte Vrms=                  230;                               // Vrms for apparent power readings (when no AC-AC voltage sample is present)
@@ -110,12 +111,12 @@ byte numSensors;
 
 //-----------------------RFM12B / RFM69CW SETTINGS----------------------------------------------------------------------------------------------------
 #define RF_freq RF12_433MHZ                                              // Frequency of RF69CW module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
-byte nodeID = 10;                                                        // emonTx RFM12B node ID
+byte nodeID = 8;                                                        // emonTx RFM12B node ID
 const int networkGroup = 210;
  
 typedef struct { 
   int power1, power2, power3, power4, Vrms, temp[MaxOnewire]; 
-  int pulseCount;
+  unsigned long pulseCount;
 } PayloadTX;     // create structure - a neat way of packaging data for RF comms
 
 PayloadTX emontx;
@@ -445,8 +446,8 @@ void onPulse()
 {  
   if ( (millis() - pulsetime) > min_pulsewidth) {
     pulseCount++;					//calculate wh elapsed from time between pulses
-    pulsetime=millis(); 
-  }	
+  }
+  pulsetime=millis(); 	
 }
 
 int get_temperature(byte sensor)                
