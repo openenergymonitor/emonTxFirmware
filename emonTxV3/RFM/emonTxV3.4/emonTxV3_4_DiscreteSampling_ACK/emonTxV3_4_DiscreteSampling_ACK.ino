@@ -115,8 +115,8 @@ byte numSensors;
 
 //-----------------------RFM12B / RFM69CW SETTINGS----------------------------------------------------------------------------------------------------
 #define RF_freq RF12_433MHZ                                              // Frequency of RF69CW module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
-byte nodeID = 7;                                                        // emonTx RFM12B node ID
-const int networkGroup = 200;
+byte nodeID = 8;                                                        // emonTx RFM12B node ID
+const int networkGroup = 210;
  
 typedef struct { 
   int power1, power2, power3, power4, Vrms, temp[MaxOnewire]; 
