@@ -128,9 +128,11 @@ Reducing the output power below -10 dBm has very little effect on the minimum su
                                                  //  You should use the one matching the module you have.
 												 //  (Note: this is different from the normal OEM definition.)
 												 
-#define RFMSELPIN 10                             // Pins for the RFM Radio module:  10 for the V3; 5 or 10 for the Shield, depending on jumper setting
-#define RFMIRQPIN 2								 // Pins for the RFM Radio module:   2 for the V3; 2 or  3 for the Shield, depending on jumper setting
-												 
+
+#define RFMSELPIN 10                             // Pins for the RFM Radio module:  
+                                                 //        10 for the V3; 5 or 10 for the Shield, depending on jumper setting; 4 for the RFu_328 V1.2
+#define RFMIRQPIN 2                              // Pins for the RFM Radio module:
+                                                 //         2 for the V3; 2 or  3 for the Shield, depending on jumper setting; 3 for the RFu_328 V1.2												 
 
 const int nodeID = 10;                           //  node ID for this emonTx. This sketch does NOT interrogate the DIP switch.
 
