@@ -60,7 +60,7 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); }                            // Attache
 #define firmware_version "v0.1"
 //----------------------------emonTx V3 Settings---------------------------------------------------------------------------------------------------------------
 const byte Vrms                  = 230;                              // Vrms for apparent power readings (when no AC-AC voltage sample is present)
-const byte TIME_BETWEEN_READINGS = 10;                               // Time between readings   
+const double TIME_BETWEEN_READINGS = 9.8;                               // Time between readings   
 
 //http://openenergymonitor.org/emon/buildingblocks/calibration
 
@@ -226,7 +226,7 @@ void setup()
   
   EmonLibCM_number_of_channels(4);       // number of current channels
   EmonLibCM_cycles_per_second(50);       // frequency 50Hz, 60Hz
-  EmonLibCM_datalog_period(9);          // period of readings in seconds
+  EmonLibCM_datalog_period(TIME_BETWEEN_READINGS);          // period of readings in seconds
   
   EmonLibCM_min_startup_cycles(10);      // number of cycles to let ADC run before starting first actual measurement
                                          // larger value improves stability if operated in stop->sleep->start mode
@@ -266,7 +266,7 @@ void loop()
   if (EmonLibCM_Ready())   
   {
     if (EmonLibCM_ACAC) {
-      EmonLibCM_datalog_period(9);
+      EmonLibCM_datalog_period(TIME_BETWEEN_READINGS);
       emontx.Vrms = EmonLibCM_Vrms;
       emontx.power1 = EmonLibCM_getRealPower(0);
       emontx.power2 = EmonLibCM_getRealPower(1);
@@ -342,9 +342,12 @@ void loop()
     }
     
     if (!EmonLibCM_ACAC) {
+      int sleeptime = (TIME_BETWEEN_READINGS - 1)*1000;
+      if (DS18B20_STATUS) sleeptime -= ASYNC_DELAY;
+      sleeptime -= 50;
       EmonLibCM_Stop();
       delay(50);
-      msdelay(8000-ASYNC_DELAY);
+      msdelay(sleeptime);
       EmonLibCM_datalog_period(1);
       EmonLibCM_Start();
     }
