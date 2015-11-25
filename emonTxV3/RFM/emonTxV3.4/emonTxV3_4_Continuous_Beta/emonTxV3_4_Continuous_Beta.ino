@@ -1,63 +1,19 @@
-/*
-  
-  emonTxV3.4 Discrete Sampling
-  
-  If AC-AC adapter is detected assume emonTx is also powered from adapter (jumper shorted) and take Real Power Readings and disable sleep mode to keep load on power supply constant
-  If AC-AC addapter is not detected assume powering from battereis / USB 5V AC sample is not present so take Apparent Power Readings and enable sleep mode
-  
-  Transmitt values via RFM69CW radio
-  
-   -----------------------------------------
-  Part of the openenergymonitor.org project
-  
-  Authors: Glyn Hudson & Trystan Lea 
-  Builds upon JCW JeeLabs RF12 library and Arduino 
-  
-  Licence: GNU GPL V3
-
-*/
-
-/*Recommended node ID allocation
-------------------------------------------------------------------------------------------------------------
--ID-	-Node Type- 
-0	- Special allocation in JeeLib RFM12 driver - reserved for OOK use
-1-4     - Control nodes 
-5-10	- Energy monitoring nodes
-11-14	--Un-assigned --
-15-16	- Base Station & logging nodes
-17-30	- Environmental sensing nodes (temperature humidity etc.)
-31	- Special allocation in JeeLib RFM12 driver - Node31 can communicate with nodes on any network group
--------------------------------------------------------------------------------------------------------------
-
-
-Change Log:
-v2.3   16/11/15 Change to unsigned long for pulse count and make default node ID 8 to avoid emonHub node decoder conflict & fix counting pulses faster than 110ms, strobed meter LED http://openenergymonitor.org/emon/node/11490 
-v2.2   12/11/15 Remove debug timming serial print code
-v2.1   24/10/15 Improved timing so that packets are sent just under 10s, reducing resulting data gaps in feeds + default status code for no temp sensors of 3000 which reduces corrupt packets improving data reliability
-V2.0   30/09/15 Update number of samples 1480 > 1662 to improve sampling accurancy: 1662 samples take 300 mS, which equates to 15 cycles @ 50 Hz or 18 cycles @ 60 Hz.
-V1.9   25/08/15 Fix spurious pulse readings from RJ45 port when DS18B20 but no pulse counter is connected (enable internal pull-up)
-V1.8 - 18/06/15 Increase max pulse width to 110ms
-V1.7 - 12/06/15 Fix pulse count debounce issue & enable pulse count pulse temperature
-V1.6 - Add support for multiple DS18B20 temperature sensors 
-V1.5 - Add interrupt pulse counting - simplify serial print debug 
-V1.4.1 - Remove filter settle routine as latest emonLib 19/01/15 does not require 
-V1.4 - Support for RFM69CW, DIP switches and battery voltage reading on emonTx V3.4
-V1.3 - fix filter settle time to eliminate large inital reading
-V1.2 - fix bug which caused Vrms to be returned as zero if CT1 was not connected 
-V1.1 - fix bug in startup Vrms calculation, startup Vrms startup calculation is now more accuratre
-*/
-
-#define emonTxV3                                                                          // Tell emonLib this is the emonTx V3 - don't read Vcc assume Vcc = 3.3V as is always the case on emonTx V3 eliminates bandgap error and need for calibration http://harizanov.com/2013/09/thoughts-on-avr-adc-accuracy/
-#define RF69_COMPAT 1                                                              // Set to 1 if using RFM69CW or 0 is using RFM12B
-#include <JeeLib.h>                                                                      //https://github.com/jcw/jeelib - Tested with JeeLib 3/11/14
-ISR(WDT_vect) { Sleepy::watchdogEvent(); }                            // Attached JeeLib sleep function to Atmega328 watchdog -enables MCU to be put into sleep mode inbetween readings to reduce power consumption 
-
-#include "EmonLibCM.h"
-
-#include <OneWire.h>                                                  //http://www.pjrc.com/teensy/td_libs_OneWire.html
-#include <DallasTemperature.h>                                        //http://download.milesburton.com/Arduino/MaximTemperature/DallasTemperature_LATEST.zip
+//
+// EmonTx v3.4 Continuous sampling Beta
+//
 
 #define firmware_version "v0.1"
+#define emonTxV3
+#define RF69_COMPAT 1                                                 // Set to 1 if using RFM69CW or 0 is using RFM12B
+
+#include <JeeLib.h>
+#include <EmonLibCM.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
+
+ISR(WDT_vect) { Sleepy::watchdogEvent(); }
+
+
 //----------------------------emonTx V3 Settings---------------------------------------------------------------------------------------------------------------
 const byte Vrms                  = 230;                              // Vrms for apparent power readings (when no AC-AC voltage sample is present)
 const double TIME_BETWEEN_READINGS = 9.8;                               // Time between readings   
@@ -68,7 +24,7 @@ const float Ical1=                90.9;                              // (2000 tu
 const float Ical2=                90.9;                              // (2000 turns / 22 Ohm burden) = 90.9
 const float Ical3=                90.9;                              // (2000 turns / 22 Ohm burden) = 90.9
 const float Ical4=                16.67;                             // (2000 turns / 120 Ohm burden) = 16.67
-float Vcal=                       268.97;                            // (230V x 13) / (9V x 1.2) = 276.9 Calibration for UK AC-AC adapter 77DB-06-09 
+float Vcal=                       260.4;                            // (230V x 13) / (9V x 1.2) = 276.9 Calibration for UK AC-AC adapter 77DB-06-09 
 
 //float Vcal=276.9;
 //const float Vcal=               260;                               // Calibration for EU AC-AC adapter 77DE-06-09 
@@ -106,7 +62,7 @@ byte numSensors;
 byte nodeID = 8;                                                        // emonTx RFM12B node ID
 const int networkGroup = 210;
 
-#define RETRY_PERIOD    250  // how soon to retry if ACK didn't come in
+#define RETRY_PERIOD    50  // how soon to retry if ACK didn't come in
 #define RETRY_LIMIT     5   // maximum number of times to retry
 #define ACK_TIME        10  // number of milliseconds to wait for an ack
 #define RADIO_SYNC_MODE 2
@@ -127,7 +83,7 @@ boolean CT1, CT2, CT3, CT4, debug, DS18B20_STATUS;
 volatile byte pulseCount = 0;
 unsigned long pulsetime=0;
 // Record time of interrupt pulse
-
+unsigned long lastsent = 0;
 void setup()
 { 
   pinMode(LEDpin, OUTPUT);
@@ -231,12 +187,12 @@ void setup()
   EmonLibCM_min_startup_cycles(10);      // number of cycles to let ADC run before starting first actual measurement
                                          // larger value improves stability if operated in stop->sleep->start mode
 
-  EmonLibCM_voltageCal(0.84);            // 260.4 * (3.3/1023)
+  EmonLibCM_voltageCal(Vcal*(3.3/1023));            // 260.4 * (3.3/1023)
   
-  EmonLibCM_currentCal(0,90.9*(3.3/1023));  // 2000 turns / 22 Ohms burden resistor
-  EmonLibCM_currentCal(1,90.9*(3.3/1023));  // 2000 turns / 22 Ohms burden resistor
-  EmonLibCM_currentCal(2,90.9*(3.3/1023));  // 2000 turns / 22 Ohms burden resistor
-  EmonLibCM_currentCal(3,16.6*(3.3/1023));  // 2000 turns / 120 Ohms burden resistor
+  EmonLibCM_currentCal(0,Ical1*(3.3/1023));  // 2000 turns / 22 Ohms burden resistor
+  EmonLibCM_currentCal(1,Ical2*(3.3/1023));  // 2000 turns / 22 Ohms burden resistor
+  EmonLibCM_currentCal(2,Ical3*(3.3/1023));  // 2000 turns / 22 Ohms burden resistor
+  EmonLibCM_currentCal(3,Ical4*(3.3/1023));  // 2000 turns / 120 Ohms burden resistor
 
   EmonLibCM_phaseCal(0,0.22);
   EmonLibCM_phaseCal(1,0.41);
@@ -265,6 +221,8 @@ void loop()
 {
   if (EmonLibCM_Ready())   
   {
+    if (EmonLibCM_ACAC) {digitalWrite(LEDpin, HIGH); delay(200); digitalWrite(LEDpin, LOW);}    // flash LED if powered by AC
+    
     if (EmonLibCM_ACAC) {
       EmonLibCM_datalog_period(TIME_BETWEEN_READINGS);
       emontx.Vrms = EmonLibCM_Vrms;
@@ -285,9 +243,11 @@ void loop()
     if (DS18B20_STATUS==1) 
     {
       digitalWrite(DS18B20_PWR, HIGH); 
-      msdelay(50); 
+      delay(50);
       sensors.requestTemperatures();
-      msdelay(ASYNC_DELAY);                                                // Must wait for conversion, since we use ASYNC mode 
+      // Must wait for conversion, since we use ASYNC mode 
+      if (EmonLibCM_ACAC) delay(ASYNC_DELAY); else Sleepy::loseSomeTime(ASYNC_DELAY);
+      
       for(byte j=0;j<numSensors;j++) {
         float temp = sensors.getTempC(allAddress[j]);
         if ((temp>-55.0) && (temp<125.0)) {
@@ -306,6 +266,7 @@ void loop()
     }
  
     if (debug==1) {
+      Serial.print("data: ");
       Serial.print(emontx.power1); Serial.print(" ");
       Serial.print(emontx.power2); Serial.print(" ");
       Serial.print(emontx.power3); Serial.print(" ");
@@ -318,33 +279,33 @@ void loop()
           Serial.print(" ");
         } 
       }
-      Serial.println("");
+      Serial.print(", ");
+      Serial.print(millis()-lastsent);
+      Serial.println("ms");
+      lastsent = millis();
+      
       delay(50);
-    } 
-  
-    if (EmonLibCM_ACAC) {digitalWrite(LEDpin, HIGH); delay(200); digitalWrite(LEDpin, LOW);}    // flash LED if powered by AC
-  
+    }
+    
     for (byte i = 0; i < RETRY_LIMIT; ++i) {
       rf12_sendNow(RF12_HDR_ACK, &emontx, sizeof emontx);
       rf12_sendWait(RADIO_SYNC_MODE);
       byte acked = waitForAck();
       rf12_sleep(RF12_SLEEP);
 
-      if (acked) {
-        Serial.print(" ack ");
-        Serial.println((int) i);
-        break;
-      }
+      if (acked) break;
     
-      Serial.print("retry: ");
-      Serial.println(i);
+      if (debug==1) { 
+        Serial.print("retry: ");
+        Serial.println(i);
+      }
       delay(RETRY_PERIOD);
     }
     
     if (!EmonLibCM_ACAC) {
       int sleeptime = (TIME_BETWEEN_READINGS - 1)*1000;
-      if (DS18B20_STATUS) sleeptime -= ASYNC_DELAY;
-      sleeptime -= 50;
+      if (DS18B20_STATUS) sleeptime -= (ASYNC_DELAY+50);
+      sleeptime -= 100;
       EmonLibCM_Stop();
       delay(50);
       msdelay(sleeptime);
@@ -365,6 +326,6 @@ void onPulse()
 
 void msdelay(int ms)
 {
-  // delay(ms);
+  //delay(ms);
   Sleepy::loseSomeTime(ms);
 }
