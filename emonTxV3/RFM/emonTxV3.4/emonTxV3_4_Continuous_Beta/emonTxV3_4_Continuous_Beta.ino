@@ -68,7 +68,7 @@ const int networkGroup = 210;
 #define RADIO_SYNC_MODE 2
 
 typedef struct { 
-  byte packetcount;
+  // byte packetcount;
   int Vrms;
   int power1,power2, power3, power4;
   unsigned long wh1,wh2,wh3,wh4,pulseCount;
@@ -211,7 +211,7 @@ void setup()
   for(byte j=0;j<MaxOnewire;j++) 
       emontx.temp[j] = 3000;                             // If no temp sensors connected default to status code 3000 
                                                          // will appear as 300 once multipled by 0.1 in emonhub
-  emontx.packetcount = 0;
+  // emontx.packetcount = 0;
 } //end SETUP
 
 static byte waitForAck() {
@@ -301,8 +301,8 @@ void loop()
       delay(50);
     }
     
-    emontx.packetcount ++;
-    if (emontx.packetcount>180) emontx.packetcount = 0;
+    // emontx.packetcount ++;
+    // if (emontx.packetcount>180) emontx.packetcount = 0;
     
     for (byte i = 0; i < RETRY_LIMIT; ++i) {
       rf12_sendNow(RF12_HDR_ACK, &emontx, sizeof emontx);
