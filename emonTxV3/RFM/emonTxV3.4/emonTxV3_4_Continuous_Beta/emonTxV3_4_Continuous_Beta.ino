@@ -105,7 +105,12 @@ byte numSensors;
 #define RF_freq RF12_433MHZ                                              // Frequency of RF69CW module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 byte nodeID = 8;                                                        // emonTx RFM12B node ID
 const int networkGroup = 210;
- 
+
+#define RETRY_PERIOD    250  // how soon to retry if ACK didn't come in
+#define RETRY_LIMIT     5   // maximum number of times to retry
+#define ACK_TIME        10  // number of milliseconds to wait for an ack
+#define RADIO_SYNC_MODE 2
+
 typedef struct { 
   int power1, power2, power3, power4, Vrms, temp[MaxOnewire]; 
   unsigned long pulseCount;
@@ -221,7 +226,7 @@ void setup()
   
   EmonLibCM_number_of_channels(4);       // number of current channels
   EmonLibCM_cycles_per_second(50);       // frequency 50Hz, 60Hz
-  EmonLibCM_datalog_period(5);          // period of readings in seconds
+  EmonLibCM_datalog_period(9);          // period of readings in seconds
   
   EmonLibCM_min_startup_cycles(10);      // number of cycles to let ADC run before starting first actual measurement
                                          // larger value improves stability if operated in stop->sleep->start mode
@@ -247,12 +252,21 @@ void setup()
                                                          // will appear as 300 once multipled by 0.1 in emonhub
 } //end SETUP
 
+static byte waitForAck() {
+  MilliTimer ackTimer;
+  while (!ackTimer.poll(ACK_TIME)) {
+    if (rf12_recvDone() && rf12_crc == 0 && rf12_hdr == (RF12_HDR_DST | RF12_HDR_CTL | nodeID))
+      return 1;
+  }
+  return 0;
+}
+
 void loop()
 {
   if (EmonLibCM_Ready())   
   {
     if (EmonLibCM_ACAC) {
-      EmonLibCM_datalog_period(5);
+      EmonLibCM_datalog_period(9);
       emontx.Vrms = EmonLibCM_Vrms;
       emontx.power1 = EmonLibCM_getRealPower(0);
       emontx.power2 = EmonLibCM_getRealPower(1);
@@ -264,14 +278,6 @@ void loop()
       emontx.power2 = Vrms * EmonLibCM_getIrms(1);
       emontx.power3 = Vrms * EmonLibCM_getIrms(2);
       emontx.power4 = Vrms * EmonLibCM_getIrms(3);
-    }
-    
-    if (!EmonLibCM_ACAC) {
-      EmonLibCM_Stop();
-      delay(50);
-      msdelay(4000);
-      EmonLibCM_datalog_period(1);
-      EmonLibCM_Start();
     }
                                                                                          // read battery voltage if powered by DC
     // int battery_voltage=analogRead(battery_voltage_pin) * 0.681322727;                // 6.6V battery = 3.3V input = 1024 ADC
@@ -318,10 +324,30 @@ void loop()
   
     if (EmonLibCM_ACAC) {digitalWrite(LEDpin, HIGH); delay(200); digitalWrite(LEDpin, LOW);}    // flash LED if powered by AC
   
-    rf12_sleep(RF12_WAKEUP);                                   
-    rf12_sendNow(0, &emontx, sizeof emontx);
-    rf12_sendWait(2);
-    rf12_sleep(RF12_SLEEP);
+    for (byte i = 0; i < RETRY_LIMIT; ++i) {
+      rf12_sendNow(RF12_HDR_ACK, &emontx, sizeof emontx);
+      rf12_sendWait(RADIO_SYNC_MODE);
+      byte acked = waitForAck();
+      rf12_sleep(RF12_SLEEP);
+
+      if (acked) {
+        Serial.print(" ack ");
+        Serial.println((int) i);
+        break;
+      }
+    
+      Serial.print("retry: ");
+      Serial.println(i);
+      delay(RETRY_PERIOD);
+    }
+    
+    if (!EmonLibCM_ACAC) {
+      EmonLibCM_Stop();
+      delay(50);
+      msdelay(8000-ASYNC_DELAY);
+      EmonLibCM_datalog_period(1);
+      EmonLibCM_Start();
+    }
   }
 }
 
@@ -336,6 +362,6 @@ void onPulse()
 
 void msdelay(int ms)
 {
-  delay(ms);
-  // Sleepy::loseSomeTime(ms);
+  // delay(ms);
+  Sleepy::loseSomeTime(ms);
 }
