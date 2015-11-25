@@ -64,12 +64,15 @@ const int networkGroup = 210;
 
 #define RETRY_PERIOD    50  // how soon to retry if ACK didn't come in
 #define RETRY_LIMIT     5   // maximum number of times to retry
-#define ACK_TIME        10  // number of milliseconds to wait for an ack
+#define ACK_TIME        20  // number of milliseconds to wait for an ack
 #define RADIO_SYNC_MODE 2
 
 typedef struct { 
-  int power1, power2, power3, power4, Vrms, temp[MaxOnewire]; 
-  unsigned long pulseCount;
+  byte packetcount;
+  int Vrms;
+  int power1,power2, power3, power4;
+  unsigned long wh1,wh2,wh3,wh4,pulseCount;
+  int temp[MaxOnewire];
 } PayloadTX;
 
 PayloadTX emontx;
@@ -84,6 +87,8 @@ volatile byte pulseCount = 0;
 unsigned long pulsetime=0;
 // Record time of interrupt pulse
 unsigned long lastsent = 0;
+
+
 void setup()
 { 
   pinMode(LEDpin, OUTPUT);
@@ -180,8 +185,8 @@ void setup()
     Serial.end();
   }
   
-  EmonLibCM_number_of_channels(4);       // number of current channels
-  EmonLibCM_cycles_per_second(50);       // frequency 50Hz, 60Hz
+  EmonLibCM_number_of_channels(4);                          // number of current channels
+  EmonLibCM_cycles_per_second(50);                          // frequency 50Hz, 60Hz
   EmonLibCM_datalog_period(TIME_BETWEEN_READINGS);          // period of readings in seconds
   
   EmonLibCM_min_startup_cycles(10);      // number of cycles to let ADC run before starting first actual measurement
@@ -206,6 +211,7 @@ void setup()
   for(byte j=0;j<MaxOnewire;j++) 
       emontx.temp[j] = 3000;                             // If no temp sensors connected default to status code 3000 
                                                          // will appear as 300 once multipled by 0.1 in emonhub
+  emontx.packetcount = 0;
 } //end SETUP
 
 static byte waitForAck() {
@@ -230,12 +236,20 @@ void loop()
       emontx.power2 = EmonLibCM_getRealPower(1);
       emontx.power3 = EmonLibCM_getRealPower(2);
       emontx.power4 = EmonLibCM_getRealPower(3);
+      emontx.wh1 = EmonLibCM_getWattHour(0);
+      emontx.wh2 = EmonLibCM_getWattHour(1);
+      emontx.wh3 = EmonLibCM_getWattHour(2);
+      emontx.wh4 = EmonLibCM_getWattHour(3);
     } else {
       emontx.Vrms = Vrms;
       emontx.power1 = Vrms * EmonLibCM_getIrms(0);
       emontx.power2 = Vrms * EmonLibCM_getIrms(1);
       emontx.power3 = Vrms * EmonLibCM_getIrms(2);
       emontx.power4 = Vrms * EmonLibCM_getIrms(3);
+      emontx.wh1 = 0;
+      emontx.wh2 = 0;
+      emontx.wh3 = 0;
+      emontx.wh4 = 0;
     }
                                                                                          // read battery voltage if powered by DC
     // int battery_voltage=analogRead(battery_voltage_pin) * 0.681322727;                // 6.6V battery = 3.3V input = 1024 ADC
@@ -286,6 +300,9 @@ void loop()
       
       delay(50);
     }
+    
+    emontx.packetcount ++;
+    if (emontx.packetcount>180) emontx.packetcount = 0;
     
     for (byte i = 0; i < RETRY_LIMIT; ++i) {
       rf12_sendNow(RF12_HDR_ACK, &emontx, sizeof emontx);
