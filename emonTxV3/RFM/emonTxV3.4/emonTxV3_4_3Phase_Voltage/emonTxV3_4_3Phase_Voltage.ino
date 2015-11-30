@@ -18,6 +18,7 @@ V.2  28/1/2015	  Altered to use low-pass filter and subtract the offset, to remo
 V.3  1/5/2015     Dependency on JeeLib removed, replaced by in-line code.
 V.4  16/6/2015    Array addressing bug solved.
 V.5  2/8/2015     Added option to select emonTx V3 / emonTx Shield
+V.6  31/11/2015   Set default node ID to 11 to avoid conflict with discrete sampling emonTx sketch. Add emonhub.conf node decoder example (see below)
 
 
 emonTx documentation: http://wiki.openenergymonitor.org/index.php/Main_Page#Monitoring_Nodes
@@ -31,6 +32,18 @@ avr/wdt.h                                        // the UNO bootloader
 
 Does NOT require JeeLib
 Does NOT require EmonLib
+
+emonhub.conf node decoder for this sketch:
+
+[[11]]
+nodename = emonTx_three_phase
+firmware =three_phase
+hardware = emonTx_(NodeID_DIP_Switch1:OFF)
+[[[rx]]]
+names = power1, power2, power3, power4, Vrms
+datacode = h
+scales = 1,1,1,1,0.01
+units =W,W,W,W,V
 =============================================================================================
 
 Extended to allow the voltage measurement of a single phase to be used to generate approximate indications of
@@ -134,7 +147,7 @@ Reducing the output power below -10 dBm has very little effect on the minimum su
 #define RFMIRQPIN 2                              // Pins for the RFM Radio module:
                                                  //         2 for the V3; 2 or  3 for the Shield, depending on jumper setting; 3 for the RFu_328 V1.2												 
 
-const int nodeID = 10;                           //  node ID for this emonTx. This sketch does NOT interrogate the DIP switch.
+const int nodeID = 11;                           //  node ID for this emonTx. This sketch does NOT interrogate the DIP switch.
 
 const int networkGroup = 210;                    //  wireless network group
                                                  //  - needs to be same as emonBase and emonGLCD. OEM default is 210
