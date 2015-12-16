@@ -219,13 +219,13 @@ void loop()
     
     if (EmonLibCM_ACAC) {
       EmonLibCM_datalog_period(TIME_BETWEEN_READINGS);
-      emontx.Vrms = EmonLibCM_Vrms;
+      emontx.Vrms = EmonLibCM_Vrms*100;
       emontx.power1 = EmonLibCM_getRealPower(0);
       emontx.power2 = EmonLibCM_getRealPower(1);
       emontx.power3 = EmonLibCM_getRealPower(2);
       emontx.power4 = EmonLibCM_getRealPower(3);
     } else {
-      emontx.Vrms = Vrms;
+      emontx.Vrms = Vrms*100;
       emontx.power1 = Vrms * EmonLibCM_getIrms(0);
       emontx.power2 = Vrms * EmonLibCM_getIrms(1);
       emontx.power3 = Vrms * EmonLibCM_getIrms(2);
