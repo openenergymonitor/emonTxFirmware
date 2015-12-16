@@ -2,7 +2,7 @@
 // EmonTx v3.4 Continuous sampling Beta
 //
 
-#define firmware_version "v0.1"
+#define firmware_version "v0.2"
 #define emonTxV3
 #define RF69_COMPAT 1                                                 // Set to 1 if using RFM69CW or 0 is using RFM12B
 
@@ -24,7 +24,7 @@ const float Ical1=                90.9;                              // (2000 tu
 const float Ical2=                90.9;                              // (2000 turns / 22 Ohm burden) = 90.9
 const float Ical3=                90.9;                              // (2000 turns / 22 Ohm burden) = 90.9
 const float Ical4=                16.67;                             // (2000 turns / 120 Ohm burden) = 16.67
-float Vcal=                       260.4;                            // (230V x 13) / (9V x 1.2) = 276.9 Calibration for UK AC-AC adapter 77DB-06-09 
+float Vcal=                       260.4;                             // (230V x 13) / (9V x 1.2) = 276.9 Calibration for UK AC-AC adapter 77DB-06-09 
 
 //float Vcal=276.9;
 //const float Vcal=               260;                               // Calibration for EU AC-AC adapter 77DE-06-09 
@@ -33,7 +33,7 @@ boolean USA=FALSE;
 
 const byte min_pulsewidth= 110;                                      // minimum width of interrupt pulse (default pulse output meters = 100ms)
 const int TEMPERATURE_PRECISION=  11;                                // 9 (93.8ms),10 (187.5ms) ,11 (375ms) or 12 (750ms) bits equal to resplution of 0.5C, 0.25C, 0.125C and 0.0625C
-const byte MaxOnewire=             6;                            
+const byte MaxOnewire=             4;                            
 #define ASYNC_DELAY 375                                              // DS18B20 conversion delay - 9bit requres 95ms, 10bit 187ms, 11bit 375ms and 12bit resolution takes 750ms
 //-------------------------------------------------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------------------------------
@@ -58,30 +58,25 @@ byte numSensors;
 //-------------------------------------------------------------------------------------------------------------------------------------------
 
 //-----------------------RFM12B / RFM69CW SETTINGS----------------------------------------------------------------------------------------------------
-#define RF_freq RF12_433MHZ                                              // Frequency of RF69CW module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
-byte nodeID = 8;                                                        // emonTx RFM12B node ID
+#define RF_freq RF12_433MHZ                                        // Frequency of RF69CW module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
+byte nodeID = 10;                                                  // emonTx RFM12B node ID
 const int networkGroup = 210;
 
-#define RETRY_PERIOD    50  // how soon to retry if ACK didn't come in
-#define RETRY_LIMIT     5   // maximum number of times to retry
-#define ACK_TIME        20  // number of milliseconds to wait for an ack
+#define RETRY_PERIOD    100   // how soon to retry if ACK didn't come in
+#define RETRY_LIMIT     2     // maximum number of times to retry
+#define ACK_TIME        40    // number of milliseconds to wait for an ack
 #define RADIO_SYNC_MODE 2
 
-typedef struct { 
-  // byte packetcount;
-  int Vrms;
-  int power1,power2, power3, power4;
-  unsigned long wh1,wh2,wh3,wh4,pulseCount;
-  int temp[MaxOnewire];
+typedef struct {
+  unsigned long msg;
+  int power1,power2, power3, power4, Vrms, temp[MaxOnewire];
+  unsigned long pulseCount;
+  // unsigned long retry;
+  unsigned long fail;
 } PayloadTX;
 
 PayloadTX emontx;
 
-//-------------------------------------------------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------------------------------
-
-//Random Variables 
-//boolean settled = false;
 boolean CT1, CT2, CT3, CT4, debug, DS18B20_STATUS; 
 volatile byte pulseCount = 0;
 unsigned long pulsetime=0;
@@ -119,15 +114,11 @@ void setup()
   
   delay(10);
   rf12_initialize(nodeID, RF_freq, networkGroup);                         // initialize RFM12B/rfm69CW
-  for (int i=10; i>=0; i--)                                               // Send RF test sequence (for factory testing)
-  {
-    emontx.power1=i; 
-    rf12_sendNow(0, &emontx, sizeof emontx);
-    delay(100);
-  }
-  rf12_sendWait(2);
-  emontx.power1=0;
 
+  emontx.msg = 0;
+  emontx.fail = 0;
+  // emontx.retry = 0;
+  
   digitalWrite(LEDpin,LOW); 
   
   //################################################################################################################################
@@ -188,7 +179,6 @@ void setup()
   EmonLibCM_number_of_channels(4);                          // number of current channels
   EmonLibCM_cycles_per_second(50);                          // frequency 50Hz, 60Hz
   EmonLibCM_datalog_period(TIME_BETWEEN_READINGS);          // period of readings in seconds
-  
   EmonLibCM_min_startup_cycles(10);      // number of cycles to let ADC run before starting first actual measurement
                                          // larger value improves stability if operated in stop->sleep->start mode
 
@@ -211,23 +201,13 @@ void setup()
   for(byte j=0;j<MaxOnewire;j++) 
       emontx.temp[j] = 3000;                             // If no temp sensors connected default to status code 3000 
                                                          // will appear as 300 once multipled by 0.1 in emonhub
-  // emontx.packetcount = 0;
 } //end SETUP
-
-static byte waitForAck() {
-  MilliTimer ackTimer;
-  while (!ackTimer.poll(ACK_TIME)) {
-    if (rf12_recvDone() && rf12_crc == 0 && rf12_hdr == (RF12_HDR_DST | RF12_HDR_CTL | nodeID))
-      return 1;
-  }
-  return 0;
-}
 
 void loop()
 {
   if (EmonLibCM_Ready())   
   {
-    if (EmonLibCM_ACAC) {digitalWrite(LEDpin, HIGH); delay(200); digitalWrite(LEDpin, LOW);}    // flash LED if powered by AC
+    // if (EmonLibCM_ACAC) {digitalWrite(LEDpin, HIGH); delay(10); digitalWrite(LEDpin, LOW);}    // flash LED if powered by AC
     
     if (EmonLibCM_ACAC) {
       EmonLibCM_datalog_period(TIME_BETWEEN_READINGS);
@@ -236,20 +216,12 @@ void loop()
       emontx.power2 = EmonLibCM_getRealPower(1);
       emontx.power3 = EmonLibCM_getRealPower(2);
       emontx.power4 = EmonLibCM_getRealPower(3);
-      emontx.wh1 = EmonLibCM_getWattHour(0);
-      emontx.wh2 = EmonLibCM_getWattHour(1);
-      emontx.wh3 = EmonLibCM_getWattHour(2);
-      emontx.wh4 = EmonLibCM_getWattHour(3);
     } else {
       emontx.Vrms = Vrms;
       emontx.power1 = Vrms * EmonLibCM_getIrms(0);
       emontx.power2 = Vrms * EmonLibCM_getIrms(1);
       emontx.power3 = Vrms * EmonLibCM_getIrms(2);
       emontx.power4 = Vrms * EmonLibCM_getIrms(3);
-      emontx.wh1 = 0;
-      emontx.wh2 = 0;
-      emontx.wh3 = 0;
-      emontx.wh4 = 0;
     }
                                                                                          // read battery voltage if powered by DC
     // int battery_voltage=analogRead(battery_voltage_pin) * 0.681322727;                // 6.6V battery = 3.3V input = 1024 ADC
@@ -301,22 +273,9 @@ void loop()
       delay(50);
     }
     
-    // emontx.packetcount ++;
-    // if (emontx.packetcount>180) emontx.packetcount = 0;
-    
-    for (byte i = 0; i < RETRY_LIMIT; ++i) {
-      rf12_sendNow(RF12_HDR_ACK, &emontx, sizeof emontx);
-      rf12_sendWait(RADIO_SYNC_MODE);
-      byte acked = waitForAck();
-      rf12_sleep(RF12_SLEEP);
-
-      if (acked) break;
-    
-      if (debug==1) { 
-        Serial.print("retry: ");
-        Serial.println(i);
-      }
-      delay(RETRY_PERIOD);
+    emontx.msg++;
+    if (!rfm69send()) {
+      emontx.fail++;
     }
     
     if (!EmonLibCM_ACAC) {
@@ -343,6 +302,29 @@ void onPulse()
 
 void msdelay(int ms)
 {
-  //delay(ms);
+  // delay(ms);
   Sleepy::loseSomeTime(ms);
+}
+
+bool rfm69send() {
+    uint32_t sentTime;
+    bool success = false;
+    for (uint8_t i=0; i<=RETRY_LIMIT; i++)
+    {
+      rf12_sendNow(RF12_HDR_ACK, &emontx, sizeof emontx);
+      rf12_sendWait(RADIO_SYNC_MODE);
+      sentTime = millis();
+      while (millis()-sentTime<ACK_TIME)
+      {
+        if (rf12_recvDone() && rf12_crc == 0 && rf12_hdr == (RF12_HDR_DST | RF12_HDR_CTL | nodeID))
+        {
+          rf12_sleep(RF12_SLEEP);
+          return 1;
+        }
+      }
+      rf12_sleep(RF12_SLEEP);
+      // emontx.retry++;
+      delay(RETRY_PERIOD);
+    }
+    return 0; 
 }
