@@ -16,7 +16,7 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); }
 
 //----------------------------emonTx V3 Settings---------------------------------------------------------------------------------------------------------------
 const byte Vrms                  = 230;                              // Vrms for apparent power readings (when no AC-AC voltage sample is present)
-const double TIME_BETWEEN_READINGS = 9.8;                               // Time between readings   
+const double TIME_BETWEEN_READINGS = 9.5;                               // Time between readings   
 
 //http://openenergymonitor.org/emon/buildingblocks/calibration
 
