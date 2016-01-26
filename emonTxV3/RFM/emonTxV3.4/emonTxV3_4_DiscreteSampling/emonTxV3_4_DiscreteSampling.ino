@@ -127,6 +127,8 @@ byte numSensors;
 byte nodeID = 8;                                                        // emonTx RFM12B node ID
 const int networkGroup = 210;
  
+// Note: Please update emonhub configuration guide on OEM wide packet structure change:
+// https://github.com/openenergymonitor/emonhub/blob/emon-pi/configuration.md
 typedef struct { 
   int power1, power2, power3, power4, Vrms, temp[MaxOnewire]; 
   unsigned long pulseCount;
