@@ -47,6 +47,7 @@ V1.2 - fix bug which caused Vrms to be returned as zero if CT1 was not connected
 V1.1 - fix bug in startup Vrms calculation, startup Vrms startup calculation is now more accuratre
 
 emonhub.conf node decoder (nodeid is 8 when switch is off, 7 when switch is on)
+See: https://github.com/openenergymonitor/emonhub/blob/emon-pi/configuration.md
 
 [[8]]
     nodename = emonTx_3
