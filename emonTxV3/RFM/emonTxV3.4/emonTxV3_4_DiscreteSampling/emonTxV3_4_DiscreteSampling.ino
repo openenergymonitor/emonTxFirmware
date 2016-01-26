@@ -45,6 +45,19 @@ V1.4 - Support for RFM69CW, DIP switches and battery voltage reading on emonTx V
 V1.3 - fix filter settle time to eliminate large inital reading
 V1.2 - fix bug which caused Vrms to be returned as zero if CT1 was not connected 
 V1.1 - fix bug in startup Vrms calculation, startup Vrms startup calculation is now more accuratre
+
+emonhub.conf node decoder (nodeid is 8 when switch is off, 7 when switch is on)
+
+[[8]]
+    nodename = emonTx_3
+    firmware =V2_3_emonTxV3_4_DiscreteSampling
+    hardware = emonTx_(NodeID_DIP_Switch1:OFF)
+    [[[rx]]]
+       names = power1, power2, power3, power4, Vrms, temp1, temp2, temp3, temp4, temp5, temp6, pulse
+       datacodes = h,h,h,h,h,h,h,h,h,h,h,L
+       scales = 1,1,1,1,0.01,0.1,0.1, 0.1,0.1,0.1,0.1,1 
+       units =W,W,W,W,V,C,C,C,C,C,C,p
+
 */
 
 #define emonTxV3                                                                          // Tell emonLib this is the emonTx V3 - don't read Vcc assume Vcc = 3.3V as is always the case on emonTx V3 eliminates bandgap error and need for calibration http://harizanov.com/2013/09/thoughts-on-avr-adc-accuracy/
