@@ -36,6 +36,20 @@
 17-30	- Environmental sensing nodes (temperature humidity etc.)
 31	- Special allocation in JeeLib RFM12 driver - Node31 can communicate with nodes on any network group
 -------------------------------------------------------------------------------------------------------------
+
+emonhub.conf node decoder:
+See: https://github.com/openenergymonitor/emonhub/blob/emon-pi/configuration.md
+
+[[6]]
+    nodename = emonTxShield
+    firmware =emonTxShield
+    hardware = emonTxShield
+    [[[rx]]]
+       names = power1, power2, power3, power4, Vrms
+       datacode = h
+       scales = 1,1,1,1,0.01
+       units =W,W,W,W,V
+       
 */
 
 #define FILTERSETTLETIME 5000                                           //  Time (ms) to allow the filters to settle before sending data
@@ -55,6 +69,8 @@ const int networkGroup = 210;                                           // emonT
 #include "EmonLib.h"
 EnergyMonitor ct1,ct2,ct3, ct4;                                              // Create  instances for each CT channel
 
+// Note: Please update emonhub configuration guide on OEM wide packet structure change:
+// https://github.com/openenergymonitor/emonhub/blob/emon-pi/configuration.md
 typedef struct { int power1, power2, power3, power4, Vrms;} PayloadTX;      // create structure - a neat way of packaging data for RF comms
 PayloadTX emontx;                                                       
 
