@@ -143,9 +143,9 @@ Reducing the output power below -10 dBm has very little effect on the minimum su
 												 
 
 #define RFMSELPIN 10                             // Pins for the RFM Radio module:  
-                                                 //        10 for the V3; 5 or 10 for the Shield, depending on jumper setting; 4 for the RFu_328 V1.2
+                                                 //        10 for the V3.4; 4 for V3.2; 5 or 10 for the Shield, depending on jumper setting; 4 for the RFu_328 V1.2
 #define RFMIRQPIN 2                              // Pins for the RFM Radio module:
-                                                 //         2 for the V3; 2 or  3 for the Shield, depending on jumper setting; 3 for the RFu_328 V1.2												 
+                                                 //         2 for the V3.4; 3 for V3.2; 2 or  3 for the Shield, depending on jumper setting; 3 for the RFu_328 V1.2												 
 
 const int nodeID = 11;                           //  node ID for this emonTx. This sketch does NOT interrogate the DIP switch.
 
@@ -356,7 +356,7 @@ void loop()
 	emontx.power2 = realPower2;
 	emontx.power3 = realPower3;
 	emontx.power4 = realPower4;
-	emontx.Vrms   = Vrms;
+	emontx.Vrms   = Vrms * 100;
 	digitalWrite(LEDpin, HIGH); delay(2); digitalWrite(LEDpin, LOW);      // flash LED
 
 #if defined RFM12B || defined RFM69CW	
