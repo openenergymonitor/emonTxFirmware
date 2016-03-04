@@ -23,16 +23,24 @@ or if you have cloned before pull in latest updates
 
 	$ cd /home/pi/emonTxFirmware/emonTxV3/RFM/emonTxV3.2/emonTxV3_2_DiscreteSampling/update_scripts
 
+You need avrdude to flash the new firmware to the emonTx V3.2:
+
+	$ sudo apt-get install avrdude -y
+
 Run the correct update script for your emonTx RF module frequeny. All emonTx V3.2's will have RFM12B Radio
 See here for help identify RF module frequency: http://openenergymonitor.org/emon/buildingblocks/which-radio-module
 
-Run update script e.g:
+Run update script for 433 MHz:
 
 	$ ./Update_emonTx_V3_2_RFM12B_433.sh
+
+or for 868 MHz:
+
+	$ ./Update_emonTx_V3_2_RFM12B_868.sh
 
 Check update has worked by viewing serial output of emonTx at statup:
 Open up serial window, with minicom. Install if required
 
 	$ sudo apt-get install minicom -y
 
-	$ minicom -D /dev/ttyUSB0 -b 6900
+	$ minicom -D /dev/ttyUSB0 -b 9600
