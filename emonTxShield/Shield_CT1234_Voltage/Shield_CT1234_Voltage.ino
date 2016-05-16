@@ -64,7 +64,7 @@ const int CT4 = 1;
 const int nodeID = 6;                                                  // emonTx RFM12B node ID
 const int networkGroup = 210;                                           // emonTx RFM12B wireless network group - needs to be same as emonBase and emonGLCD                                                 
 
-#define RF69_COMPAT 0 // set to 1 to use RFM69CW 
+#define RF69_COMPAT 1 // set to 1 to use RFM69CW 
 #include <JeeLib.h>   // make sure V12 (latest) is used if using RFM69CW
 #include "EmonLib.h"
 EnergyMonitor ct1,ct2,ct3, ct4;                                              // Create  instances for each CT channel
