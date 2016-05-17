@@ -109,16 +109,14 @@ Reducing the output power below -10 dBm has very little effect on the minimum su
 emonhub.conf node decoder settings for this sketch:
 
 [[11]]
-   nodename = emonTx_three_phase
-   firmware = three_phase
-   hardware = emonTx V3.2/V3.4/Shield
- [[[rx]]]
-   names = powerL1, powerL2, powerL3, power4, Vrms, temp1
-   datacode = h
-   scales = 1,1,1,1,0.01,0.1
-   units =W,W,W,W,V,C
+    nodename = 3phase
+    [[[rx]]]
+       names = powerL1, powerL2, powerL3, power4, Vrms, temp1, temp2, temp3, temp4, temp5, temp6
+       datacode = h
+       scales = 1,1,1,1,0.01,0.1,0.1,0.1,0.1,0.1,0.1
+       units =W,W,W,W,V,C,C,C,C,C,C
 
-[Note: add further temperatures - names & scales - as necessary.]
+https://github.com/openenergymonitor/emonhub/blob/emon-pi/configuration.md
 
 */
 // #define DEBUGGING                             // enable this line to include debugging print statements
