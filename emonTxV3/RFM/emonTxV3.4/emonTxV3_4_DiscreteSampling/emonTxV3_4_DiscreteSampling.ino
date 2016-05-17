@@ -347,7 +347,7 @@ void loop()
       ct1.calcVI(no_of_half_wavelengths,timeout); emontx.power1=ct1.realPower;
       emontx.Vrms=ct1.Vrms*100;
     } else {
-      emontx.power1 = ct1.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of sample
+      emontx.power1 = ct1.calcIrms(no_of_samples)*Vrms;                               
     }
   }
   
@@ -356,7 +356,7 @@ void loop()
       ct2.calcVI(no_of_half_wavelengths,timeout); emontx.power2=ct2.realPower;
       emontx.Vrms=ct2.Vrms*100;
     } else {
-      emontx.power2 = ct2.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
+      emontx.power2 = ct2.calcIrms(no_of_samples)*Vrms;                               
     }
   }
 
@@ -365,7 +365,7 @@ void loop()
       ct3.calcVI(no_of_half_wavelengths,timeout); emontx.power3=ct3.realPower;
       emontx.Vrms=ct3.Vrms*100;
     } else {
-      emontx.power3 = ct3.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
+      emontx.power3 = ct3.calcIrms(no_of_samples)*Vrms;                               
     }
   }
   
@@ -374,7 +374,7 @@ void loop()
       ct4.calcVI(no_of_half_wavelengths,timeout); emontx.power4=ct4.realPower;
       emontx.Vrms=ct4.Vrms*100;
     } else {
-      emontx.power4 = ct4.calcIrms(no_of_samples)*Vrms;                               // Calculate Apparent Power 1  1480 is  number of samples
+      emontx.power4 = ct4.calcIrms(no_of_samples)*Vrms;                             
     }
   }
   
