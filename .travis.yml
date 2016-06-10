@@ -1,0 +1,39 @@
+# Continuous Integration (CI) is the practice, in software
+# engineering, of merging all developer working copies with a shared mainline
+# several times a day < http://docs.platformio.org/en/latest/ci/index.html >
+#
+# Documentation:
+#
+# * Travis CI Embedded Builds with PlatformIO
+#   < https://docs.travis-ci.com/user/integration/platformio/ >
+#
+# * PlatformIO integration with Travis CI
+#   < http://docs.platformio.org/en/latest/ci/travis.html >
+#
+# * User Guide for `platformio ci` command
+#   < http://docs.platformio.org/en/latest/userguide/cmd_ci.html >
+
+
+language: python
+python:
+- '2.7'
+sudo: false
+cache:
+  directories:
+  - "~/.platformio"
+install:
+- pip install -U platformio
+script:
+- platformio run -d emonTxV3/RFM/emonTxV3.4/emonTxV3_4_DiscreteSampling -e emontx_deploy
+
+deploy:
+  on:
+    repo: openenergymonitor/emonTxFirmware
+    all_branches: true
+    condition: $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$
+  skip_cleanup: true
+  provider: releases
+  overwrite: true
+  api_key:
+    secure: DNdYUz0h7/VkII8tuovl8vDq1L0hsX9zAE19IcjlMZP6XeRVfeXN4P6AYPs7XQz8oEQu4fTGDU5vgj1jurEXsby0Evwxr/+zidPXgpNqW20ZS76wOMxEtTrl5gcm/j+TWRxSggo8kz9yERh2SDbUXrTT2KQbOgL7TQZQOlVvc7DeErKXGYXgQ7POGfFAzbwS1BaZmEP38b89Z0ht6e/y8rPtST/kmpmWfgoyBYDTjpWhR+6YP0ODGPezdWvgkNzdejzAmrrBQ2cQ9LVq72PUNc0ZCvc4S32fpYCMCVQmJRobSn6c1iEm8UGrIo0Ntfuk4EPo4iDbkolNXxx/uDTa0Ca4idKhISdwP9Tk6I79jF0RKLkZPfQLLRcaouMgfNMDnSKU/YqqYMgwHICUt/ySafVLWs8QgzNpU6NehkihksvU2EumgjnB+A8YuUDv3eQ5QKwj8UgfGpHSyxqGWTs6MkiCy56RTPkFt05y3VUzK95pnoN2nVvIZp51nF4UeSQP4QjAmHVNG9b8fMKg/dls1CqQNpte//0QQsJonOxSkJzFLqMYyuTWqFh9Em65DzYz8QnD+0gzIFcz+mZMH3RIj8UP//GrVuX1RvOdGdEw2/KzGEIdVebHmODBPza9BPdNC8vpW4QgQXblTBDgADmImiEqquJILGQauP0cJNdCgl0=
+  file: ".pioenvs/emontx_deploy/firmware.hex"
