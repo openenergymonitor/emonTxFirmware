@@ -175,7 +175,7 @@ https://github.com/openenergymonitor/emonhub/blob/emon-pi/configuration.md
 												 //		 2 for the V3.4; 2 or  3 for the Shield but depending on jumper setting, 3 for the V3.2/RFu_328 V1.2
 
 #define DS18B20_PWR 19                           // DS18B20 Power pin - all versions
-#define ONE_WIRE_BUS 5                           // DS18B20 Data      - all versions  
+#define ONE_WIRE_BUS 5                           // DS18B20 Data - pin 5 for emonTX (all versions) and pin 4 for Shield 
 #define MAXONEWIRE 6                             // Max number of temperature sensors
 #define TEMPERATURE_PRECISION 11                 // 9 (93.8ms), 10 (187.5ms), 11 (375ms) or 12 (750ms) bits equal to resolution
                                                  //   of 0.5C, 0.25C, 0.125C and 0.0625C
