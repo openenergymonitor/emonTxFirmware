@@ -21,17 +21,17 @@ or via python pipL
 
 ## Compile
   
-    $ pio run -e emontx
+    $ pio run
 
 ## Upload
 
-    $ pio run -e emontx -t upload
+    $ pio run -t upload
 
 ## Test 
 
 See [PlatfomIO unit test docs](http://docs.platformio.org/en/feature-platformio-30/platforms/unit_testing.html#example)
 
-    $ pio test -e emontx 
+    $ pio test
 
 ## Install libs (no longer required)
 
