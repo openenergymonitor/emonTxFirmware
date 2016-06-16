@@ -145,7 +145,9 @@ PayloadTX emontx;
 boolean CT1, CT2, CT3, CT4, ACAC, debug, DS18B20_STATUS; 
 byte CT_count=0;
 volatile byte pulseCount = 0;
-unsigned long pulsetime=0;                                    // Record time of interrupt pulse        
+unsigned long pulsetime=0;                                    // Record time of interrupt pulse 
+
+#ifndef UNIT_TEST  // IMPORTANT LINE!       
 void setup()
 { 
   pinMode(LEDpin, OUTPUT); 
@@ -471,4 +473,6 @@ int get_temperature(byte sensor)
   float temp=(sensors.getTempC(allAddress[sensor]));
   if ((temp<125.0) && (temp>-55.0)) return(temp*10);            //if reading is within range for the sensor convert float to int ready to send via RF
 }
+
+#endif    // IMPORTANT LINE!
 

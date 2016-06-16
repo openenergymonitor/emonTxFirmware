@@ -21,13 +21,19 @@ or via python pipL
 
 ## Compile
   
-    $ platformio run 
+    $ pio run -e emontx
 
 ## Upload
 
-    $ platformio run --target upload
+    $ pio run -e emontx -t upload
 
-## Install libs (not required)
+## Test 
+
+See [PlatfomIO unit test docs](http://docs.platformio.org/en/feature-platformio-30/platforms/unit_testing.html#example)
+
+    $ pio test -e emontx 
+
+## Install libs (no longer required)
 
 
 **Note: installing libs is no longer requires since required libs are now defined in `platformio.ini`, lib installation will be prompted at fist compile**
