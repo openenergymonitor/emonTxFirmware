@@ -23,15 +23,17 @@ or via python pipL
   
     $ pio run
 
+## Test (optional)
+
+See [PlatfomIO unit test docs](http://docs.platformio.org/en/feature-platformio-30/platforms/unit_testing.html#example). Requires PlatformIO 3.x
+
+    $ pio test
+
+
 ## Upload
 
     $ pio run -t upload
 
-## Test 
-
-See [PlatfomIO unit test docs](http://docs.platformio.org/en/feature-platformio-30/platforms/unit_testing.html#example)
-
-    $ pio test
 
 ## Install libs (no longer required)
 
