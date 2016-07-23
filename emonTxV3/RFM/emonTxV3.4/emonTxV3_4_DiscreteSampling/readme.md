@@ -21,13 +21,21 @@ or via python pipL
 
 ## Compile
   
-    $ platformio run 
+    $ pio run
+
+## Test (optional)
+
+See [PlatfomIO unit test docs](http://docs.platformio.org/en/feature-platformio-30/platforms/unit_testing.html#example). Requires PlatformIO 3.x
+
+    $ pio test
+
 
 ## Upload
 
-    $ platformio run --target upload
+    $ pio run -t upload
 
-## Install libs (not required)
+
+## Install libs (no longer required)
 
 
 **Note: installing libs is no longer requires since required libs are now defined in `platformio.ini`, lib installation will be prompted at fist compile**
