@@ -1,4 +1,5 @@
 // EmonTx V3 Direct Serial example
+// AC-AC adapter must be used with this example (highly recomneded for more accurate Real Power calculations)
 // Useful for direct connection to Raspberry Pi or computer via USB to UART cable 
 // Forum thread: http://openenergymonitor.org/emon/node/3872
 
