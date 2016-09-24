@@ -8,15 +8,13 @@ cache:
 install:
 - pip install -U platformio
 script:
-- platformio run -d emonTxV3/RFM/emonTxV3.4/emonTxV3_4_DiscreteSampling -e emontx
-
-
-# If git release then run build with git tag as build tag see platformio.ini
-- if [ ${TRAVIS_TAG} = "true" ]; then
-    platformio run -d emonTxV3/RFM/emonTxV3.4/emonTxV3_4_DiscreteSampling -e emontx_deploy|| travis_terminate 1;
+- pio --version
+- if [ -z "$TRAVIS_TAG" ]; then
+    platformio run -d emonTxV3/RFM/emonTxV3.4/emonTxV3_4_DiscreteSampling -e emontx;
+  else
+    echo $TRAVIS_TAG;
+    platformio run -d emonTxV3/RFM/emonTxV3.4/emonTxV3_4_DiscreteSampling -e emontx_deploy;
   fi
-# Fix travis exit status
-# http://steven.casagrande.io/articles/travis-ci-and-if-statements/
 
 deploy:
   on:
