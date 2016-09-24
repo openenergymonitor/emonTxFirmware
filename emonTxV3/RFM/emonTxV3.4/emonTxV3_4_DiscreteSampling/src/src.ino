@@ -1,18 +1,18 @@
 /*
-  
+
   emonTxV3.4 Discrete Sampling
-  
+
   If AC-AC adapter is detected assume emonTx is also powered from adapter (jumper shorted) and take Real Power Readings and disable sleep mode to keep load on power supply constant
   If AC-AC addapter is not detected assume powering from battereis / USB 5V AC sample is not present so take Apparent Power Readings and enable sleep mode
-  
+
   Transmitt values via RFM69CW radio
-  
+
    -----------------------------------------
   Part of the openenergymonitor.org project
-  
+
   Authors: Glyn Hudson & Trystan Lea
   Builds upon JCW JeeLabs RF12 library and Arduino
-  
+
   Licence: GNU GPL V3
 
 */
@@ -129,7 +129,7 @@ byte numSensors;
 #define RF_freq RF12_433MHZ                                              // Frequency of RF69CW module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
 byte nodeID = 8;                                                        // emonTx RFM12B node ID
 const int networkGroup = 210;
- 
+
 // Note: Please update emonhub configuration guide on OEM wide packet structure change:
 // https://github.com/openenergymonitor/emonhub/blob/emon-pi/configuration.md
 typedef struct {
@@ -161,7 +161,7 @@ void setup()
   digitalWrite(LEDpin,HIGH);
 
   Serial.begin(115200);
- 
+
   Serial.print("emonTx V3.4 Discrete Sampling V"); Serial.print(version*0.1);
   #if (RF69_COMPAT)
     Serial.println(" RFM69CW");
@@ -170,18 +170,18 @@ void setup()
   #endif
   Serial.println("OpenEnergyMonitor.org");
   Serial.println("POST.....wait 10s");
-  
+
   //READ DIP SWITCH POSITIONS
   pinMode(DIP_switch1, INPUT_PULLUP);
   pinMode(DIP_switch2, INPUT_PULLUP);
   if (digitalRead(DIP_switch1)==LOW) nodeID--;                            // IF DIP switch 1 is switched on then subtract 1 from nodeID
   if (digitalRead(DIP_switch2)==LOW) USA=TRUE;                            // IF DIP switch 2 is switched on then activate USA mode
- 
+
 
   if (USA==TRUE){                                                         // if USA mode is true
     Vcal=Vcal_USA;                                                        // Assume USA AC/AC adatper is being used, set calibration accordingly
   }
-  
+
   delay(10);
   rf12_initialize(nodeID, RF_freq, networkGroup);                         // initialize RFM12B/rfm69CW
   for (int i=10; i>=0; i--)                                               // Send RF test sequence (for factory testing)
@@ -192,24 +192,24 @@ void setup()
   }
   rf12_sendWait(2);
   emontx.power1=0;
-  
+
   if (analogRead(1) > 0) {CT1 = 1; CT_count++;} else CT1=0;              // check to see if CT is connected to CT1 input, if so enable that channel
   if (analogRead(2) > 0) {CT2 = 1; CT_count++;} else CT2=0;              // check to see if CT is connected to CT2 input, if so enable that channel
   if (analogRead(3) > 0) {CT3 = 1; CT_count++;} else CT3=0;              // check to see if CT is connected to CT3 input, if so enable that channel
   if (analogRead(4) > 0) {CT4 = 1; CT_count++;} else CT4=0;              // check to see if CT is connected to CT4 input, if so enable that channel
-  
+
   if ( CT_count == 0) CT1=1;                                             // If no CT's are connect ed CT1-4 then by default read from CT1
 
   // Quick check to see if there is a voltage waveform present on the ACAC Voltage input
   // Check consists of calculating the RMS from 100 samples of the voltage input.
   Sleepy::loseSomeTime(10000);            //wait for settle
   digitalWrite(LEDpin,LOW);
-  
+
   // Calculate if there is an ACAC adapter on analog input 0
   //double vrms = calc_rms(0,1780) * (Vcal * (3.3/1024) );
   double vrms = calc_rms(0,1780) * 0.87;
   if (vrms>90) ACAC = 1; else ACAC=0;
- 
+
   if (ACAC)
   {
     for (int i=0; i<10; i++)                                              // indicate AC has been detected by flashing LED 10 times
@@ -223,8 +223,8 @@ void setup()
     delay(1000);
     digitalWrite(LEDpin, HIGH); delay(2000); digitalWrite(LEDpin, LOW);   // indicate DC power has been detected by turing LED on then off
   }
- 
- 
+
+
   //################################################################################################################################
   //Setup and for presence of DS18B20
   //################################################################################################################################
@@ -234,14 +234,14 @@ void setup()
                                                    // http://harizanov.com/2013/07/optimizing-ds18b20-code-for-low-power-applications/
   numSensors=(sensors.getDeviceCount());
   if (numSensors > MaxOnewire) numSensors=MaxOnewire;   //Limit number of sensors to max number of sensors
-  
+
   byte j=0;                                        // search for one wire devices and
                                                    // copy to device address arrays.
   while ((j < numSensors) && (oneWire.search(allAddress[j])))  j++;
-  
+
   delay(500);
   digitalWrite(DS18B20_PWR, LOW);
-  
+
   if (numSensors==0) DS18B20_STATUS=0;
     else DS18B20_STATUS=1;
 
@@ -258,7 +258,7 @@ void setup()
 
     Serial.print("RMS Voltage on AC-AC  is: ~");
     Serial.print(vrms,0); Serial.println("V");
-      
+
     if (ACAC) {
       Serial.println("AC-AC detected - Real Power measure enabled");
       Serial.println("assuming pwr from AC-AC (jumper closed)");
@@ -279,20 +279,20 @@ void setup()
       if (CT3) Serial.println("CT 3 detected");
       if (CT4) Serial.println("CT 4 detected");
     }
-    
+
     if (DS18B20_STATUS==1) {
       Serial.print("Detected Temp Sensors:  ");
       Serial.println(numSensors);
     } else {
       Serial.println("No temperature sensor");
     }
-    
+
     #if (RF69_COMPAT)
        Serial.println("RFM69CW");
     #else
       Serial.println("RFM12B");
     #endif
-    
+
     Serial.print("Node: "); Serial.print(nodeID);
     Serial.print(" Freq: ");
     if (RF_freq == RF12_433MHZ) Serial.print("433Mhz");
@@ -310,13 +310,13 @@ void setup()
   {
     Serial.end();
   }
-  
-    
+
+
   if (CT1) ct1.current(1, Ical1);             // CT ADC channel 1, calibration.  calibration (2000 turns / 22 Ohm burden resistor = 90.909)
   if (CT2) ct2.current(2, Ical2);             // CT ADC channel 2, calibration.
   if (CT3) ct3.current(3, Ical3);             // CT ADC channel 3, calibration.
   if (CT4) ct4.current(4, Ical4);             // CT ADC channel 4, calibration.  calibration (2000 turns / 120 Ohm burden resistor = 16.66) high accuracy @ low power -  4.5kW Max @ 240V
-  
+
   if (ACAC)
   {
     if (CT1) ct1.voltage(0, Vcal, phase_shift);          // ADC pin, Calibration, phase_shift
@@ -326,7 +326,7 @@ void setup()
   }
 
   attachInterrupt(pulse_countINT, onPulse, FALLING);     // Attach pulse counting interrupt pulse counting
- 
+
   for(byte j=0;j<MaxOnewire;j++)
       emontx.temp[j] = 3000;                             // If no temp sensors connected default to status code 3000
                                                          // will appear as 300 once multipled by 0.1 in emonhub
@@ -335,17 +335,17 @@ void setup()
 void loop()
 {
   unsigned long start = millis();
-  
+
   if (ACAC) {
     delay(200);                         //if powering from AC-AC allow time for power supply to settle
     emontx.Vrms=0;                      //Set Vrms to zero, this will be overwirtten by CT 1-4
   }
-  
+
   // emontx.power1 = 1;
   // emontx.power2 = 1;
   // emontx.power3 = 1;
   // emontx.power4 = 1;
-  
+
   if (CT1) {
     if (ACAC) {
       ct1.calcVI(no_of_half_wavelengths,timeout); emontx.power1=ct1.realPower;
@@ -354,7 +354,7 @@ void loop()
       emontx.power1 = ct1.calcIrms(no_of_samples)*Vrms;
     }
   }
-  
+
   if (CT2) {
     if (ACAC) {
       ct2.calcVI(no_of_half_wavelengths,timeout); emontx.power2=ct2.realPower;
@@ -372,7 +372,7 @@ void loop()
       emontx.power3 = ct3.calcIrms(no_of_samples)*Vrms;
     }
   }
-  
+
   if (CT4) {
     if (ACAC) {
       ct4.calcVI(no_of_half_wavelengths,timeout); emontx.power4=ct4.realPower;
@@ -381,12 +381,12 @@ void loop()
       emontx.power4 = ct4.calcIrms(no_of_samples)*Vrms;
     }
   }
-  
+
   if (!ACAC){                                                                         // read battery voltage if powered by DC
     int battery_voltage=analogRead(battery_voltage_pin) * 0.681322727;                // 6.6V battery = 3.3V input = 1024 ADC
     emontx.Vrms= battery_voltage;
   }
-  
+
   if (DS18B20_STATUS==1)
   {
     digitalWrite(DS18B20_PWR, HIGH);
@@ -399,7 +399,7 @@ void loop()
       emontx.temp[j]=get_temperature(j);
     digitalWrite(DS18B20_PWR, LOW);
   }
-  
+
   if (pulseCount)                                                                     // if the ISR has counted some pulses, update the total count
   {
     cli();                                                                            // Disable interrupt just in case pulse comes in while we are updating the count
@@ -421,16 +421,17 @@ void loop()
         Serial.print(emontx.temp[j]);
       }
     }
+    Serial.println();
     delay(50);
   }
-  
+
   if (ACAC) {digitalWrite(LEDpin, HIGH); delay(200); digitalWrite(LEDpin, LOW);}    // flash LED if powered by AC
-  
+
   send_rf_data();                                                           // *SEND RF DATA* - see emontx_lib
-  
+
   unsigned long runtime = millis() - start;
   unsigned long sleeptime = (TIME_BETWEEN_READINGS*1000) - runtime - 100;
-  
+
   if (ACAC) {                                                               // If powered by AC-AC adaper (mains power) then delay instead of sleep
     delay(sleeptime);
   } else {                                                                  // if powered by battery then sleep rather than dealy and disable LED to lower energy consumption
@@ -476,4 +477,3 @@ int get_temperature(byte sensor)
 }
 
 #endif    // IMPORTANT LINE!
-
