@@ -424,14 +424,22 @@ void loop()
     delay(50);
   }*/
   
+  
+  
+ // char tmpStr[200];
+ // sprintf(tmpStr,"ct1:%d,ct2:%d,ct3:%d,ct4:%d//,vrms:%d,pulse:%ld",emontx.power1,emontx//.power2,emontx.power3,emontx.power4,emontx//.Vrms,emontx.pulseCount);
+ // Serial.println(tmpStr);
+  
+    printf("ct1:%d,ct2:%d,ct3:%d,ct4:%d,vrms:%d,pulse:%u",emontx.power1,emontx.power2,emontx.power3,emontx.power4,emontx.Vrms,emontx.pulseCount);
+  
   if (debug==1) {
 
-    Serial.print("ct1:"); Serial.print(emontx.power1);
-    Serial.print(",ct2:"); Serial.print(emontx.power2);
-    Serial.print(",ct3:"); Serial.print(emontx.power3);
-    Serial.print(",ct4:"); Serial.print(emontx.power4);
-    Serial.print(",vrms:"); Serial.print(emontx.Vrms);
-    Serial.print(",pulse:"); Serial.print(emontx.pulseCount);
+   // Serial.print("ct1:"); Serial.print(emontx//.power1);
+   // Serial.print(",ct2:"); Serial.print(emontx//.power2);
+   // Serial.print(",ct3:"); Serial.print(emontx//.power3);
+   // Serial.print(",ct4:"); Serial.print(emontx//.power4);
+   // Serial.print(",vrms:"); Serial.print//(emontx.Vrms);
+   // Serial.print(",pulse:"); Serial.print//(emontx.pulseCount);
     if (DS18B20_STATUS==1){
       for(byte j=0;j<numSensors;j++){
         Serial.print(",t"); Serial.print(j); Serial.print(":");

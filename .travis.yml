@@ -8,7 +8,16 @@ cache:
 install:
 - pip install -U platformio
 script:
-- platformio run -d emonTxV3/RFM/emonTxV3.4/emonTxV3_4_DiscreteSampling -e emontx_deploy
+- platformio run -d emonTxV3/RFM/emonTxV3.4/emonTxV3_4_DiscreteSampling -e emontx
+
+
+# If git release then run build with git tag as build tag see platformio.ini
+- if [ ${TRAVIS_TAG} = "true" ]; then
+    platformio run -d emonTxV3/RFM/emonTxV3.4/emonTxV3_4_DiscreteSampling -e emontx_deploy|| travis_terminate 1;
+  fi
+# Fix travis exit status
+# http://steven.casagrande.io/articles/travis-ci-and-if-statements/
+
 deploy:
   on:
     repo: openenergymonitor/emonTxFirmware
@@ -25,6 +34,6 @@ deploy:
 
 ## Setup auto depoly .hex on release tag
 # sudo gem install travis
-# cd into repo 
+# cd into repo
 # $ travis setup releases
 # folow prompts..depoly section will be populated
