@@ -1,4 +1,5 @@
 // EmonTx V3 Direct Serial example
+// AC-AC adapter must be used with this example (highly recomneded for more accurate Real Power calculations)
 // Useful for direct connection to Raspberry Pi or computer via USB to UART cable 
 // Forum thread: http://openenergymonitor.org/emon/node/3872
 
@@ -27,11 +28,13 @@ void setup()
   Serial.begin(9600);
   Serial.println("emonTx V3 Direct serial Example");
   
-  // Calibration, phase_shift
-  ct1.voltage(0, 276.9, 1.7);                   
-  ct2.voltage(0, 276.9, 1.7);
-  ct3.voltage(0, 276.9, 1.7);
-  ct4.voltage(0, 276.9, 1.7);
+  // ADC pin, Vcal Calibration, phase_shift
+  ct1.voltage(0, 268.97, 1.7);                   
+  ct2.voltage(0, 268.97, 1.7);
+  ct3.voltage(0, 268.97, 1.7);
+  ct4.voltage(0, 268.97, 1.7);
+  
+// note:  UK/EU Vcal = 268.97; USA Vcal = 130.0; 
   
   // CT Current calibration 
   // (2000 turns / 22 Ohm burden resistor = 90.909)
