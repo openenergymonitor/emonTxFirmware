@@ -31,6 +31,8 @@
 
 
 Change Log:
+v2.5   19/09/16 Increase baud 9600 > 115200 to emonesp compatiability
+v2.4   06/09/16 Update serial output to use CSV string pairs to work with emonESP e.g. 'ct1:100,ct2:329'
 v2.3   16/11/15 Change to unsigned long for pulse count and make default node ID 8 to avoid emonHub node decoder conflict & fix counting pulses faster than 110ms, strobed meter LED http://openenergymonitor.org/emon/node/11490
 v2.2   12/11/15 Remove debug timming serial print code
 v2.1   24/10/15 Improved timing so that packets are sent just under 10s, reducing resulting data gaps in feeds + default status code for no temp sensors of 3000 which reduces corrupt packets improving data reliability
@@ -73,7 +75,7 @@ EnergyMonitor ct1, ct2, ct3, ct4;
 #include <DallasTemperature.h>                                        //http://download.milesburton.com/Arduino/MaximTemperature/DallasTemperature_LATEST.zip
 
 
-const byte version = 23;         // firmware version divided by 10 e,g 16 = V1.6
+const byte version = 25;         // firmware version divided by 10 e,g 16 = V1.6
 
 //----------------------------emonTx V3 Settings---------------------------------------------------------------------------------------------------------------
 const byte Vrms=                  230;                               // Vrms for apparent power readings (when no AC-AC voltage sample is present)
@@ -158,7 +160,7 @@ void setup()
 
   digitalWrite(LEDpin,HIGH);
 
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   Serial.print("emonTx V3.4 Discrete Sampling V"); Serial.print(version*0.1);
   #if (RF69_COMPAT)
@@ -407,19 +409,19 @@ void loop()
   }
 
   if (debug==1) {
-    Serial.print(emontx.power1); Serial.print(" ");
-    Serial.print(emontx.power2); Serial.print(" ");
-    Serial.print(emontx.power3); Serial.print(" ");
-    Serial.print(emontx.power4); Serial.print(" ");
-    Serial.print(emontx.Vrms); Serial.print(" ");
-    Serial.print(emontx.pulseCount); Serial.print(" ");
+    Serial.print("ct1:"); Serial.print(emontx.power1);
+    Serial.print(",ct2:"); Serial.print(emontx.power2);
+    Serial.print(",ct3:"); Serial.print(emontx.power3);
+    Serial.print(",ct4:"); Serial.print(emontx.power4);
+    Serial.print(",vrms:"); Serial.print(emontx.Vrms);
+    Serial.print(",pulse:"); Serial.print(emontx.pulseCount);
     if (DS18B20_STATUS==1){
       for(byte j=0;j<numSensors;j++){
+        Serial.print(",t"); Serial.print(j); Serial.print(":");
         Serial.print(emontx.temp[j]);
-       Serial.print(" ");
       }
     }
-    Serial.println("");
+    Serial.println();
     delay(50);
   }
 
