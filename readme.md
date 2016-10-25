@@ -27,6 +27,7 @@ Part of the [openenergymonitor.org](http://openenergymonitor.org) project
 
 ***
 
+## Licence
 ```
 The emonTx firmware is released under the GNU GPL V3 license
 
