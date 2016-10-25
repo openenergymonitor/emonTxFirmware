@@ -1,5 +1,7 @@
 # Change Log:
 
+- v2.5   19/09/16 Increase baud 9600 > 115200 to emonesp compatiability
+- v2.4   06/09/16 Update serial output to use CSV string pairs to work with emonESP e.g. 'ct1:100,ct2:329'
 - v2.3   16/11/15 Change to unsigned long for pulse count and make default node ID 8 to avoid emonHub node decoder conflict & fix counting pulses faster than 110ms, strobed meter LED http://openenergymonitor.org/emon/node/11490 
 - v2.2   12/11/15 Remove debug timming serial print code
 - v2.1   24/10/15 Improved timing so that packets are sent just under 10s, reducing resulting data gaps in feeds + default status code for no temp sensors of 3000 which reduces corrupt packets improving data reliability
