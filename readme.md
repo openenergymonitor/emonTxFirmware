@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/openenergymonitor/emonpi.svg?branch=master)](https://travis-ci.org/openenergymonitor/emonpi)
 
-Arduino compatible firmware (ATmega328) for emonTx Low power wireless energy-monitoring node 
+Arduino compatible firmware (ATmega328) for emonTx Low power wireless energy-monitoring node.
 
 
 
