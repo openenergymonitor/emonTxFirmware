@@ -34,14 +34,14 @@ Change Log:
 v2.5   19/09/16 Increase baud 9600 > 115200 to emonesp compatiability
 v2.4   06/09/16 Update serial output to use CSV string pairs to work with emonESP e.g. 'ct1:100,ct2:329'
 v2.3   16/11/15 Change to unsigned long for pulse count and make default node ID 8 to avoid emonHub node decoder conflict & fix counting pulses faster than 110ms, strobed meter LED http://openenergymonitor.org/emon/node/11490
-v2.2   12/11/15 Remove debug timming serial print code
+v2.2   12/11/15 Remove DEBUG timming serial print code
 v2.1   24/10/15 Improved timing so that packets are sent just under 10s, reducing resulting data gaps in feeds + default status code for no temp sensors of 3000 which reduces corrupt packets improving data reliability
 V2.0   30/09/15 Update number of samples 1480 > 1662 to improve sampling accurancy: 1662 samples take 300 mS, which equates to 15 cycles @ 50 Hz or 18 cycles @ 60 Hz.
 V1.9   25/08/15 Fix spurious pulse readings from RJ45 port when DS18B20 but no pulse counter is connected (enable internal pull-up)
 V1.8 - 18/06/15 Increase max pulse width to 110ms
 V1.7 - 12/06/15 Fix pulse count debounce issue & enable pulse count pulse temperature
 V1.6 - Add support for multiple DS18B20 temperature sensors
-V1.5 - Add interrupt pulse counting - simplify serial print debug
+V1.5 - Add interrupt pulse counting - simplify serial print DEBUG
 V1.4.1 - Remove filter settle routine as latest emonLib 19/01/15 does not require
 V1.4 - Support for RFM69CW, DIP switches and battery voltage reading on emonTx V3.4
 V1.3 - fix filter settle time to eliminate large inital reading
@@ -76,6 +76,7 @@ EnergyMonitor ct1, ct2, ct3, ct4;
 
 
 const byte version = 25;         // firmware version divided by 10 e,g 16 = V1.6
+boolean DEBUG = 1;                       // Print serial debug
 
 //----------------------------emonTx V3 Settings---------------------------------------------------------------------------------------------------------------
 const byte Vrms=                  230;                               // Vrms for apparent power readings (when no AC-AC voltage sample is present)
@@ -126,9 +127,10 @@ byte numSensors;
 //-------------------------------------------------------------------------------------------------------------------------------------------
 
 //-----------------------RFM12B / RFM69CW SETTINGS----------------------------------------------------------------------------------------------------
-#define RF_freq RF12_433MHZ                                              // Frequency of RF69CW module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
-byte nodeID = 8;                                                        // emonTx RFM12B node ID
-const int networkGroup = 210;
+byte RF_freq=RF12_433MHZ;                                           // Frequency of RF69CW module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
+byte nodeID = 8;                                                    // emonTx RFM12B node ID
+int networkGroup = 210;
+boolean RF_STATUS = 1;                                              // Enable RF
 
 // Note: Please update emonhub configuration guide on OEM wide packet structure change:
 // https://github.com/openenergymonitor/emonhub/blob/emon-pi/configuration.md
@@ -144,12 +146,29 @@ PayloadTX emontx;
 
 //Random Variables
 //boolean settled = false;
-boolean CT1, CT2, CT3, CT4, ACAC, debug, DS18B20_STATUS;
+boolean CT1, CT2, CT3, CT4, ACAC, DS18B20_STATUS;
 byte CT_count=0;
 volatile byte pulseCount = 0;
 unsigned long pulsetime=0;                                    // Record time of interrupt pulse
+unsigned long start=0;
+
+const char helpText1[] PROGMEM =                                 // Available Serial Commands
+"\n"
+"Available commands:\n"
+"  <nn> i     - set node IDs (standard node ids are 1..30)\n"
+"  <n> b      - set MHz band (4 = 433, 8 = 868, 9 = 915)\n"
+"  <nnn> g    - set network group (RFM12 only allows 212, 0 = any)\n"
+"  s          - save config to EEPROM\n"
+"  v          - Show firmware version\n"
+;
+
 
 #ifndef UNIT_TEST  // IMPORTANT LINE!
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//SETUP
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------------------------------
 void setup()
 {
   pinMode(LEDpin, OUTPUT);
@@ -160,16 +179,25 @@ void setup()
 
   digitalWrite(LEDpin,HIGH);
 
+  
   Serial.begin(115200);
-
-  Serial.print("emonTx V3.4 Discrete Sampling V"); Serial.print(version*0.1);
-  #if (RF69_COMPAT)
-    Serial.println(" RFM69CW");
-  #else
-    Serial.println(" RFM12B");
-  #endif
+  Serial.print("emonTx V3.4 Discrete Sampling V"); Serial.println(version*0.1);
   Serial.println("OpenEnergyMonitor.org");
-  Serial.println("POST.....wait 10s");
+  if (RF_STATUS==1){
+    #if (RF69_COMPAT)
+       Serial.print("RFM69CW");
+    #else
+      Serial.print("RFM12B");
+    #endif
+    Serial.print(" Node: "); Serial.print(nodeID);
+    Serial.print(" Freq: ");
+    if (RF_freq == RF12_433MHZ) Serial.print("433Mhz");
+    if (RF_freq == RF12_868MHZ) Serial.print("868Mhz");
+    if (RF_freq == RF12_915MHZ) Serial.print("915Mhz");
+    Serial.print(" Network: "); Serial.println(networkGroup);
+  }
+  Serial.println("POST.....wait 10s. Enter '+++' to enter config");
+  
 
   //READ DIP SWITCH POSITIONS
   pinMode(DIP_switch1, INPUT_PULLUP);
@@ -183,16 +211,19 @@ void setup()
   }
 
   delay(10);
-  rf12_initialize(nodeID, RF_freq, networkGroup);                         // initialize RFM12B/rfm69CW
-  for (int i=10; i>=0; i--)                                               // Send RF test sequence (for factory testing)
-  {
-    emontx.power1=i;
-    rf12_sendNow(0, &emontx, sizeof emontx);
-    delay(100);
+  
+  if (RF_STATUS==1){
+    rf12_initialize(nodeID, RF_freq, networkGroup);                         // initialize RFM12B/rfm69CW
+    for (int i=10; i>=0; i--)                                               // Send RF test sequence (for factory testing)
+    {
+      emontx.power1=i;
+      rf12_sendNow(0, &emontx, sizeof emontx);
+      delay(100);
+    }
+    rf12_sendWait(2);
+    emontx.power1=0;
   }
-  rf12_sendWait(2);
-  emontx.power1=0;
-
+  
   if (analogRead(1) > 0) {CT1 = 1; CT_count++;} else CT1=0;              // check to see if CT is connected to CT1 input, if so enable that channel
   if (analogRead(2) > 0) {CT2 = 1; CT_count++;} else CT2=0;              // check to see if CT is connected to CT2 input, if so enable that channel
   if (analogRead(3) > 0) {CT3 = 1; CT_count++;} else CT3=0;              // check to see if CT is connected to CT3 input, if so enable that channel
@@ -202,7 +233,24 @@ void setup()
 
   // Quick check to see if there is a voltage waveform present on the ACAC Voltage input
   // Check consists of calculating the RMS from 100 samples of the voltage input.
-  Sleepy::loseSomeTime(10000);            //wait for settle
+  start = millis();
+  while (millis() < (start + 10000)){
+    // If serial input of keyword string '+++' is entered during 10s POST then enter config mode
+    if (Serial.available()){
+      if ( Serial.readString() == "+++\r\n"){
+        Serial.println("Entering config mode...");
+        showString(helpText1);
+        // char c[]="v"
+        config(char('v'));
+        while(1){
+          if (Serial.available()){
+            config(Serial.read());
+          }
+        }
+      }
+    }
+  }
+  
   digitalWrite(LEDpin,LOW);
 
   // Calculate if there is an ACAC adapter on analog input 0
@@ -247,8 +295,7 @@ void setup()
 
   //################################################################################################################################
 
-  if (Serial) debug = 1; else debug=0;          // if serial UART to USB is connected show debug O/P. If not then disable serial
-  if (debug==1)
+  if (DEBUG==1)
   {
     Serial.print("CT 1 Cal "); Serial.println(Ical1);
     Serial.print("CT 2 Cal "); Serial.println(Ical2);
@@ -287,19 +334,6 @@ void setup()
       Serial.println("No temperature sensor");
     }
 
-    #if (RF69_COMPAT)
-       Serial.println("RFM69CW");
-    #else
-      Serial.println("RFM12B");
-    #endif
-
-    Serial.print("Node: "); Serial.print(nodeID);
-    Serial.print(" Freq: ");
-    if (RF_freq == RF12_433MHZ) Serial.print("433Mhz");
-    if (RF_freq == RF12_868MHZ) Serial.print("868Mhz");
-    if (RF_freq == RF12_915MHZ) Serial.print("915Mhz");
-    Serial.print(" Network: "); Serial.println(networkGroup);
-
     Serial.print("CT1 CT2 CT3 CT4 VRMS/BATT PULSE");
     if (DS18B20_STATUS==1){Serial.print(" Temperature 1-"); Serial.print(numSensors);}
     Serial.println(" ");
@@ -332,9 +366,14 @@ void setup()
                                                          // will appear as 300 once multipled by 0.1 in emonhub
 } //end SETUP
 
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------------------------------
+// LOOP
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------------------------------
 void loop()
 {
-  unsigned long start = millis();
+  start = millis();
 
   if (ACAC) {
     delay(200);                         //if powering from AC-AC allow time for power supply to settle
@@ -408,7 +447,7 @@ void loop()
     sei();                                                                            // Re-enable interrupts
   }
 
-  if (debug==1) {
+  if (DEBUG==1) {
     Serial.print("ct1:"); Serial.print(emontx.power1);
     Serial.print(",ct2:"); Serial.print(emontx.power2);
     Serial.print(",ct3:"); Serial.print(emontx.power3);
@@ -427,7 +466,9 @@ void loop()
 
   if (ACAC) {digitalWrite(LEDpin, HIGH); delay(200); digitalWrite(LEDpin, LOW);}    // flash LED if powered by AC
 
-  send_rf_data();                                                           // *SEND RF DATA* - see emontx_lib
+  if (RF_STATUS==1){
+    send_rf_data();                                                           // *SEND RF DATA* - see emontx_lib
+  }
 
   unsigned long runtime = millis() - start;
   unsigned long sleeptime = (TIME_BETWEEN_READINGS*1000) - runtime - 100;
@@ -438,8 +479,18 @@ void loop()
                                    // lose an additional 500ms here (measured timing)
     Sleepy::loseSomeTime(sleeptime-500);                                    // sleep or delay in seconds
   }
-}
+} // end loop
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------------------------------
 
+
+
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------------------------------
+// SEND RF
+//-------------------------------------------------------------------------------------------------------------------------------------------
 void send_rf_data()
 {
   rf12_sleep(RF12_WAKEUP);
@@ -460,8 +511,14 @@ double calc_rms(int pin, int samples)
   double rms = sqrt((double)sum / samples);
   return rms;
 }
+//-------------------------------------------------------------------------------------------------------------------------------------------
 
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------------------------------
 // The interrupt routine - runs each time a falling edge of a pulse is detected
+//-------------------------------------------------------------------------------------------------------------------------------------------
 void onPulse()
 {
   if ( (millis() - pulsetime) > min_pulsewidth) {
@@ -475,5 +532,7 @@ int get_temperature(byte sensor)
   float temp=(sensors.getTempC(allAddress[sensor]));
   if ((temp<125.0) && (temp>-55.0)) return(temp*10);            //if reading is within range for the sensor convert float to int ready to send via RF
 }
+//-------------------------------------------------------------------------------------------------------------------------------------------
+
 
 #endif    // IMPORTANT LINE!
