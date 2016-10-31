@@ -31,6 +31,7 @@
 
 
 Change Log:
+v2.6   31/10/16 Add RF config via serial & save to EEPROM feature. Allows RF setings (nodeID, freq, group) via serial
 v2.5   19/09/16 Increase baud 9600 > 115200 to emonesp compatiability
 v2.4   06/09/16 Update serial output to use CSV string pairs to work with emonESP e.g. 'ct1:100,ct2:329'
 v2.3   16/11/15 Change to unsigned long for pulse count and make default node ID 8 to avoid emonHub node decoder conflict & fix counting pulses faster than 110ms, strobed meter LED http://openenergymonitor.org/emon/node/11490
@@ -75,7 +76,7 @@ EnergyMonitor ct1, ct2, ct3, ct4;
 #include <DallasTemperature.h>                                        //http://download.milesburton.com/Arduino/MaximTemperature/DallasTemperature_LATEST.zip
 
 
-const byte version = 25;         // firmware version divided by 10 e,g 16 = V1.6
+const byte version = 26;         // firmware version divided by 10 e,g 16 = V1.6
 boolean DEBUG = 1;                       // Print serial debug
 
 //----------------------------emonTx V3 Settings---------------------------------------------------------------------------------------------------------------
@@ -183,7 +184,9 @@ void setup()
   Serial.begin(115200);
   Serial.print("emonTx V3.4 Discrete Sampling V"); Serial.println(version*0.1);
   Serial.println("OpenEnergyMonitor.org");
+  Serial.println(" ");
   if (RF_STATUS==1){
+    load_config();                                                        // Load RF config from EEPROM (if any exists)
     #if (RF69_COMPAT)
        Serial.print("RFM69CW");
     #else
@@ -194,9 +197,11 @@ void setup()
     if (RF_freq == RF12_433MHZ) Serial.print("433Mhz");
     if (RF_freq == RF12_868MHZ) Serial.print("868Mhz");
     if (RF_freq == RF12_915MHZ) Serial.print("915Mhz");
-    Serial.print(" Network: "); Serial.println(networkGroup);
+    Serial.print(" Group: "); Serial.println(networkGroup);
+    Serial.println(" ");
   }
-  Serial.println("POST.....wait 10s. Enter '+++' to enter config");
+  Serial.println("POST.....wait 10s");
+  Serial.println("'+++' then [Enter] for RF config mode");
   
 
   //READ DIP SWITCH POSITIONS
