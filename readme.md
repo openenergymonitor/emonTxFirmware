@@ -1,6 +1,6 @@
 # emonTx Firmware
 
-[![Build Status](https://travis-ci.org/openenergymonitor//emonTxFirmware.svg?branch=master)](https://travis-ci.org/openenergymonitor//emonTxFirmware)
+[![Build Status](https://travis-ci.org/openenergymonitor/emonTxFirmware.svg?branch=master)](https://travis-ci.org/openenergymonitor/emonTxFirmware)
 
 Arduino compatible firmware (ATmega328) for emonTx Low power wireless energy-monitoring node.
 
