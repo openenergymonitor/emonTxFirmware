@@ -56,7 +56,7 @@ void setup()
   Serial.println("emonTX CT123 no RF Voltage example");
   Serial.println("OpenEnergyMonitor.org");
 
-  ct1.voltageTX(236.2, 1.7);                                         // ct.voltageTX(calibration, phase_shift) - make sure to select correct calibration for AC-AC adapter  http://openenergymonitor.org/emon/modules/emontx/firmware/calibration. Default is set for Ideal Power voltage adapter.
+  ct1.voltageTX(251.6, 1.7);                                         // ct.voltageTX(calibration, phase_shift) - make sure to select correct calibration for AC-AC adapter  http://openenergymonitor.org/emon/modules/emontx/firmware/calibration. Default is set for Ideal Power voltage adapter.
   ct1.currentTX(1, 111.1);                                            // Setup emonTX CT channel (channel (1,2 or 3), calibration)
                                                                       // CT Calibration factor = CT ratio / burden resistance
   ct2.voltageTX(234.26, 1.7);                                         // CT Calibration factor = (100A / 0.05A) x 18 Ohms
@@ -67,6 +67,7 @@ void setup()
 
   pinMode(LEDpin, OUTPUT);                                              // Setup indicator LED
   digitalWrite(LEDpin, HIGH);
+  delay(500);
 }
 
 void loop()
@@ -87,12 +88,12 @@ void loop()
   }
 
   Serial.print("ct1:"); Serial.print(emontx.power1);
-  Serial.print(",ct2:"); Serial.print(emontx.power2);
-  Serial.print(",ct3:"); Serial.print(emontx.power3);
+  if (CT2){ Serial.print(",ct2:"); Serial.print(emontx.power2);}
+  if (CT3){ Serial.print(",ct3:"); Serial.print(emontx.power3);}
   Serial.print(",vrms:"); Serial.print(int(emontx.Vrms*0.01));
   Serial.println();
 
-  digitalWrite(LEDpin, HIGH); delay(20); digitalWrite(LEDpin, LOW);      // flash LED
+  digitalWrite(LEDpin, HIGH); delay(100); digitalWrite(LEDpin, LOW);      // flash LED
   delay(2000);      // sleep or delay in seconds - see emontx_lib
 
 }
