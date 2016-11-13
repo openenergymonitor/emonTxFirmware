@@ -1,5 +1,5 @@
 /*
- EmonTx CT123 + Voltage example
+ EmonTx CT123 + Voltage example. noRF
 
  An example sketch for the emontx module for
  CT and AC voltage sample electricity monitoring. Enables real power and Vrms calculations.
@@ -17,7 +17,6 @@
  THIS SKETCH REQUIRES:
 
  Libraries in the standard arduino libraries folder:
-	- JeeLib		https://github.com/jcw/jeelib
 	- EmonLib		https://github.com/openenergymonitor/EmonLib.git
 
  Other files in project directory (should appear in the arduino tabs above)
@@ -38,23 +37,9 @@
 -------------------------------------------------------------------------------------------------------------
 */
 
-#define FILTERSETTLETIME 5000                                           //  Time (ms) to allow the filters to settle before sending data
-
 //CT 1 is always enabled
 const int CT2 = 1;                                                      // Set to 1 to enable CT channel 2
 const int CT3 = 1;                                                      // Set to 1 to enable CT channel 3
-
-#define RF69_COMPAT 1 							// SET TO 1 IF RFM69
-#define RF_freq RF12_433MHZ                                             // Frequency of RF12B module can be RF12_433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.433MHZ, RF12_868MHZ or RF12_915MHZ. You should use the one matching the module you have.
-const int nodeID = 10;                                                  // emonTx RFM12B node ID
-const int networkGroup = 210;                                           // emonTx RFM12B wireless network group - needs to be same as emonBase and emonGLCD needs to be same as emonBase and emonGLCD
-
-const int UNO = 1;                                                      // Set to 0 if your not using the UNO bootloader (i.e using Duemilanove) - All Atmega's shipped from OpenEnergyMonitor come with Arduino Uno bootloader
-#include <avr/wdt.h>                                                    // the UNO bootloader
-
-
-#include <JeeLib.h>   // make sure V12 (latest) is used if using RFM69CW
-ISR(WDT_vect) { Sleepy::watchdogEvent(); }
 
 #include "EmonLib.h"
 EnergyMonitor ct1,ct2,ct3;                                              // Create  instances for each CT channel
@@ -64,24 +49,14 @@ PayloadTX emontx;
 
 const int LEDpin = 9;                                                   // On-board emonTx LED
 
-boolean settled = false;
 
 void setup()
 {
-  Serial.begin(9600);
-  //Serial.begin(1115200);
-  Serial.println("emonTX CT123 Voltage example");
+  Serial.begin(115200);
+  Serial.println("emonTX CT123 no RF Voltage example");
   Serial.println("OpenEnergyMonitor.org");
-  Serial.print("Node: ");
-  Serial.print(nodeID);
-  Serial.print(" Freq: ");
-  if (RF_freq == RF12_433MHZ) Serial.print("433Mhz");
-  if (RF_freq == RF12_868MHZ) Serial.print("868Mhz");
-  if (RF_freq == RF12_915MHZ) Serial.print("915Mhz");
-  Serial.print(" Network: ");
-  Serial.println(networkGroup);
 
-  ct1.voltageTX(236.2, 1.7);                                         // ct.voltageTX(calibration, phase_shift) - make sure to select correct calibration for AC-AC adapter  http://openenergymonitor.org/emon/modules/emontx/firmware/calibration. Default is set for Ideal Power voltage adapter.
+  ct1.voltageTX(251.6, 1.7);                                         // ct.voltageTX(calibration, phase_shift) - make sure to select correct calibration for AC-AC adapter  http://openenergymonitor.org/emon/modules/emontx/firmware/calibration. Default is set for Ideal Power voltage adapter.
   ct1.currentTX(1, 111.1);                                            // Setup emonTX CT channel (channel (1,2 or 3), calibration)
                                                                       // CT Calibration factor = CT ratio / burden resistance
   ct2.voltageTX(234.26, 1.7);                                         // CT Calibration factor = (100A / 0.05A) x 18 Ohms
@@ -90,46 +65,35 @@ void setup()
   ct3.voltageTX(234.26, 1.7);
   ct3.currentTX(3, 111.1);
 
-  rf12_initialize(nodeID, RF_freq, networkGroup);                          // initialize RF
-  rf12_sleep(RF12_SLEEP);
-
   pinMode(LEDpin, OUTPUT);                                              // Setup indicator LED
   digitalWrite(LEDpin, HIGH);
-
-  if (UNO) wdt_enable(WDTO_8S);                                         // Enable anti crash (restart) watchdog if UNO bootloader is selected. Watchdog does not work with duemilanove bootloader                                                             // Restarts emonTx if sketch hangs for more than 8s
+  delay(500);
 }
 
 void loop()
 {
   ct1.calcVI(20,2000);                                                  // Calculate all. No.of crossings, time-out
   emontx.power1 = ct1.realPower;
-  Serial.print(emontx.power1);
 
   emontx.Vrms = ct1.Vrms*100;                                          // AC Mains rms voltage
 
   if (CT2) {
     ct2.calcVI(20,2000);                                               //ct.calcVI(number of crossings to sample, time out (ms) if no waveform is detected)
     emontx.power2 = ct2.realPower;
-    Serial.print(" "); Serial.print(emontx.power2);
   }
 
   if (CT3) {
     ct3.calcVI(20,2000);
     emontx.power3 = ct3.realPower;
-    Serial.print(" "); Serial.print(emontx.power3);
   }
 
-  Serial.print(" "); Serial.print(ct1.Vrms);
+  Serial.print("ct1:"); Serial.print(emontx.power1);
+  if (CT2){ Serial.print(",ct2:"); Serial.print(emontx.power2);}
+  if (CT3){ Serial.print(",ct3:"); Serial.print(emontx.power3);}
+  Serial.print(",vrms:"); Serial.print(int(emontx.Vrms*0.01));
+  Serial.println();
 
-  Serial.println(); delay(100);
+  digitalWrite(LEDpin, HIGH); delay(100); digitalWrite(LEDpin, LOW);      // flash LED
+  delay(2000);      // sleep or delay in seconds - see emontx_lib
 
-  // because millis() returns to zero after 50 days !
-  if (!settled && millis() > FILTERSETTLETIME) settled = true;
-
-  if (settled)                                                            // send data only after filters have settled
-  {
-    send_rf_data();                                                       // *SEND RF DATA* - see emontx_lib
-    digitalWrite(LEDpin, HIGH); delay(2); digitalWrite(LEDpin, LOW);      // flash LED
-    emontx_sleep(5);      // sleep or delay in seconds - see emontx_lib
-  }
 }
