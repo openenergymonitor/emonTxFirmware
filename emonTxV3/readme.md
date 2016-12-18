@@ -34,7 +34,8 @@ Need to use standard JeeLib library
 
 ## RFM12B Firmware
 
-### MAIN EMONTX V3 FIRMWARE [*emonTxV3_RFM12B_Discrete Sampling* -](https://github.com/openenergymonitor/emonTxFirmware/tree/master/emonTxV3/RFM12B/emonTxV3_RFM12B_DiscreteSampling)
+### MAIN EMONTX V3 FIRMWARE [*emonTxV3_RFM12B_Discrete Sampling* -](https://github.com/openenergymonitor/emonTxFirmware/tree/master/emonTxV3/RFM/emonTxV3.4/emonTxV3_4_DiscreteSampling)
+
 **TESTED AND CALIBRATED - all pre-assembled emonTx V3's are shipped with this firmware, available on github as .ino and pre-complied .hex**
 
 * Detection of AC-AC adapter sets Apparent Power / Real Power Sampling accordingly
