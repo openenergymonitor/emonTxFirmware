@@ -8,9 +8,6 @@ Part of the [OpenEnergyMonitor.org](https://openenergymonitor.org) project
 
 ## Current Firmware
 
-**TESTED AND CALIBRATED - all pre-assembled emonTx V3.4 are shipped with this firmware, available on github as .ino and pre-complied .hex**
-
-### MAIN EMONTX V3 FIRMWARE [*emonTxV3_RFM12B_Discrete Sampling* -](https://github.com/openenergymonitor/emonTxFirmware/tree/master/emonTxV3/RFM12B/emonTxV3_RFM12B_DiscreteSampling)
 **TESTED AND CALIBRATED - all pre-assembled emonTx V3's are shipped with this firmware, available on github as .ino and pre-complied .hex**
 
 **Current firmware key features:**
@@ -20,6 +17,8 @@ Part of the [OpenEnergyMonitor.org](https://openenergymonitor.org) project
 * Detection of CT connections and samples only from the channels needed
 * Detection of remote DS18B20 temperature sensor connection
 * Low power battery opperation supported
+* DIP switch 1 (closes to RF module) to select node ID. (Switch off node ID =10, switch on node ID = 9)
+* DIP switch 2 to select UK/EU or USA AC-AC adapter calibration (Switch off = UK/EU, Switch on = USA)
 * [Serial RF nodeID config](https://community.openenergymonitor.org/t/emontx-v3-configure-rf-settings-via-serial-released-fw-v2-6-0/2064)
 
 ### RFM Examples:
