@@ -1,5 +1,6 @@
 # Change Log:
 
+- v2.6   31/10/16 Add RF config via serial & save to EEPROM feature. Allows RF setings (nodeID, freq, group) via serial
 - v2.5   19/09/16 Increase baud 9600 > 115200 to emonesp compatiability
 - v2.4   06/09/16 Update serial output to use CSV string pairs to work with emonESP e.g. 'ct1:100,ct2:329'
 - v2.3   16/11/15 Change to unsigned long for pulse count and make default node ID 8 to avoid emonHub node decoder conflict & fix counting pulses faster than 110ms, strobed meter LED http://openenergymonitor.org/emon/node/11490 
