@@ -1,0 +1,1 @@
+The [standard emonTx firmware](https://github.com/openenergymonitor/emontx3) and [emonTx 3-phase firmware](https://https://github.com/openenergymonitor/emontx-3phase/) now outputs serial data in a format and baud rate that the emonESP expects. Using the standard firmware over this firmware is recomended where possible
