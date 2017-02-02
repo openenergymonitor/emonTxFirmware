@@ -1,6 +1,11 @@
-# emonTx V3 - Low power wireless energy-monitoring node 
+# emonTx V3 - Low power wireless energy-monitoring node
 
 Part of the [OpenEnergyMonitor.org](https://openenergymonitor.org) project
+
+**Update: the offical firmware for latest version of emonTx V3 (as shipped via OpenEnergyMonitor online store) has been moved to a [dedicated emonTx V3 repository](https://github.com/openenergymonitor/emontx3)**
+
+***
+
 
 - [Getting started guide](https://guide.openenergymonitor.org/setup/emontx)
 - [Technical Wiki (emonTx V3.4)](https://wiki.openenergymonitor.org/index.php?title=EmonTx_V3.4)
@@ -8,18 +13,13 @@ Part of the [OpenEnergyMonitor.org](https://openenergymonitor.org) project
 
 ## Current Firmware
 
-**TESTED AND CALIBRATED - all pre-assembled emonTx V3's are shipped with this firmware, available on github as .ino and pre-complied .hex**
+**Update: the offical firmware for latest version of emonTx V3 (as shipped via OpenEnergyMonitor online store) has been moved to a [dedicated emonTx V3 repository](https://github.com/openenergymonitor/emontx3)**
 
-**Current firmware key features:**
+***
 
-* Detection of AC-AC adapter sets Apparent Power / Real Power Sampling accordingly
-* Detection of battery / USB 5V or AC > DC power method and sets sleep mode accordingly
-* Detection of CT connections and samples only from the channels needed
-* Detection of remote DS18B20 temperature sensor connection
-* Low power battery opperation supported
-* DIP switch 1 (closes to RF module) to select node ID. (Switch off node ID =10, switch on node ID = 9)
-* DIP switch 2 to select UK/EU or USA AC-AC adapter calibration (Switch off = UK/EU, Switch on = USA)
-* [Serial RF nodeID config](https://community.openenergymonitor.org/t/emontx-v3-configure-rf-settings-via-serial-released-fw-v2-6-0/2064)
+## Misc Firmware Examples
+
+*Most of these examples are old not activly developed / supported*
 
 ### RFM Examples:
 * **emonTxV3_3phase_Voltage** - Approximate 3-phase sketch. [Now moved to emonTx 3-phase repo](https://github.com/openenergymonitor/emontx-3phase)
@@ -42,9 +42,10 @@ Part of the [OpenEnergyMonitor.org](https://openenergymonitor.org) project
 
 
 ### No RF Examples:
-There are example sketches which do not use or require an RF module 
 
-* **emonTxV3_DirectSerial** - Serial output of power readings. Useful for direct connection to RaspberryPi see [technical Wiki](http://wiki.openenergymonitor.org/index.php?title=EmonTx_V3#Direct_connection_emonTx_V3_.3E_Raspberry_Pi_GPIO) 
+There are example sketches which do not use or require an RF module
+
+* **emonTxV3_DirectSerial** - Serial output of power readings. Useful for direct connection to RaspberryPi see [technical Wiki](http://wiki.openenergymonitor.org/index.php?title=EmonTx_V3#Direct_connection_emonTx_V3_.3E_Raspberry_Pi_GPIO)
 
 * **LED_DigitalMeter** - emonTx V3 to emulate solid state digital power meter by pulsing on-board red LED every 0.1Wh (default)
 
@@ -59,6 +60,6 @@ There are example sketches which do not use or require an RF module
 
 ```
 emonTx firmware is released under the GNU GPL V3 license
-The documentation is subject to GNU Free Documentation License 
+The documentation is subject to GNU Free Documentation License
 The emonTx hardware designs follow the terms of the OSHW (Open-source hardware) Statement of Principles 1.0.
 ```
